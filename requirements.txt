@@ -14,7 +14,6 @@ asgiref==3.11.0
 
 attrs==25.4.0
 
-audioop-lts==0.2.2
 
 beautifulsoup4==4.14.3
 
@@ -218,7 +217,6 @@ annotated-types==0.7.0
 anyio==4.12.0
 asgiref==3.11.0
 attrs==25.4.0
-audioop-lts==0.2.2
 beautifulsoup4==4.14.3
 blinker==1.9.0
 cachetools==6.2.3
