@@ -1,128 +1,1530 @@
-/* ============================================
-   VitalBook Custom Admin Theme
-   Colors: Dark Blue #0B2B46 + Orange #FF8C00
-============================================ */
+/*
+ * VitalBook Admin — Next-Gen Medical CRM Theme
+ * Design system: Light, airy, clinical
+ * Primary: Medical Blue #2563EB | Background: #F8FAFC | Sidebar: #FFFFFF
+ */
 
-/* 1. Top Header Background */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ══════════════════════════════════════════════════════
+   GLOBAL RESET & TYPOGRAPHY
+══════════════════════════════════════════════════════ */
+*, *::before, *::after {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    box-sizing: border-box !important;
+    -webkit-font-smoothing: antialiased !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   BODY & PAGE BACKGROUND
+══════════════════════════════════════════════════════ */
+body {
+    background: #F3F6F9 !important;
+    color: #1E293B !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+#content {
+    background: #F3F6F9 !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   TOP HEADER / NAV BAR
+══════════════════════════════════════════════════════ */
 #header {
-    background-color: #0B2B46 !important;
-    color: #ffffff !important;
-    border-bottom: 3px solid #FF8C00 !important;
+    background: #FFFFFF !important;
+    color: #1E293B !important;
+    padding: 0 24px !important;
+    height: 58px !important;
+    display: flex !important;
+    align-items: center !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
 }
 
-/* 2. Header Site Name / Title */
-#site-name a {
-    color: #ffffff !important;
-    font-weight: 700;
-    font-size: 1.3rem;
-    text-decoration: none;
+#branding {
+    display: flex !important;
+    align-items: center !important;
 }
 
-/* 3. Header links */
-#header a:link,
-#header a:visited {
-    color: #ffffff !important;
-}
-#header a:hover {
-    color: #FF8C00 !important;
+#branding h1 {
+    margin: 0 !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #1E293B !important;
+    line-height: 1 !important;
 }
 
-/* 4. User Tools (top right: welcome, logout) */
+#branding h1 a {
+    color: #1E293B !important;
+    text-decoration: none !important;
+}
+
+#user-tools {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    color: #64748B !important;
+    font-size: 13px !important;
+}
+
 #user-tools a {
-    color: #FF8C00 !important;
-    border-bottom: none !important;
+    color: #64748B !important;
+    background: transparent !important;
+    border: 1px solid #E2E8F0 !important;
+    padding: 5px 12px !important;
+    border-radius: 7px !important;
+    margin-left: 6px !important;
+    text-decoration: none !important;
+    transition: all 0.18s ease !important;
+    font-weight: 500 !important;
+    font-size: 12.5px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
 }
+
 #user-tools a:hover {
-    color: #ffffff !important;
+    background: #FEF2F2 !important;
+    border-color: #FECACA !important;
+    color: #DC2626 !important;
 }
 
-/* 5. Breadcrumbs bar */
+/* ══════════════════════════════════════════════════════
+   LEFT SIDEBAR — Force-Reset for Clean SaaS Look
+══════════════════════════════════════════════════════ */
+
+/* 1. Force-Reset the Sidebar Container */
+#nav-sidebar {
+    width: 260px !important;
+    background: #FFFFFF !important;
+    border-right: 1px solid #E2E8F0 !important;
+    padding-top: 10px !important;
+    box-shadow: none !important;
+}
+
+/* Force-reset the underlying HTML table that Django renders */
+#nav-sidebar table,
+#nav-sidebar tr,
+#nav-sidebar tbody {
+    display: block !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* App module wrapper — completely transparent, no borders */
+#nav-sidebar .module {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin-bottom: 10px !important;
+    padding: 0 !important;
+}
+
+/* 2. Category headers (e.g. 'APPOINTMENT') */
+#nav-sidebar caption {
+    display: block !important;
+    background: transparent !important;
+    color: #94A3B8 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    padding: 15px 20px 5px 20px !important;
+    border: none !important;
+    text-align: left !important;
+    box-shadow: none !important;
+}
+
+/* 3. Main link cell — inline-block so it sits next to the Add button */
+#nav-sidebar th {
+    display: inline-block !important;
+    width: 70% !important;
+    border: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+/* Main model links */
+#nav-sidebar th a {
+    display: block !important;
+    padding: 8px 15px !important;
+    color: #475569 !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 2px 10px !important;
+    transition: all 0.2s ease !important;
+    text-transform: capitalize !important;
+    text-decoration: none !important;
+}
+
+#nav-sidebar th a:hover,
+#nav-sidebar .current-app th a {
+    background: #EFF6FF !important;
+    color: #2563EB !important;
+}
+
+/* 4. Mini 'Add' button cell — inline-block next to the link */
+#nav-sidebar td {
+    display: inline-block !important;
+    width: 20% !important;
+    border: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+    vertical-align: middle !important;
+}
+
+/* Mini Add buttons — emerald outline style */
+#nav-sidebar td a.addlink {
+    display: inline-block !important;
+    background: transparent !important;
+    color: #10B981 !important;
+    border: 1px solid #10B981 !important;
+    border-radius: 4px !important;
+    padding: 3px 8px !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    box-shadow: none !important;
+    margin-top: 6px !important;
+    text-decoration: none !important;
+    transition: all 0.15s ease !important;
+}
+
+#nav-sidebar td a.addlink:hover {
+    background: #10B981 !important;
+    color: #FFFFFF !important;
+}
+
+/* 5. Toggle sidebar button */
+#toggle-nav-sidebar {
+    color: #94A3B8 !important;
+    background: transparent !important;
+    border-radius: 6px !important;
+    border: 1px solid #E2E8F0 !important;
+    transition: all 0.2s ease !important;
+}
+
+#toggle-nav-sidebar:hover {
+    background: #EEF2FF !important;
+    color: #2563EB !important;
+    border-color: #BFDBFE !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   BREADCRUMBS
+══════════════════════════════════════════════════════ */
 div.breadcrumbs {
-    background-color: #FF8C00 !important;
-    color: #ffffff !important;
-    padding: 10px 20px !important;
+    background: #FFFFFF !important;
+    color: #94A3B8 !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    padding: 10px 28px !important;
+    font-size: 12px !important;
+    box-shadow: none !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
 }
+
 div.breadcrumbs a {
-    color: #ffffff !important;
-    text-decoration: underline;
+    color: #2563EB !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+    transition: color 0.15s !important;
 }
+
 div.breadcrumbs a:hover {
-    color: #0B2B46 !important;
+    color: #1D4ED8 !important;
+    text-decoration: underline !important;
 }
 
-/* 6. Module Section Headers (APPOINTMENT, AUTH, etc.) */
-.module caption,
-.module h2,
-#changelist .module h2 {
-    background-color: #0B2B46 !important;
-    color: #ffffff !important;
-    border-radius: 4px 4px 0 0;
+/* ══════════════════════════════════════════════════════
+   MODULE / CARD CONTAINERS
+══════════════════════════════════════════════════════ */
+#content-main .module,
+.module {
+    background: #FFFFFF !important;
+    border-radius: 16px !important;
+    border: none !important;
+    box-shadow: 0px 4px 20px rgba(112, 144, 176, 0.08) !important;
+    padding: 20px !important;
+    overflow: hidden !important;
+    margin-bottom: 20px !important;
 }
 
-/* 7. Sidebar App Headers */
-#nav-sidebar .module h2 {
-    background-color: #0B2B46 !important;
-    color: #ffffff !important;
+/* Module section headers */
+.module > h2,
+.module > caption,
+.inline-group > h2 {
+    background: #F8FAFC !important;
+    color: #475569 !important;
+    padding: 13px 18px !important;
+    border-radius: 12px 12px 0 0 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.9px !important;
+    text-transform: uppercase !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    border-left: none !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
 }
 
-/* 8. General links */
-a:link, a:visited {
-    color: #0B2B46;
-}
-a:hover {
-    color: #FF8C00;
+.module > h2::before,
+.module > caption::before {
+    content: '' !important;
+    display: inline-block !important;
+    width: 3px !important;
+    height: 14px !important;
+    background: #2563EB !important;
+    border-radius: 2px !important;
+    flex-shrink: 0 !important;
 }
 
-/* 9. Buttons — Save, Add, Log in */
+/* ══════════════════════════════════════════════════════
+   DATA TABLES
+══════════════════════════════════════════════════════ */
+#result_list {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    width: 100% !important;
+}
+
+#result_list thead th {
+    background: #F8FAFC !important;
+    color: #64748B !important;
+    font-weight: 600 !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.7px !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    padding: 13px 16px !important;
+    white-space: nowrap !important;
+}
+
+#result_list thead th a,
+#result_list thead th a:visited {
+    color: #64748B !important;
+    text-decoration: none !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+#result_list thead th.sorted a {
+    color: #2563EB !important;
+}
+
+#result_list thead th.sorted {
+    border-bottom-color: #2563EB !important;
+}
+
+#result_list tbody tr {
+    transition: background 0.12s ease !important;
+}
+
+#result_list tbody tr:hover td {
+    background: #EFF6FF !important;
+}
+
+#result_list tbody tr:nth-child(even) td {
+    background: #FAFAFA !important;
+}
+
+#result_list tbody tr:nth-child(even):hover td {
+    background: #EFF6FF !important;
+}
+
+#result_list td {
+    padding: 13px 16px !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+    font-size: 13.5px !important;
+    vertical-align: middle !important;
+    color: #334155 !important;
+}
+
+#result_list td a {
+    color: #2563EB !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+}
+
+#result_list td a:hover {
+    color: #1D4ED8 !important;
+    text-decoration: underline !important;
+}
+
+/* ── Checkbox column ── */
+#result_list thead th:first-child,
+#result_list td:first-child {
+    padding-left: 20px !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   PRIMARY BUTTONS
+══════════════════════════════════════════════════════ */
 .button,
 input[type=submit],
 input[type=button],
 .submit-row input,
-a.button,
-.addlink,
-.changelink {
-    background-color: #FF8C00 !important;
-    color: #ffffff !important;
-    border-radius: 6px !important;
+a.button {
+    background-color: #0152FF !important;
+    color: white !important;
     border: none !important;
-    padding: 8px 16px !important;
+    border-radius: 12px !important;
+    padding: 10px 24px !important;
     font-weight: 600 !important;
+    font-size: 13px !important;
     cursor: pointer !important;
-    transition: background 0.2s ease !important;
+    transition: transform 0.2s, box-shadow 0.2s !important;
+    text-decoration: none !important;
+    letter-spacing: 0.1px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
 }
+
+.button:hover,
+input[type=submit]:hover,
+input[type=button]:hover,
+a.button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0px 5px 15px rgba(1, 82, 255, 0.3) !important;
+}
+
+/* Add link — soft emerald */
+.addlink {
+    background: #ECFDF5 !important;
+    border: 1px solid #A7F3D0 !important;
+    border-radius: 7px !important;
+    padding: 5px 12px !important;
+    color: #059669 !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    transition: all 0.15s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+}
+
+.addlink:hover {
+    background: #D1FAE5 !important;
+    color: #047857 !important;
+    border-color: #6EE7B7 !important;
+}
+
+/* Delete link */
+.deletelink,
+.deletelink:visited {
+    background: #FEF2F2 !important;
+    border: 1px solid #FECACA !important;
+    color: #DC2626 !important;
+    border-radius: 8px !important;
+    padding: 7px 14px !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    transition: all 0.15s ease !important;
+}
+
+.deletelink:hover {
+    background: #FEE2E2 !important;
+    border-color: #FCA5A5 !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   SEARCH BAR
+══════════════════════════════════════════════════════ */
+#toolbar {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 0 15px 0 !important;
+}
+
+#toolbar input[type='text'] {
+    border-radius: 8px !important;
+    border: 1px solid #E2E8F0 !important;
+    padding: 10px 15px !important;
+    width: 300px !important;
+}
+
+#searchbar {
+    background: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    padding: 9px 16px !important;
+    font-size: 13.5px !important;
+    color: #1E293B !important;
+    transition: all 0.2s ease !important;
+    outline: none !important;
+    min-width: 260px !important;
+}
+
+#searchbar:focus {
+    border-color: #2563EB !important;
+    background: #FFFFFF !important;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.15) !important;
+}
+
+#changelist-search input[type=submit] {
+    border-radius: 8px !important;
+    padding: 9px 18px !important;
+    font-size: 13px !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   FORM INPUTS
+══════════════════════════════════════════════════════ */
+input[type=text],
+input[type=password],
+input[type=email],
+input[type=number],
+input[type=url],
+input[type=date],
+input[type=time],
+input[type=tel],
+textarea,
+select {
+    background: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    padding: 9px 13px !important;
+    font-size: 13.5px !important;
+    color: #1E293B !important;
+    transition: all 0.2s ease !important;
+    outline: none !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+input[type=text]:focus,
+input[type=password]:focus,
+input[type=email]:focus,
+input[type=number]:focus,
+input[type=url]:focus,
+input[type=date]:focus,
+input[type=time]:focus,
+input[type=tel]:focus,
+textarea:focus,
+select:focus {
+    border-color: #2563EB !important;
+    background: #FFFFFF !important;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.15) !important;
+}
+
+/* Checkbox */
+input[type=checkbox]:checked {
+    accent-color: #2563EB !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   FILTER SIDEBAR (right-side filters)
+══════════════════════════════════════════════════════ */
+#changelist-filter {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 15px -3px rgba(0,0,0,0.02) !important;
+    margin-left: 24px !important;
+    padding: 0 0 16px 0 !important;
+}
+
+#changelist-filter h2 {
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    font-weight: 600 !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+    border-radius: 12px 12px 0 0 !important;
+    padding: 16px 20px !important;
+    font-size: 14px !important;
+}
+
+#changelist-filter h3 {
+    color: #94A3B8 !important;
+    font-weight: 600 !important;
+    margin: 20px 20px 8px 20px !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+
+#changelist-filter ul {
+    margin: 0 12px !important;
+    padding: 0 !important;
+    border-bottom: none !important;
+}
+
+#changelist-filter li {
+    list-style: none !important;
+    margin: 2px 0 !important;
+}
+
+#changelist-filter a {
+    display: block !important;
+    padding: 8px 12px !important;
+    color: #475569 !important;
+    border-radius: 8px !important;
+    text-decoration: none !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    transition: all 0.15s ease !important;
+}
+
+#changelist-filter a:hover {
+    background-color: #F8FAFC !important;
+    color: #0F172A !important;
+}
+
+#changelist-filter li.selected a {
+    background-color: #EFF6FF !important;
+    color: #1D4ED8 !important;
+    font-weight: 600 !important;
+    box-shadow: inset 2px 0 0 0 #2563EB !important;
+}
+
+#changelist-filter #changelist-filter-clear a {
+    color: #EF4444 !important;
+    font-weight: 500 !important;
+    margin-top: 16px !important;
+    text-align: center !important;
+    border: 1px solid transparent !important;
+}
+
+#changelist-filter #changelist-filter-clear a:hover {
+    background-color: #FEF2F2 !important;
+    border: 1px solid #FCA5A5 !important;
+    color: #B91C1C !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   GLOBAL LINKS
+══════════════════════════════════════════════════════ */
+a:link, a:visited {
+    color: #2563EB !important;
+}
+
+a:hover {
+    color: #1D4ED8 !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   MESSAGES / ALERTS
+══════════════════════════════════════════════════════ */
+ul.messagelist {
+    padding: 0 0 16px !important;
+    margin: 0 !important;
+}
+
+.success, li.success {
+    background: #ECFDF5 !important;
+    color: #065F46 !important;
+    border-radius: 8px !important;
+    border: 1px solid #A7F3D0 !important;
+    border-left: 4px solid #10B981 !important;
+    padding: 12px 16px !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+    margin-bottom: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.errornote, li.error, .errorlist li {
+    background: #FEF2F2 !important;
+    color: #991B1B !important;
+    border-radius: 8px !important;
+    border: 1px solid #FECACA !important;
+    border-left: 4px solid #EF4444 !important;
+    padding: 12px 16px !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+    margin-bottom: 8px !important;
+}
+
+.warning {
+    background: #FFFBEB !important;
+    color: #92400E !important;
+    border-radius: 8px !important;
+    border: 1px solid #FDE68A !important;
+    border-left: 4px solid #F59E0B !important;
+    padding: 12px 16px !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   PAGINATION
+══════════════════════════════════════════════════════ */
+.paginator {
+    color: #64748B !important;
+    padding: 16px !important;
+    font-size: 13px !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+}
+
+.paginator a,
+.paginator span.this-page {
+    border-radius: 7px !important;
+    padding: 6px 12px !important;
+    margin: 0 !important;
+    border: 1px solid #E2E8F0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    font-weight: 500 !important;
+    transition: all 0.15s ease !important;
+    text-decoration: none !important;
+}
+
+.paginator a:hover {
+    background: #EFF6FF !important;
+    border-color: #BFDBFE !important;
+    color: #2563EB !important;
+}
+
+.paginator span.this-page {
+    background: #2563EB !important;
+    color: #FFFFFF !important;
+    border-color: #2563EB !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 4px rgba(37,99,235,0.3) !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   OBJECT TOOLS (top-right action buttons: ADD PATIENT, ADD DOCTOR etc.)
+══════════════════════════════════════════════════════ */
+.object-tools {
+    margin-top: 0 !important;
+}
+
+.object-tools a {
+    background: #2563EB !important;
+    border-radius: 8px !important;
+    padding: 8px 16px !important;
+    color: #FFFFFF !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    box-shadow: 0 1px 3px rgba(37,99,235,0.25) !important;
+    transition: all 0.15s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+/* ADD PATIENT / ADD DOCTOR prominent blue button */
+.object-tools a.addlink {
+    background: #2563EB !important;
+    color: #FFFFFF !important;
+    border-radius: 8px !important;
+    padding: 10px 20px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    font-size: 12px !important;
+    letter-spacing: 0.5px !important;
+    box-shadow: 0 4px 10px rgba(37,99,235,0.2) !important;
+    border: none !important;
+    transition: all 0.2s ease !important;
+}
+
+.object-tools a.addlink:hover {
+    background: #1D4ED8 !important;
+    color: #FFFFFF !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 15px rgba(37,99,235,0.3) !important;
+}
+
+.object-tools a:hover {
+    background: #1D4ED8 !important;
+    color: #FFFFFF !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(37,99,235,0.3) !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   CONTENT HEADING
+══════════════════════════════════════════════════════ */
+#content h1 {
+    color: #0F172A !important;
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    margin-bottom: 22px !important;
+    letter-spacing: -0.3px !important;
+    line-height: 1.3 !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   RECENT ACTIONS PANEL
+══════════════════════════════════════════════════════ */
+#recent-actions-module h2 {
+    background: #F8FAFC !important;
+    border-left: none !important;
+    color: #475569 !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+}
+
+.actionlist li {
+    border-bottom: 1px solid #F1F5F9 !important;
+    padding: 9px 0 !important;
+    font-size: 13px !important;
+    color: #475569 !important;
+}
+
+.actionlist .changelink,
+.actionlist .addlink {
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #2563EB !important;
+    box-shadow: none !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   CALENDAR / DATE WIDGET
+══════════════════════════════════════════════════════ */
+.calendarbox,
+.clockbox {
+    border-radius: 12px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important;
+    border: 1px solid #E2E8F0 !important;
+    background: #FFFFFF !important;
+    overflow: hidden !important;
+}
+
+.calendar caption,
+.calendarbox h2 {
+    background: #2563EB !important;
+    color: #FFFFFF !important;
+    border-radius: 0 !important;
+    font-weight: 600 !important;
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+}
+
+.calendar td a,
+.calendar td span {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 6px !important;
+    transition: all 0.12s ease !important;
+}
+
+td.selected a {
+    background: #2563EB !important;
+    color: #FFFFFF !important;
+    border-radius: 6px !important;
+}
+
+td a:hover {
+    background: #EFF6FF !important;
+    color: #2563EB !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   INLINE ADMIN GROUPS
+══════════════════════════════════════════════════════ */
+.inline-group {
+    background: #FFFFFF !important;
+    border-radius: 16px !important;
+    border: none !important;
+    box-shadow: 0px 4px 20px rgba(112, 144, 176, 0.08) !important;
+    padding: 20px !important;
+    overflow: hidden !important;
+    margin-bottom: 18px !important;
+}
+
+.inline-related h3 {
+    background: #F8FAFC !important;
+    color: #475569 !important;
+    padding: 10px 16px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.6px !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   ACTION BAR (bulk actions)
+══════════════════════════════════════════════════════ */
+.actions {
+    background: transparent !important;
+    border: none !important;
+    padding: 10px 0 20px 0 !important;
+}
+
+.actions select {
+    background: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+    color: #1E293B !important;
+}
+
+.actions button,
+.actions .button {
+    background: #2563EB !important;
+    color: white !important;
+    border-radius: 8px !important;
+    border: none !important;
+    padding: 8px 20px !important;
+    font-weight: 600 !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   HELP TEXT & LABELS
+══════════════════════════════════════════════════════ */
+.help {
+    color: #94A3B8 !important;
+    font-size: 12px !important;
+    margin-top: 4px !important;
+    line-height: 1.4 !important;
+}
+
+label {
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    color: #374151 !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   STATUS BADGES (custom admin list display)
+══════════════════════════════════════════════════════ */
+.status-pending {
+    background: #FEF9C3 !important;
+    color: #854D0E !important;
+    border: 1px solid #FDE68A !important;
+    border-radius: 20px !important;
+    padding: 3px 10px !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    display: inline-block !important;
+}
+
+.status-confirmed {
+    background: #ECFDF5 !important;
+    color: #065F46 !important;
+    border: 1px solid #A7F3D0 !important;
+    border-radius: 20px !important;
+    padding: 3px 10px !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    display: inline-block !important;
+}
+
+.status-cancelled {
+    background: #FEF2F2 !important;
+    color: #991B1B !important;
+    border: 1px solid #FECACA !important;
+    border-radius: 20px !important;
+    padding: 3px 10px !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    display: inline-block !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   DASHBOARD — APP CARDS (index page)
+══════════════════════════════════════════════════════ */
+#content-main .app-appointment.module table {
+    width: 100% !important;
+}
+
+#content-main .app-appointment.module table td {
+    padding: 12px 16px !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+    font-size: 13.5px !important;
+}
+
+#content-main .app-appointment.module table td:first-child a {
+    font-weight: 600 !important;
+    color: #1E293B !important;
+}
+
+#content-main .app-appointment.module table td:first-child a:hover {
+    color: #2563EB !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   SCROLLBAR STYLING (webkit)
+══════════════════════════════════════════════════════ */
+::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
+}
+
+::-webkit-scrollbar-track {
+    background: #F1F5F9 !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #CBD5E1 !important;
+    border-radius: 4px !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8 !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   DRIBBBLE SAAS — FINALISED OVERRIDES
+   Applied on top of all previous rules.
+   Theme: Medical Blue #2563EB / BG #F3F6F9 / Cards #FFFFFF
+══════════════════════════════════════════════════════ */
+
+/* 1. Global Colours & Layout */
+body,
+#content {
+    background-color: #F3F6F9 !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+#header {
+    background: #FFFFFF !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02) !important;
+    border-bottom: 1px solid #EAEFEF !important;
+}
+
+/* 2. Left Sidebar */
+#nav-sidebar {
+    background: #FFFFFF !important;
+    border: none !important;
+    border-right: 1px solid #EAEFEF !important;
+}
+
+#changelist-filter {
+    background: #FFFFFF !important;
+    border: none !important;
+    border-right: 1px solid #EAEFEF !important;
+}
+
+.module {
+    background: #FFFFFF !important;
+    border: none !important;
+}
+
+/* Nav sidebar links */
+.nav-sidebar a {
+    color: #64748B !important;
+    font-weight: 500 !important;
+    border-radius: 8px !important;
+    margin: 4px 10px !important;
+    padding: 10px 15px !important;
+    transition: all 0.2s ease !important;
+    display: block !important;
+}
+
+.nav-sidebar a:hover,
+.nav-sidebar a.selected {
+    background-color: #EEF2FF !important;
+    color: #2563EB !important;
+    font-weight: 600 !important;
+}
+
+/* 3. Blue Hero Banner */
+.dashboard-hero {
+    background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+    border-radius: 16px !important;
+    padding: 30px 40px !important;
+    color: #FFFFFF !important;
+    margin-bottom: 24px !important;
+    position: relative !important;
+    z-index: 1 !important;
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2) !important;
+    overflow: hidden !important;
+}
+
+.dashboard-hero h2 {
+    color: #FFFFFF !important;
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    margin: 0 0 5px 0 !important;
+    border: none !important;
+    background: none !important;
+    padding: 0 !important;
+}
+
+.dashboard-hero p {
+    color: #BFDBFE !important;
+    font-size: 14px !important;
+    margin: 0 0 20px 0 !important;
+}
+
+/* 4. Metric Cards & Data Tables */
+.metric-card {
+    background: #FFFFFF !important;
+    border-radius: 16px !important;
+    border: 1px solid #F1F5F9 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+    position: relative !important;
+    z-index: 2 !important;
+    padding: 20px !important;
+}
+
+.metric-card h4 {
+    color: #64748B !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    background: none !important;
+    padding: 0 !important;
+    border: none !important;
+    letter-spacing: 0.5px !important;
+    margin: 0 0 6px 0 !important;
+}
+
+.metric-card .value {
+    color: #0F172A !important;
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+}
+
+.changelist-form-container,
+#changelist {
+    background: #FFFFFF !important;
+    border-radius: 16px !important;
+    border: 1px solid #F1F5F9 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+    position: relative !important;
+    z-index: 2 !important;
+    padding: 20px !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   VITALBOOK BRAND UNIFICATION — TOTAL ADMIN UI DESIGN RESET
+   Color Palette: Navy #0B2B46 | Orange #FF8C00 | BG #F8FAFC
+   Reference: card-based SaaS layout + patient-site color tokens
+   *** These rules appear last and override everything above ***
+════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Global Layout & Font Reset ──────────────────────────────── */
+body,
+#content-main {
+    background-color: #F8FAFC !important;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    margin: 0 !important;
+}
+
+/* Make the outer wrapper a flex row so sidebar + main sit side by side */
+#container {
+    display: flex !important;
+    min-height: 100vh !important;
+    flex-wrap: nowrap !important;
+}
+
+/* Main content area — push right to clear the fixed 260px sidebar */
+#content {
+    flex-grow: 1 !important;
+    margin-left: 260px !important;
+    padding: 30px !important;
+    position: relative !important;
+    z-index: 1 !important;
+    background-color: #F8FAFC !important;
+}
+
+/* ── 2. Left Sidebar — Fixed, full-height, white ────────────────── */
+#nav-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    width: 260px !important;
+    background: #FFFFFF !important;
+    border-right: 1px solid #EAEFEF !important;
+    padding: 20px 10px !important;
+    z-index: 100 !important;
+    overflow-y: auto !important;
+    box-shadow: none !important;
+}
+
+/* Reset the underlying table Django renders */
+#nav-sidebar table,
+#nav-sidebar tr,
+#nav-sidebar tbody {
+    display: block !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+#nav-sidebar .module {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin-bottom: 10px !important;
+    padding: 0 !important;
+}
+
+/* App section title (e.g. APPOINTMENT, AUTHENTICATION) */
+#nav-sidebar caption {
+    display: block !important;
+    background: transparent !important;
+    color: #0B2B46 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    padding: 15px 20px !important;
+    border: none !important;
+    text-align: left !important;
+    box-shadow: none !important;
+}
+
+/* Link cell — inline-block, 70% width */
+#nav-sidebar th {
+    display: inline-block !important;
+    width: 70% !important;
+    border: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+/* Model links (Doctors, Patients, etc.) */
+#nav-sidebar th a {
+    display: block !important;
+    padding: 10px 15px !important;
+    color: #475569 !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 2px 10px !important;
+    text-transform: capitalize !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+}
+
+#nav-sidebar th a:hover,
+#nav-sidebar .current-app th a {
+    background-color: #EFF6FF !important;
+    color: #0B2B46 !important;
+    font-weight: 600 !important;
+}
+
+/* Add-button cell — inline-block, 20% width */
+#nav-sidebar td {
+    display: inline-block !important;
+    width: 20% !important;
+    border: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+    vertical-align: middle !important;
+}
+
+/* Sidebar mini Add buttons — orange accent */
+#nav-sidebar td a.addlink {
+    display: inline-block !important;
+    background: transparent !important;
+    color: #FF8C00 !important;
+    border: 1px solid #FF8C00 !important;
+    border-radius: 4px !important;
+    padding: 3px 7px !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    box-shadow: none !important;
+    margin-top: 8px !important;
+    text-decoration: none !important;
+    transition: all 0.15s ease !important;
+}
+
+#nav-sidebar td a.addlink:hover {
+    background: #FF8C00 !important;
+    color: #FFFFFF !important;
+}
+
+/* ── 3. Metric Cards (Dashboard) ────────────────────────────────── */
+.metric-card,
+.widget {
+    background: #FFFFFF !important;
+    border-radius: 16px !important;
+    border: 1px solid #EAEFEF !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02) !important;
+    padding: 25px !important;
+    margin-bottom: 30px !important;
+    position: relative !important;
+    z-index: 2 !important;
+}
+
+/* Icon inside metric card */
+.metric-card .icon {
+    color: #FF8C00 !important;
+    font-size: 24px !important;
+}
+
+/* Big number value */
+.metric-card .value {
+    color: #0B2B46 !important;
+    font-size: 32px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+}
+
+/* Label below the value */
+.metric-card .label {
+    color: #64748B !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+/* Metric card category headings */
+.metric-card h4 {
+    color: #64748B !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 0 10px 0 !important;
+}
+
+/* Metric card top-accent bars — orange */
+.metric-card.blue::before   { background: linear-gradient(90deg, #0B2B46, #1D5484) !important; }
+.metric-card.green::before  { background: linear-gradient(90deg, #FF8C00, #FFA733) !important; }
+.metric-card.violet::before { background: linear-gradient(90deg, #0B2B46, #2563EB) !important; }
+.metric-card.rose::before   { background: linear-gradient(90deg, #FF8C00, #EF4444) !important; }
+
+/* ── 4. Data Tables & Forms ─────────────────────────────────────── */
+.changelist-form-container,
+#changelist,
+form.changeform-form {
+    background: #FFFFFF !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02) !important;
+    border: 1px solid #EAEFEF !important;
+}
+
+/* Table header row */
+#changelist table thead th,
+#result_list thead th {
+    background: #F8FAFC !important;
+    color: #0B2B46 !important;
+    font-weight: 700 !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    border-bottom: 2px solid #EAEFEF !important;
+    padding: 13px 16px !important;
+}
+
+/* Table header sort links */
+#result_list thead th a,
+#result_list thead th a:visited {
+    color: #0B2B46 !important;
+}
+
+#result_list thead th.sorted a {
+    color: #FF8C00 !important;
+}
+
+#result_list thead th.sorted {
+    border-bottom-color: #FF8C00 !important;
+}
+
+/* Table row hover */
+#changelist table tbody tr:hover td,
+#result_list tbody tr:hover td {
+    background-color: #F8FAFC !important;
+}
+
+/* Table row links */
+#result_list td a {
+    color: #0B2B46 !important;
+    font-weight: 500 !important;
+}
+
+#result_list td a:hover {
+    color: #FF8C00 !important;
+}
+
+/* ── 5. Top Header Bar ───────────────────────────────────────────── */
+#header,
+.custom-top-bar {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid #EAEFEF !important;
+    padding: 0 30px !important;
+    height: 58px !important;
+    display: flex !important;
+    align-items: center !important;
+    box-shadow: none !important;
+}
+
+#branding h1,
+#branding h1 a,
+.user-name,
+.custom-top-bar .dropdown-toggle {
+    color: #0B2B46 !important;
+    font-weight: 700 !important;
+    font-size: 15px !important;
+    text-decoration: none !important;
+}
+
+/* User-tools links */
+#user-tools a {
+    color: #475569 !important;
+    border: 1px solid #EAEFEF !important;
+}
+
+#user-tools a:hover {
+    color: #0B2B46 !important;
+    background: #F8FAFC !important;
+    border-color: #CBD5E1 !important;
+}
+
+/* Orange CTA button */
+.btn-orange,
+.object-tools a.addlink {
+    background-color: #FF8C00 !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 10px 20px !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    box-shadow: 0 4px 10px rgba(255, 140, 0, 0.25) !important;
+    transition: all 0.2s ease !important;
+    text-decoration: none !important;
+}
+
+.btn-orange:hover,
+.object-tools a.addlink:hover {
+    background-color: #E07B00 !important;
+    color: #FFFFFF !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 15px rgba(255, 140, 0, 0.35) !important;
+}
+
+/* All other object-tool links (non-addlink) — Navy */
+.object-tools a:not(.addlink) {
+    background: #0B2B46 !important;
+    color: #FFFFFF !important;
+    border-radius: 8px !important;
+    padding: 8px 16px !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 1px 3px rgba(11, 43, 70, 0.2) !important;
+    transition: all 0.15s ease !important;
+    text-decoration: none !important;
+}
+
+.object-tools a:not(.addlink):hover {
+    background: #0D3558 !important;
+    transform: translateY(-1px) !important;
+}
+
+/* ── 6. Primary Buttons ──────────────────────────────────────────── */
+.button,
+input[type=submit],
+.submit-row input[type=submit],
+a.button {
+    background-color: #0B2B46 !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 10px 24px !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+}
+
 .button:hover,
 input[type=submit]:hover,
 a.button:hover {
-    background-color: #e07000 !important;
+    background-color: #0D3558 !important;
+    box-shadow: 0 4px 12px rgba(11, 43, 70, 0.25) !important;
+    transform: translateY(-1px) !important;
 }
 
-/* 10. Delete button stays red */
+/* Delete / danger buttons keep red */
 .deletelink,
-.submit-row a.deletelink {
-    background-color: #dc3545 !important;
-    color: #ffffff !important;
-}
-.deletelink:hover {
-    background-color: #b02a37 !important;
-}
-
-/* 11. Login page */
-#login-form input[type=submit] {
-    background-color: #FF8C00 !important;
-    color: white !important;
-    width: 100%;
-    padding: 12px !important;
-    font-size: 1rem !important;
-    border-radius: 6px !important;
+.submit-row .deletelink,
+input[name=_delete] {
+    background: #FEF2F2 !important;
+    color: #DC2626 !important;
+    border: 1px solid #FECACA !important;
+    border-radius: 8px !important;
 }
 
-/* 12. Selected/active rows in changelist */
-#result_list tr.selected {
-    background-color: rgba(255, 140, 0, 0.1) !important;
+/* ── 7. Active / selected sidebar link ───────────────────────────── */
+#nav-sidebar .current-app th a,
+#nav-sidebar th a.selected {
+    background-color: #FFF3E0 !important;
+    color: #0B2B46 !important;
+    font-weight: 600 !important;
+    border-left: 3px solid #FF8C00 !important;
+    padding-left: 12px !important;
 }
 
-/* 13. Paginator active page */
-.paginator a:focus,
+/* ── 8. Pagination — navy active page ───────────────────────────── */
+.paginator span.this-page {
+    background: #0B2B46 !important;
+    color: #FFFFFF !important;
+    border-color: #0B2B46 !important;
+}
+
 .paginator a:hover {
-    color: #FF8C00 !important;
+    background: #F8FAFC !important;
+    border-color: #0B2B46 !important;
+    color: #0B2B46 !important;
+}
+
+/* ── 9. Dashboard Hero Banner — Orange CTAs ─────────────────────── */
+.dashboard-hero {
+    background: linear-gradient(135deg, #0B2B46 0%, #1D5484 100%) !important;
+}
+
+.btn-primary-dash {
+    background: linear-gradient(135deg, #FF8C00, #E07B00) !important;
+    box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3) !important;
+}
+
+.btn-primary-dash:hover {
+    box-shadow: 0 6px 16px rgba(255, 140, 0, 0.45) !important;
+}
+
+/* ── 10. Dash sidebar nav (custom dashboard sidebar) ────────────── */
+.dash-nav-item:hover,
+.dash-nav-item.active {
+    background: #FFF3E0 !important;
+    color: #0B2B46 !important;
+    font-weight: 600 !important;
+}
+
+.dash-nav-badge {
+    background: #FF8C00 !important;
+}
+
+.dash-logo-icon {
+    background: linear-gradient(135deg, #FF8C00, #E07B00) !important;
 }

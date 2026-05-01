@@ -1,0 +1,710 @@
+/* =============================================================
+   VITALBOOK ADMIN — CUSTOM THEME (admin_custom.css)
+   Theme:  Navy #0f1c2e | Orange #ff6b00
+   Target: /admin/auth/user/<id>/change/  (Change User page)
+   Author: VitalBook Dev Team
+   ============================================================= */
+
+/* ── 0. GOOGLE FONT IMPORT ─────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ── 1. GLOBAL RESET & BASE ────────────────────────────────── */
+html, body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    background-color: #080f1a !important;
+    color: #e2e8f0 !important;
+    min-height: 100vh !important;
+}
+
+/* Apply Inter everywhere it matters */
+#content,
+.module h2,
+label,
+input,
+select,
+textarea,
+.submit-row input {
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* ── 2. FORCE 98% FULL-WIDTH LAYOUT ────────────────────────── */
+#container {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+#content {
+    width: 98% !important;
+    max-width: none !important;
+    margin: 0 auto !important;
+    padding: 30px 20px 120px 20px !important; /* bottom padding keeps content above sticky bar */
+}
+
+/* Remove Django's default left/right gutter columns */
+.colMS,
+.colM {
+    margin-right: 0 !important;
+    float: none !important;
+    width: 100% !important;
+}
+
+/* The inner form wrapper — allow it to stretch */
+#content-main {
+    width: 100% !important;
+    max-width: none !important;
+}
+
+#content-main form {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding-bottom: 20px !important;
+}
+
+/* ── 3. PAGE TITLE ─────────────────────────────────────────── */
+#content h1 {
+    color: #ff6b00 !important;
+    font-size: 1.65rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.3px !important;
+    margin-bottom: 28px !important;
+    padding-bottom: 16px !important;
+    border-bottom: 2px solid #1e293b !important;
+}
+
+/* ── 4. FIELDSETS — MODERN DARK CARDS ──────────────────────── */
+fieldset.module {
+    background: #0d1b2a !important;
+    border: 1px solid #1a2a3a !important;
+    border-radius: 16px !important;
+    box-shadow:
+        0 4px 6px -2px rgba(0, 0, 0, 0.3),
+        0 10px 40px -4px rgba(0, 0, 0, 0.55) !important;
+    margin-bottom: 32px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Fieldset header (h2 — e.g. "Account Credentials") */
+fieldset.module h2,
+.module h2 {
+    background: linear-gradient(90deg, #1a2a3a 0%, #0d1b2a 100%) !important;
+    color: #ff6b00 !important;
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.8px !important;
+    text-transform: uppercase !important;
+    padding: 20px 32px !important;
+    margin: 0 0 20px 0 !important;
+    border-bottom: 2px solid #1e293b !important;
+    border-top-left-radius: 16px !important;
+    border-top-right-radius: 16px !important;
+}
+
+/* ── 5. FORM ROWS — HORIZONTAL FLEX CONTAINERS ─────────────── */
+.form-row {
+    display: flex !important;
+    align-items: flex-start !important;
+    flex-wrap: nowrap !important;
+    padding: 22px 32px !important;
+    border-bottom: 1px solid #111f30 !important;
+    background: transparent !important;
+    gap: 20px !important;
+    min-height: 70px !important;
+}
+
+.form-row:last-of-type {
+    border-bottom: none !important;
+}
+
+/* Hover highlight for rows */
+.form-row:hover {
+    background: rgba(255, 107, 0, 0.025) !important;
+}
+
+/* ── 6. LABELS — FIXED COLUMN WIDTH & PROFESSIONAL STYLE ───── */
+/* Target every possible label placement Django uses */
+.form-row > label,
+.form-row > div > label,
+.form-row .field-box > label,
+.form-row label:first-of-type {
+    flex: 0 0 260px !important;
+    min-width: 260px !important;
+    max-width: 260px !important;
+    color: #94a3b8 !important;           /* Cool Slate Blue */
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    line-height: 1.4 !important;
+    padding-top: 12px !important;
+    padding-right: 0 !important;
+    margin-bottom: 4px !important;
+}
+
+/* Required asterisk color */
+.form-row label .required,
+.required {
+    color: #ff6b00 !important;
+}
+
+/* ── 7. INPUT FIELDS — STYLED & GLOWING ────────────────────── */
+.form-row input[type="text"],
+.form-row input[type="email"],
+.form-row input[type="password"],
+.form-row input[type="number"],
+.form-row input[type="url"],
+.form-row input[type="date"],
+.form-row input[type="time"],
+.form-row select,
+.form-row textarea,
+.form-row .readonly {
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    max-width: 820px !important;
+    background: #1a2a40 !important;      /* Slightly lighter Navy for contrast */
+    border: 1px solid #334155 !important;
+    color: #f8fafc !important;           /* Crisp White text */
+    padding: 12px 16px !important;
+    border-radius: 10px !important;
+    font-size: 0.95rem !important;       /* Larger, sharper text */
+    font-family: 'Inter', sans-serif !important;
+    transition: all 0.2s ease-in-out !important;
+    outline: none !important;
+}
+
+/* The "Anti-Gravity" Focus State — 4px orange glow */
+.form-row input[type="text"]:focus,
+.form-row input[type="email"]:focus,
+.form-row input[type="password"]:focus,
+.form-row input[type="number"]:focus,
+.form-row input[type="url"]:focus,
+.form-row input[type="date"]:focus,
+.form-row input[type="time"]:focus,
+.form-row select:focus,
+.form-row textarea:focus {
+    border-color: #ff6b00 !important;              /* Brand Orange */
+    box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.15) !important;
+    outline: none !important;
+    background: #1e2e4a !important;
+}
+
+/* Textarea height */
+.form-row textarea {
+    min-height: 100px !important;
+    resize: vertical !important;
+}
+
+/* Select arrow tint */
+.form-row select {
+    appearance: auto !important;
+    cursor: pointer !important;
+}
+
+/* ── 8. READONLY DIV (e.g. password hash line, created_at) ─── */
+.form-row div.readonly,
+.form-row p.readonly,
+.form-row span.readonly {
+    flex: 1 1 auto !important;
+    max-width: 820px !important;
+    color: #cbd5e1 !important;
+    font-size: 0.9rem !important;
+    padding: 11px 0 !important;
+    line-height: 1.5 !important;
+}
+
+/* ── 9. PASSWORD HASH MASK ─────────────────────────────────── */
+/* Hide the raw hash — show monospace orange stars instead */
+.field-password .readonly {
+    font-family: monospace !important;   /* Monospace for password look */
+    font-size: 0 !important;             /* Hides the raw hash */
+    color: transparent !important;
+    letter-spacing: 4px !important;
+    user-select: none !important;
+    background: transparent !important;  /* No input-box look for password row */
+    border: none !important;
+    padding: 0 !important;
+}
+
+/* Monospace orange bullet replacement */
+.field-password .readonly::before {
+    content: "•••••••••••••••••";
+    font-family: monospace !important;
+    font-size: 1.2rem !important;        /* Larger, visible stars */
+    color: #ff6b00 !important;           /* Brand Orange stars */
+    letter-spacing: 4px !important;
+    font-weight: 400 !important;
+}
+
+/* Re-show the "Change password" link inside that div */
+.field-password .readonly a {
+    font-size: 0.82rem !important;
+    font-family: 'Inter', sans-serif !important;
+    display: inline-block !important;
+    background: #1e3a5f !important;
+    color: #93c5fd !important;
+    padding: 5px 14px !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+    margin-left: 14px !important;
+    vertical-align: middle !important;
+    letter-spacing: 0 !important;
+    transition: background 0.2s ease !important;
+}
+
+.field-password .readonly a:hover {
+    background: #ff6b00 !important;
+    color: #ffffff !important;
+}
+
+/* ── 10. HELP TEXT ─────────────────────────────────────────── */
+.help,
+.helptext,
+.help-tooltip,
+p.help {
+    color: #64748b !important;
+    font-size: 0.75rem !important;
+    font-style: italic !important;       /* Italic for "helper" visual cue */
+    margin-top: 8px !important;
+    line-height: 1.5 !important;
+    display: block !important;
+}
+
+/* ── 11. ERROR MESSAGES ────────────────────────────────────── */
+.errornote,
+.errorlist,
+ul.errorlist li {
+    background: rgba(220, 38, 38, 0.12) !important;
+    border: 1px solid #dc2626 !important;
+    color: #fca5a5 !important;
+    border-radius: 8px !important;
+    padding: 10px 16px !important;
+    font-size: 0.85rem !important;
+}
+
+/* ── 12. FLOATING STICKY SUBMIT BAR ────────────────────────── */
+.submit-row {
+    position: sticky !important;
+    bottom: 20px !important;
+    z-index: 999 !important;
+
+    /* Frosted glass effect */
+    background: rgba(13, 27, 42, 0.92) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+
+    /* Orange border glow */
+    border: 1.5px solid #ff6b00 !important;
+    border-radius: 50px !important;
+
+    /* Layout */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+    padding: 14px 40px !important;
+    margin-top: 20px !important;
+
+    /* Shadow */
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 107, 0, 0.1) !important;
+}
+
+/* ── 13. SUBMIT BUTTONS ─────────────────────────────────────── */
+/* Base style for all submit inputs */
+.submit-row input[type="submit"] {
+    height: 44px !important;
+    padding: 0 28px !important;
+    border-radius: 50px !important;
+    border: none !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.6px !important;
+    text-transform: uppercase !important;
+    cursor: pointer !important;
+    transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease !important;
+}
+
+/* Primary: Save button */
+.submit-row input[name="_save"] {
+    background: #ff6b00 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 15px rgba(255, 107, 0, 0.35) !important;
+}
+
+/* Secondary: Save and add another */
+.submit-row input[name="_addanother"] {
+    background: #1e3a5f !important;
+    color: #93c5fd !important;
+}
+
+/* Secondary: Save and continue editing */
+.submit-row input[name="_continue"] {
+    background: #1e3a5f !important;
+    color: #93c5fd !important;
+}
+
+/* Hover state for all submit buttons */
+.submit-row input[type="submit"]:hover {
+    transform: translateY(-2px) !important;
+    opacity: 0.92 !important;
+    box-shadow: 0 6px 20px rgba(255, 107, 0, 0.4) !important;
+}
+
+/* History link button in the submit-row */
+.submit-row a.historylink {
+    height: 44px !important;
+    line-height: 44px !important;
+    padding: 0 22px !important;
+    border-radius: 50px !important;
+    background: #172233 !important;
+    color: #64748b !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    letter-spacing: 0.5px !important;
+    text-transform: uppercase !important;
+    transition: color 0.2s ease !important;
+}
+
+.submit-row a.historylink:hover {
+    color: #cbd5e1 !important;
+}
+
+/* ── 14. DELETE LINK ────────────────────────────────────────── */
+.submit-row p.deletelink-box {
+    margin: 0 auto 0 0 !important; /* pushes delete to the far left */
+}
+
+/* ── 14. DELETE LINK — Stripe-style Outline Button ─────────── */
+.deletelink,
+a.deletelink {
+    background: rgba(220, 38, 38, 0.1) !important;  /* Subtle red tint */
+    color: #ef4444 !important;
+    border: 1px solid #ef4444 !important;
+    border-radius: 50px !important;
+    padding: 10px 25px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    display: inline-block !important;
+    transition: all 0.3s ease !important;
+}
+
+.deletelink:hover,
+a.deletelink:hover {
+    background: #ef4444 !important;                  /* Fills solid on hover */
+    color: #ffffff !important;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4) !important;  /* Red glow */
+}
+
+/* ── 15. PERMISSIONS DUAL-SELECTOR WIDGET — Full Overhaul ───── */
+.selector {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 20px !important;
+    padding: 20px 0 !important;
+    background: transparent !important;
+}
+
+/* The two boxes: Available & Chosen */
+.selector-available,
+.selector-chosen {
+    flex: 1 !important;
+    border: 1px solid #334155 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    background: #0f1c2e !important;
+}
+
+/* Box headers */
+.selector h2,
+.selector-available h2,
+.selector-chosen h2 {
+    background: #1e293b !important;
+    color: #f8fafc !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.6px !important;
+    padding: 12px !important;
+    text-align: center !important;
+    border-bottom: 1px solid #334155 !important;
+    border: none !important;           /* Remove old box border */
+}
+
+/* Filter search bar */
+.selector .selector-filter {
+    background: #1a2a40 !important;
+    border-bottom: 1px solid #334155 !important;
+    padding: 8px 12px !important;
+}
+
+.selector .selector-filter input {
+    background: #0d1b2a !important;
+    border: 1px solid #334155 !important;
+    color: #ffffff !important;
+    border-radius: 6px !important;
+    padding: 6px 10px !important;
+    font-size: 0.82rem !important;
+    width: 100% !important;
+}
+
+/* List items inside the boxes */
+.selector select {
+    background: #0f1c2e !important;
+    color: #cbd5e1 !important;
+    padding: 10px !important;
+    border: none !important;
+    height: 250px !important;
+    width: 100% !important;
+    font-size: 0.85rem !important;
+}
+
+.selector select option {
+    padding: 8px 12px !important;
+    border-radius: 4px !important;
+}
+
+.selector select option:hover,
+.selector select option:checked {
+    background: #ff6b00 !important;
+    color: #ffffff !important;
+}
+
+/* The middle chooser column */
+ul.selector-chooser {
+    background: transparent !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    padding: 0 !important;
+    align-self: center !important;
+    list-style: none !important;
+}
+
+/* Arrow buttons — circular */
+.selector-chooser li a {
+    background-color: #334155 !important;
+    background-image: none !important;   /* Remove Django's default arrow sprite */
+    border-radius: 50% !important;
+    width: 35px !important;
+    height: 35px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 1px solid #475569 !important;
+    opacity: 1 !important;
+    transition: background 0.2s ease !important;
+}
+
+.selector-chooser li a:hover {
+    background-color: #ff6b00 !important;
+    border-color: #ff6b00 !important;
+}
+
+/* "Choose all" / "Remove all" action links */
+.selector-available .selector-chooseall,
+.selector-chosen .selector-clearall {
+    display: block !important;
+    background: #1e293b !important;
+    color: #ff6b00 !important;
+    font-weight: 700 !important;
+    font-size: 0.7rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    text-decoration: none !important;
+    padding: 8px 12px !important;
+    text-align: center !important;
+    border-top: 1px solid #334155 !important;
+    transition: background 0.2s ease !important;
+}
+
+.selector-available .selector-chooseall:hover,
+.selector-chosen .selector-clearall:hover {
+    background: #253347 !important;
+    color: #ffaa66 !important;
+}
+
+/* ── 16. COLLAPSE TOGGLE — Card Header Style ────────────────── */
+.collapse-toggle,
+a.collapse-toggle {
+    display: inline-block !important;
+    background: #1a2a40 !important;
+    color: #ff6b00 !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    font-size: 0.8rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    text-decoration: none !important;
+    border: 1px solid #334155 !important;
+    transition: background 0.2s ease, color 0.2s ease !important;
+}
+
+.collapse-toggle:hover,
+a.collapse-toggle:hover {
+    background: #253347 !important;
+    color: #ffaa66 !important;
+}
+
+fieldset.collapsed {
+    background: #0a1525 !important;
+    border: 1px solid #1a2a3a !important;
+    border-radius: 16px !important;
+    padding: 16px 24px !important;
+}
+
+/* ── 17. BREADCRUMBS ────────────────────────────────────────── */
+#content > div.breadcrumbs,
+.breadcrumbs {
+    background: transparent !important;
+    border-bottom: 1px solid #1a2a3a !important;
+    padding: 10px 0 !important;
+    margin-bottom: 24px !important;
+    font-size: 0.8rem !important;
+    color: #475569 !important;
+}
+
+.breadcrumbs a {
+    color: #ff6b00 !important;
+    text-decoration: none !important;
+}
+
+.breadcrumbs a:hover {
+    color: #ffaa66 !important;
+}
+
+/* ── 18. HEADER & NAV (global admin chrome) ─────────────────── */
+#header {
+    background: #0a1220 !important;
+    border-bottom: 1px solid #1a2a3a !important;
+}
+
+#branding h1 a {
+    color: #ff6b00 !important;
+    font-weight: 700 !important;
+}
+
+#user-tools a {
+    color: #94a3b8 !important;
+}
+
+#user-tools a:hover {
+    color: #ff6b00 !important;
+}
+
+/* ── 19. MESSAGES / ALERTS ──────────────────────────────────── */
+.messagelist li {
+    border-radius: 10px !important;
+    padding: 12px 20px !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    margin-bottom: 10px !important;
+}
+
+.messagelist li.success {
+    background: rgba(22, 163, 74, 0.15) !important;
+    border: 1px solid #16a34a !important;
+    color: #86efac !important;
+}
+
+.messagelist li.warning {
+    background: rgba(234, 179, 8, 0.12) !important;
+    border: 1px solid #ca8a04 !important;
+    color: #fde047 !important;
+}
+
+.messagelist li.error {
+    background: rgba(220, 38, 38, 0.12) !important;
+    border: 1px solid #dc2626 !important;
+    color: #fca5a5 !important;
+}
+
+/* ── 20. CHECKBOXES — Custom Painted (is_active, is_staff…) ─── */
+
+/* Specific rows for permission checkboxes */
+.form-row.field-is_active,
+.form-row.field-is_staff,
+.form-row.field-is_superuser {
+    padding: 20px 35px !important;
+    background: transparent !important;
+}
+
+/* Custom checkbox appearance */
+input[type="checkbox"] {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    width: 18px !important;
+    height: 18px !important;
+    border: 2px solid #334155 !important;
+    border-radius: 4px !important;
+    background: #1a2a40 !important;
+    cursor: pointer !important;
+    position: relative !important;
+    vertical-align: middle !important;
+    flex: none !important;
+    margin-right: 10px !important;
+    transition: background 0.2s ease, border-color 0.2s ease !important;
+}
+
+/* Orange fill when checked */
+input[type="checkbox"]:checked {
+    background: #ff6b00 !important;
+    border-color: #ff6b00 !important;
+}
+
+/* White checkmark tick */
+input[type="checkbox"]:checked::after {
+    content: '✔' !important;
+    position: absolute !important;
+    color: white !important;
+    font-size: 11px !important;
+    left: 2px !important;
+    top: -1px !important;
+    line-height: 1 !important;
+}
+
+/* Inline check + label alignment */
+.form-row .checkbox-row label,
+.form-row > label + input[type="checkbox"] {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+/* ── 21. MODULE CAPTION (used in changelist tables) ─────────── */
+.module caption {
+    background: linear-gradient(90deg, #1a2a3a 0%, #0d1b2a 100%) !important;
+    color: #ff6b00 !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 1.2px !important;
+    text-transform: uppercase !important;
+    padding: 14px 24px !important;
+    text-align: left !important;
+}
+
+/* ── 22. SCROLLBAR (webkit) ─────────────────────────────────── */
+::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
+}
+
+::-webkit-scrollbar-track {
+    background: #080f1a !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #253347 !important;
+    border-radius: 4px !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #ff6b00 !important;
+}

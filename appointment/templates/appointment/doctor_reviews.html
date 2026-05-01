@@ -1,7 +1,7 @@
 {% extends 'appointment/base.html' %}
 {% load custom_filters %}
 
-{% block title %}Reviews - Dr. {{ doctor.name }} - VitalBook{% endblock %}
+{% block title %}Reviews - {{ doctor.name }} - VitalBook{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -235,7 +235,7 @@
             <img src="https://ui-avatars.com/api/?name={{ doctor.name }}&size=100&background=0d6efd&color=fff" 
                  alt="{{ doctor.name }}" class="doctor-photo">
             <div class="doctor-info">
-                <h1>Dr. {{ doctor.name }}</h1>
+                <h1>{{ doctor.name }}</h1>
                 <div class="doctor-spec">{{ doctor.specialization.name }}</div>
             </div>
         </div>
@@ -321,7 +321,7 @@
                 <div class="no-reviews">
                     <i class="fas fa-comments"></i>
                     <h3>No Reviews Yet</h3>
-                    <p>Be the first to review Dr. {{ doctor.name }}</p>
+                    <p>Be the first to review {{ doctor.name }}</p>
                 </div>
             {% endif %}
         </div>

@@ -1,25 +1,218 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Hospital Appointment System{% endblock %}</title>
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/additional.css' %}">
     <link rel="stylesheet" href="{% static 'css/indian_hospital_theme.css' %}">
-    
+
+    <style>
+        /* Smooth scroll for anchor links */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        #upcoming-appointments {
+            scroll-margin-top: 80px;
+        }
+
+        /* ── Navbar always on top ── */
+        .navbar {
+            position: relative;
+            z-index: 1050 !important;
+            /* beats hero sections, modals, carousels */
+        }
+
+        .nav-wrapper {
+            position: relative;
+        }
+
+        /* ── Premium Navbar Dropdown ── */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 12px);
+            right: 0;
+            min-width: 230px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(11, 43, 70, 0.16), 0 4px 16px rgba(0, 0, 0, 0.08);
+            padding: 8px;
+            z-index: 9999 !important;
+            /* front of everything */
+            animation: dropIn 0.18s ease;
+        }
+
+        .dropdown-menu.open {
+            display: block;
+        }
+
+        @keyframes dropIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* CSS hover fallback (desktop nicety) */
+        @media (hover: hover) {
+            .dropdown:hover .dropdown-menu {
+                display: block;
+            }
+        }
+
+        .dropdown-item {
+            display: flex !important;
+            align-items: center;
+            gap: 11px;
+            padding: 10px 14px !important;
+            border-radius: 10px;
+            color: #334155 !important;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none !important;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .dropdown-item i {
+            width: 18px;
+            text-align: center;
+            font-size: 14px;
+            color: #64748b;
+            transition: color 0.15s;
+        }
+
+        .dropdown-item:hover {
+            background: #eff6ff;
+            color: #1d4ed8 !important;
+        }
+
+        .dropdown-item:hover i {
+            color: #1d4ed8;
+        }
+
+        .dropdown-item.text-danger {
+            color: #334155 !important;
+        }
+
+        .dropdown-item.text-danger:hover {
+            background: #fef2f2 !important;
+            color: #dc2626 !important;
+        }
+
+        .dropdown-item.text-danger:hover i {
+            color: #dc2626 !important;
+        }
+
+        .dropdown-item.text-danger i {
+            color: #64748b;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #f1f5f9;
+            margin: 6px 8px;
+        }
+
+        .dropdown-section-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #94a3b8;
+            padding: 6px 14px 4px;
+        }
+
+        .dropdown-user-header {
+            padding: 12px 14px 10px;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 6px;
+        }
+
+        .dropdown-user-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0B2B46;
+        }
+
+        .dropdown-user-role {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        /* ── Navbar active & Register outline CTA ── */
+        .nav-links a.active {
+            background: transparent !important;
+            border-radius: 0 !important;
+            color: #f97316 !important;
+            border-bottom: 2px solid #f97316;
+            padding-bottom: 4px;
+        }
+
+        .btn-nav-outline {
+            border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
+            background: transparent !important;
+            color: #ffffff !important;
+            border-radius: 50px !important;
+            transition: all 0.3s ease;
+        }
+
+        .btn-nav-outline:hover {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: #ffffff !important;
+        }
+
+        /* ── Arrow indicator on dropdown toggle ── */
+        .dropdown-toggle::after {
+            content: '';
+            display: inline-block;
+            margin-left: 6px;
+            border-top: 4px solid currentColor;
+            border-right: 4px solid transparent;
+            border-left: 4px solid transparent;
+            vertical-align: middle;
+            transition: transform 0.2s;
+        }
+
+        .dropdown.open .dropdown-toggle::after {
+            transform: rotate(180deg);
+        }
+
+        .user-name {
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+    </style>
+
     {% block extra_css %}{% endblock %}
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar">
@@ -29,69 +222,87 @@
                     <i class="fas fa-plus-square"></i>
                     <span>VitalBook</span>
                 </a>
-                
+
                 <button class="mobile-toggle" id="mobileToggle">
                     <i class="fas fa-bars"></i>
                 </button>
-                
-                <ul class="nav-links" id="navLinks">
-                    <li><a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a></li>
-                    <li><a href="{% url 'about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">About</a></li>
-                    <li><a href="{% url 'services' %}" class="{% if request.resolver_match.url_name == 'services' %}active{% endif %}">Services</a></li>
-                    <li><a href="{% url 'doctor_list' %}" class="{% if request.resolver_match.url_name == 'doctor_list' %}active{% endif %}">Doctors</a></li>
-                    <li><a href="{% url 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a></li>
-                    
-                    {% if user.is_authenticated %}
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle">
-                                <i class="fas fa-user-circle"></i> {{ user.username }}
-                            </a>
-                            <div class="dropdown-menu">
-                                {% if request.user.is_staff or request.user.is_superuser %}
-                                <!-- ADMIN LINKS -->
 
-                                <a href="/admin/" class="dropdown-item">
-                                    <i class="fas fa-cog"></i> Admin Panel
-                                </a>
-                                <a href="{% url 'doctor_dashboard' %}" class="dropdown-item">
-                                    <i class="fas fa-chart-line"></i> Doctor Dashboard
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                {% endif %}
-                                
-                                {% if request.user.is_staff == False %}
-                                <!-- DOCTOR LINKS -->
-                                {% with doctor=request.user.doctor_set.first %}
-                                {% if doctor %}
-                                <div class="dropdown-section-title">Doctor</div>
-                                <a href="{% url 'doctor_dashboard' %}" class="dropdown-item">
-                                    <i class="fas fa-stethoscope"></i> My Dashboard
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                {% endif %}
-                                {% endwith %}
-                                {% endif %}
-                                
-                                <!-- COMMON LINKS -->
-                                <a href="{% url 'profile' %}" class="dropdown-item">
-                                    <i class="fas fa-user"></i> Profile
-                                </a>
-                                <a href="{% url 'my_appointments' %}" class="dropdown-item">
-                                    <i class="fas fa-calendar-check"></i> My Appointments
-                                </a>
-                                <a href="{% url 'patient_dashboard' %}" class="dropdown-item">
-                                    <i class="fas fa-th-large"></i> Dashboard
-                                </a>
-                                
-                                <div class="dropdown-divider"></div>
-                                <a href="{% url 'logout' %}" class="dropdown-item text-danger">
-                                    <i class="fas fa-sign-out-alt"></i> Logout
-                                </a>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="{% url 'home' %}"
+                            class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a></li>
+                    <li><a href="{% url 'about' %}"
+                            class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">About</a></li>
+                    <li><a href="{% url 'services' %}"
+                            class="{% if request.resolver_match.url_name == 'services' %}active{% endif %}">Services</a>
+                    </li>
+                    <li><a href="{% url 'doctor_list' %}"
+                            class="{% if request.resolver_match.url_name == 'doctor_list' %}active{% endif %}">Doctors</a>
+                    </li>
+                    <li><a href="{% url 'contact' %}"
+                            class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a>
+                    </li>
+
+                    {% if user.is_authenticated %}
+                    {% if request.user.is_staff or request.user.is_superuser %}
+                    <li style="display: flex; align-items: center; margin-right: 15px;">
+                        <span
+                            style="background: rgba(245,158,11,0.15); color: #d97706; border: 1px solid rgba(245,158,11,0.3); padding: 6px 14px; border-radius: 50px; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-user-shield"></i> Viewing as Admin: <span class="user-name">{{ request.user.username }}</span>
+                        </span>
+                    </li>
+                    {% endif %}
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle">
+                            <i class="fas fa-user-circle"></i> <span class="user-name">{{ user.username }}</span>
+                        </a>
+                        <div class="dropdown-menu">
+                            <!-- User header -->
+                            <div class="dropdown-user-header">
+                                <div class="dropdown-user-name">{{ user.get_full_name|default:user.username }}</div>
+                                <div class="dropdown-user-role">
+                                    {% if request.user.is_staff %}Administrator{% else %}Patient{% endif %}
+                                </div>
                             </div>
-                        </li>
+
+                            {% if request.user.is_staff or request.user.is_superuser %}
+                            <div class="dropdown-section-title">Admin</div>
+                            <a href="/admin/" class="dropdown-item">
+                                <i class="fas fa-shield-alt"></i> Admin Panel
+                            </a>
+                            <a href="{% url 'doctor_dashboard' %}" class="dropdown-item">
+                                <i class="fas fa-chart-line"></i> Doctor Dashboard
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            {% endif %}
+
+                            {% if request.user.is_staff == False %}
+                            {% with doctor=request.user.doctor_set.first %}
+                            {% if doctor %}
+                            <div class="dropdown-section-title">Doctor</div>
+                            <a href="{% url 'doctor_dashboard' %}" class="dropdown-item">
+                                <i class="fas fa-stethoscope"></i> My Dashboard
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            {% endif %}
+                            {% endwith %}
+                            {% endif %}
+
+                            <div class="dropdown-section-title">Account</div>
+                            <a href="{% url 'patient_dashboard' %}" class="dropdown-item">
+                                <i class="fas fa-th-large"></i> Dashboard
+                            </a>
+                            <a href="{% url 'profile' %}" class="dropdown-item">
+                                <i class="fas fa-user-edit"></i> Edit Profile
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="{% url 'logout' %}" class="dropdown-item text-danger">
+                                <i class="fas fa-sign-out-alt"></i> Sign Out
+                            </a>
+                        </div>
+                    </li>
                     {% else %}
-                        <li><a href="{% url 'login' %}" class="btn-nav">Login</a></li>
-                        <li><a href="{% url 'register' %}" class="btn-nav btn-primary">Register</a></li>
+                    <li><a href="{% url 'login' %}" class="btn-nav">Login</a></li>
+                    <li><a href="{% url 'register' %}" class="btn-nav btn-nav-outline">Register</a></li>
                     {% endif %}
                 </ul>
             </div>
@@ -106,7 +317,8 @@
             <button class="alert-close" onclick="this.parentElement.remove()">
                 <i class="fas fa-times"></i>
             </button>
-            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+            <i
+                class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
             <span>{{ message }}</span>
         </div>
         {% endfor %}
@@ -123,8 +335,12 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h3><i class="fas fa-plus-square"></i> VitalBook</h3>
-                    <p>Your health is our priority. Book appointments with the top specialists seamlessly across India.</p>
+                    <a href="{% url 'home' %}" style="display: flex; align-items: center; gap: 10px; text-decoration: none; margin-bottom: 20px;">
+                        <i class="fas fa-plus-square" style="color: #f97316 !important; font-size: 1.8rem;"></i>
+                        <span style="color: #ffffff !important; font-size: 1.5rem; font-weight: 700;">VitalBook</span>
+                    </a>
+                    <p>Your health is our priority. Book appointments with the top specialists seamlessly across India.
+                    </p>
                     <div class="social-links">
                         <a href="#"><i class="fab fa-facebook"></i></a>
                         <a href="#"><i class="fab fa-twitter"></i></a>
@@ -132,7 +348,7 @@
                         <a href="#"><i class="fab fa-linkedin"></i></a>
                     </div>
                 </div>
-                
+
                 <div class="footer-section">
                     <h4>Quick Links</h4>
                     <ul>
@@ -142,7 +358,7 @@
                         <li><a href="{% url 'contact' %}">Contact</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-section">
                     <h4>Services</h4>
                     <ul>
@@ -152,7 +368,7 @@
                         <li><a href="#">Health Checkup</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-section">
                     <h4>Contact Info</h4>
                     <ul class="contact-info">
@@ -163,7 +379,7 @@
                     </ul>
                 </div>
             </div>
-            
+
             <div class="footer-bottom">
                 <p>&copy; 2026 VitalBook. All rights reserved.</p>
             </div>
@@ -177,6 +393,59 @@
 
     <!-- Custom JavaScript -->
     <script src="{% static 'js/script.js' %}"></script>
+
+    <!-- ── Dropdown click-toggle (no Bootstrap required) ── -->
+    <script>
+        (function () {
+            /* Find every dropdown toggle in the navbar */
+            var toggles = document.querySelectorAll('.nav-links .dropdown-toggle');
+
+            toggles.forEach(function (toggle) {
+                toggle.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    var parentLi = this.closest('.dropdown');
+                    var menu = parentLi.querySelector('.dropdown-menu');
+                    var isOpen = parentLi.classList.contains('open');
+
+                    /* Close every other open dropdown first */
+                    document.querySelectorAll('.nav-links .dropdown.open').forEach(function (d) {
+                        d.classList.remove('open');
+                        d.querySelector('.dropdown-menu').classList.remove('open');
+                    });
+
+                    /* Toggle this one */
+                    if (!isOpen) {
+                        parentLi.classList.add('open');
+                        menu.classList.add('open');
+                    }
+                });
+            });
+
+            /* Click outside → close all */
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.dropdown')) {
+                    document.querySelectorAll('.nav-links .dropdown.open').forEach(function (d) {
+                        d.classList.remove('open');
+                        d.querySelector('.dropdown-menu').classList.remove('open');
+                    });
+                }
+            });
+
+            /* Escape key → close all */
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.nav-links .dropdown.open').forEach(function (d) {
+                        d.classList.remove('open');
+                        d.querySelector('.dropdown-menu').classList.remove('open');
+                    });
+                }
+            });
+        })();
+    </script>
+
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>

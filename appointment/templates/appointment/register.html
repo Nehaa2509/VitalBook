@@ -61,17 +61,16 @@
     padding: 10px 14px;
 }
 .cal-header select {
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    padding: 2px 4px;
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 6px !important;
+    color: #fff !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    padding: 4px 8px !important;
 }
-.cal-header select option { background: #0B2B46; color: #fff; }
+.cal-header select option { background: #0B2B46 !important; color: #fff !important; }
 .cal-nav {
     background: none;
     border: none;
@@ -119,16 +118,108 @@
 {% endblock %}
 
 {% block content %}
+<!-- Premium-style override for the register form's outer wrapper -->
+<style>
+    .auth-section {
+        background: linear-gradient(135deg, #0B2B46 0%, #1a4a70 45%, #5c2d91 100%) !important;
+        min-height: 100vh;
+        padding: 80px 0 60px;
+        position: relative;
+        overflow: hidden;
+    }
+    .auth-section::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 0;
+    }
+    .auth-section .container { position: relative; z-index: 1; }
+    /* Override card styles for register to match new design */
+    .auth-wrapper {
+        max-width: 700px !important;
+        margin: 0 auto !important;
+        grid-template-columns: 1fr !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+    .auth-form-container {
+        background: #ffffff;
+        border-radius: 24px !important;
+        box-shadow: 0 32px 80px rgba(0,0,0,0.35), 0 8px 24px rgba(11,43,70,0.2) !important;
+        padding: 48px 44px !important;
+        animation: cardFadeIn 0.5s ease;
+    }
+    @keyframes cardFadeIn {
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .auth-form-container h2 {
+        font-size: 1.9rem !important;
+        font-weight: 800 !important;
+        background: linear-gradient(135deg, #0B2B46, #5c2d91);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 6px !important;
+        letter-spacing: -0.5px;
+    }
+    .auth-subtitle { color: #64748b !important; font-size: 0.95rem !important; margin-bottom: 24px; }
+    /* Input styling from premium system */
+    .auth-form input,
+    .auth-form select,
+    .auth-form textarea {
+        padding: 13px 18px !important;
+        border: 2px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        font-size: 0.95rem !important;
+        background: #f8faff !important;
+        color: #0B2B46 !important;
+        transition: all 0.25s ease !important;
+    }
+    .auth-form input:focus,
+    .auth-form select:focus,
+    .auth-form textarea:focus {
+        outline: none !important;
+        border-color: #5c2d91 !important;
+        background: white !important;
+        box-shadow: 0 0 0 4px rgba(92,45,145,0.1) !important;
+    }
+    .auth-form label { color: #0B2B46 !important; font-weight: 600 !important; font-size: 0.88rem !important; }
+    .auth-form label i { color: #5c2d91 !important; }
+    /* Submit button */
+    .btn.btn-primary.btn-block {
+        background: linear-gradient(135deg, #f97316, #fb923c) !important;
+        border: none !important;
+        border-radius: 50px !important;
+        padding: 15px !important;
+        font-size: 1rem !important;
+        font-weight: 700 !important;
+        box-shadow: 0 8px 24px rgba(249,115,22,0.4) !important;
+        transition: all 0.3s ease !important;
+        color: white !important;
+    }
+    .btn.btn-primary.btn-block:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 14px 32px rgba(249,115,22,0.5) !important;
+    }
+    .auth-footer a { color: #5c2d91 !important; font-weight: 700 !important; }
+    .auth-footer { color: #64748b !important; }
+    /* DOB calendar adjustments */
+    .dob-display-input {
+        padding: 13px 2.5rem 13px 18px !important;
+        border: 2px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        background: #f8faff !important;
+        color: #0B2B46 !important;
+    }
+</style>
 <section class="auth-section">
     <div class="container">
         <div class="auth-wrapper">
-            <div class="auth-image">
-                <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600" alt="Register">
-                <div class="auth-overlay">
-                    <h2>Join VitalBook</h2>
-                    <p>Start your journey to better health today</p>
-                </div>
-            </div>
+
             
             <div class="auth-form-container">
                 <h2>Create Account</h2>
@@ -185,6 +276,9 @@
                         <div class="form-group">
                             <label><i class="fas fa-lock"></i> Password *</label>
                             <input type="password" name="password" id="password" required placeholder="Enter password">
+                            <div id="password-requirements" style="font-size: 0.8rem; margin-top: 5px; color: #ff4d4d; font-weight: 600;">
+                                Characters: <span id="char-count">0</span>/8
+                            </div>
                         </div>
                         
                         <div class="form-group">
@@ -211,7 +305,7 @@
                                         <button type="button" class="cal-nav" id="cal_prev">&#8249;</button>
                                         <div style="display:flex;gap:6px;align-items:center;">
                                             <select id="cal_month"></select>
-                                            <select id="cal_year" style="width:64px;"></select>
+                                            <select id="cal_year"></select>
                                         </div>
                                         <button type="button" class="cal-nav" id="cal_next">&#8250;</button>
                                     </div>
@@ -433,11 +527,26 @@
     syncSelects();
 
     /* ── Password validation ── */
+    const passwordInput = document.getElementById('password');
+    const charCount = document.getElementById('char-count');
+    const requirementText = document.getElementById('password-requirements');
+
+    passwordInput.addEventListener('input', function() {
+        const length = passwordInput.value.length;
+        charCount.innerText = length;
+        
+        if (length >= 8) {
+            requirementText.style.color = "#10b981"; // Turns green when valid
+        } else {
+            requirementText.style.color = "#ff4d4d"; // Stays red when too short
+        }
+    });
+
     document.getElementById('registerForm').addEventListener('submit', function(e) {
         var pw  = document.getElementById('password').value;
         var cpw = document.getElementById('confirm_password').value;
         if (pw !== cpw) { e.preventDefault(); alert('Passwords do not match!'); return false; }
-        if (pw.length < 6) { e.preventDefault(); alert('Password must be at least 6 characters long!'); return false; }
+        if (pw.length < 8) { e.preventDefault(); alert('Password must be at least 8 characters long!'); return false; }
     });
 })();
 </script>

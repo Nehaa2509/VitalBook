@@ -4,85 +4,665 @@
 {% block title %}VitalBook Admin{% endblock %}
 
 {% block branding %}
-<h1 id="site-name">
-    <a href="{% url 'admin:index' %}">
-        💊 VitalBook Admin Panel
-    </a>
-</h1>
+<div style="display:flex; align-items:center; gap:10px;">
+    <div style="background:#2563EB; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:900; color:white; font-size:18px; box-shadow: 0 2px 8px rgba(37,99,235,0.35);">+</div>
+    <span style="font-size:20px; font-weight:700; color:#1E293B; letter-spacing:-0.3px;">VitalBook</span>
+    <span style="font-size:11px; color:#94A3B8; margin-left:2px; font-weight:500; text-transform:uppercase; letter-spacing:1px;">Admin</span>
+</div>
 {% endblock %}
 
 {% block extrastyle %}
 {{ block.super }}
 <style>
-    /* Match VitalBook UI Design */
-    :root {
-        --primary: #0d6efd;
-        --secondary: #6c757d;
-        --success: #28a745;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    /* ══════════════════════════════════════════
+       GLOBAL RESET & TYPOGRAPHY
+    ══════════════════════════════════════════ */
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        -webkit-font-smoothing: antialiased !important;
     }
 
+    /* ══════════════════════════════════════════
+       BODY & BACKGROUND
+    ══════════════════════════════════════════ */
+    body {
+        background: #F8FAFC !important;
+        color: #1E293B !important;
+    }
+
+    #content {
+        background: #F8FAFC !important;
+    }
+
+    /* ══════════════════════════════════════════
+       TOP HEADER / NAV BAR
+    ══════════════════════════════════════════ */
     #header {
-        background: linear-gradient(135deg, #0d6efd, #0056b3) !important;
-        color: white !important;
-        padding: 16px 24px !important;
+        background: #FFFFFF !important;
+        padding: 14px 24px !important;
+        border-bottom: 1px solid #E2E8F0 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
     }
 
-    #branding h1 a {
-        color: white !important;
-        font-size: 22px !important;
+    #branding h1 {
+        margin: 0 !important;
+    }
+
+    #user-tools {
+        color: #64748B !important;
+        font-size: 13px !important;
+    }
+
+    #user-tools a {
+        color: #475569 !important;
+        background: transparent !important;
+        border: 1px solid #E2E8F0 !important;
+        padding: 6px 14px !important;
+        border-radius: 8px !important;
+        margin-left: 8px !important;
+        text-decoration: none !important;
+        transition: all 0.2s ease !important;
+        font-weight: 500 !important;
+        font-size: 13px !important;
+    }
+
+    #user-tools a:hover {
+        background: #FEF2F2 !important;
+        border-color: #FECACA !important;
+        color: #DC2626 !important;
+    }
+
+    /* ══════════════════════════════════════════
+       LEFT SIDEBAR
+    ══════════════════════════════════════════ */
+    #nav-sidebar {
+        background: #FFFFFF !important;
+        border-right: 1px solid #E2E8F0 !important;
+        box-shadow: none !important;
+    }
+
+    #nav-sidebar .module th,
+    #nav-sidebar .current-app .module__name {
+        background: transparent !important;
+        color: #94A3B8 !important;
+        font-size: 10px !important;
         font-weight: 700 !important;
+        letter-spacing: 1.2px !important;
+        text-transform: uppercase !important;
+        padding: 20px 16px 6px !important;
     }
 
-    #nav-global {
-        background: #0056b3 !important;
+    #nav-sidebar a,
+    #nav-sidebar .section:last-child a {
+        color: #475569 !important;
+        padding: 9px 14px !important;
+        border-radius: 8px !important;
+        margin: 2px 8px !important;
+        display: block !important;
+        transition: all 0.18s ease !important;
+        text-decoration: none !important;
+        font-size: 13.5px !important;
+        font-weight: 500 !important;
     }
 
-    .module h2, .module caption {
-        background: #0d6efd !important;
-        color: white !important;
-        border-radius: 8px 8px 0 0 !important;
+    #nav-sidebar a:hover {
+        background: #EFF6FF !important;
+        color: #2563EB !important;
+    }
+
+    #nav-sidebar .current-app a,
+    #nav-sidebar a.selected {
+        background: #EFF6FF !important;
+        color: #2563EB !important;
+        font-weight: 600 !important;
+        border-left: 3px solid #2563EB !important;
+    }
+
+    /* Toggle sidebar button */
+    #toggle-nav-sidebar {
+        color: #64748B !important;
+        background: transparent !important;
+        border-radius: 6px !important;
+    }
+
+    /* ══════════════════════════════════════════
+       BREADCRUMBS
+    ══════════════════════════════════════════ */
+    div.breadcrumbs {
+        background: #FFFFFF !important;
+        color: #94A3B8 !important;
+        border-bottom: 1px solid #E2E8F0 !important;
+        padding: 10px 24px !important;
+        font-size: 12.5px !important;
+        box-shadow: none !important;
+    }
+
+    div.breadcrumbs a {
+        color: #2563EB !important;
+        font-weight: 500 !important;
+        text-decoration: none !important;
+    }
+
+    div.breadcrumbs a:hover {
+        color: #1D4ED8 !important;
+        text-decoration: underline !important;
+    }
+
+    /* ══════════════════════════════════════════
+       MODULES / CARDS
+    ══════════════════════════════════════════ */
+    #content-main .module,
+    .module {
+        background: #FFFFFF !important;
+        border-radius: 12px !important;
+        border: 1px solid #E2E8F0 !important;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03) !important;
+        overflow: hidden !important;
+        margin-bottom: 20px !important;
+    }
+
+    /* ── Module section headers ── */
+    .module > h2,
+    .module > caption,
+    .inline-group > h2 {
+        background: #F8FAFC !important;
+        color: #475569 !important;
+        padding: 14px 18px !important;
+        border-radius: 12px 12px 0 0 !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.8px !important;
+        text-transform: uppercase !important;
+        border-bottom: 1px solid #E2E8F0 !important;
+        border-left: none !important;
+    }
+
+    /* ── Dashboard metric strip accent ── */
+    .module > h2:before {
+        content: '' !important;
+        display: inline-block !important;
+        width: 4px !important;
+        height: 14px !important;
+        background: #2563EB !important;
+        border-radius: 2px !important;
+        margin-right: 10px !important;
+        vertical-align: middle !important;
+    }
+
+    /* ══════════════════════════════════════════
+       DATA TABLES
+    ══════════════════════════════════════════ */
+    #result_list {
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+        width: 100% !important;
+    }
+
+    #result_list thead th {
+        background: #F8FAFC !important;
+        color: #64748B !important;
+        font-weight: 600 !important;
+        font-size: 11.5px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.6px !important;
+        border-bottom: 1px solid #E2E8F0 !important;
         padding: 12px 16px !important;
     }
 
-    .button, input[type=submit], input[type=button] {
-        background: #0d6efd !important;
-        border-radius: 8px !important;
+    #result_list thead th a,
+    #result_list thead th a:visited {
+        color: #64748B !important;
+        text-decoration: none !important;
+    }
+
+    #result_list thead th.sorted a {
+        color: #2563EB !important;
+    }
+
+    #result_list tbody tr {
+        transition: background 0.12s ease !important;
+    }
+
+    #result_list tbody tr:hover td {
+        background: #F0F7FF !important;
+    }
+
+    #result_list td {
+        padding: 13px 16px !important;
+        border-bottom: 1px solid #F1F5F9 !important;
+        font-size: 13.5px !important;
+        vertical-align: middle !important;
+        color: #334155 !important;
+    }
+
+    #result_list td a {
+        color: #2563EB !important;
+        font-weight: 500 !important;
+        text-decoration: none !important;
+    }
+
+    #result_list td a:hover {
+        color: #1D4ED8 !important;
+        text-decoration: underline !important;
+    }
+
+    /* ══════════════════════════════════════════
+       PRIMARY BUTTONS
+    ══════════════════════════════════════════ */
+    .button,
+    input[type=submit],
+    input[type=button],
+    .submit-row input,
+    a.button {
+        background: #2563EB !important;
+        color: #FFFFFF !important;
         border: none !important;
+        border-radius: 8px !important;
+        padding: 10px 20px !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        text-decoration: none !important;
+        box-shadow: 0 1px 3px rgba(37,99,235,0.2) !important;
+        letter-spacing: 0.1px !important;
+    }
+
+    .button:hover,
+    input[type=submit]:hover {
+        background: #1D4ED8 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(37,99,235,0.3) !important;
+    }
+
+    /* Add link — emerald green accent */
+    .addlink {
+        background: #ECFDF5 !important;
+        border: 1px solid #A7F3D0 !important;
+        border-radius: 6px !important;
+        padding: 5px 12px !important;
+        color: #059669 !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        text-decoration: none !important;
+        transition: all 0.15s ease !important;
+    }
+
+    .addlink:hover {
+        background: #D1FAE5 !important;
+        color: #047857 !important;
+        border-color: #6EE7B7 !important;
+    }
+
+    /* Delete link */
+    .deletelink,
+    .deletelink:visited {
+        background: #FEF2F2 !important;
+        border: 1px solid #FECACA !important;
+        color: #DC2626 !important;
+        border-radius: 8px !important;
         padding: 8px 16px !important;
+        text-decoration: none !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
+        transition: all 0.15s ease !important;
     }
 
-    .button:hover {
-        background: #0056b3 !important;
+    .deletelink:hover {
+        background: #FEE2E2 !important;
+        border-color: #FCA5A5 !important;
     }
 
-    #content-main .module {
+    /* ══════════════════════════════════════════
+       SUBMIT ROW
+    ══════════════════════════════════════════ */
+    .submit-row {
+        background: #F8FAFC !important;
+        border-top: 1px solid #E2E8F0 !important;
+        border-radius: 0 0 12px 12px !important;
+        padding: 14px 18px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+    }
+
+    /* ══════════════════════════════════════════
+       FORM INPUTS
+    ══════════════════════════════════════════ */
+    input[type=text],
+    input[type=password],
+    input[type=email],
+    input[type=number],
+    input[type=url],
+    textarea,
+    select {
+        background: #F8FAFC !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 8px !important;
+        padding: 10px 14px !important;
+        font-size: 14px !important;
+        color: #1E293B !important;
+        transition: all 0.2s ease !important;
+        outline: none !important;
+    }
+
+    input[type=text]:focus,
+    input[type=password]:focus,
+    input[type=email]:focus,
+    input[type=number]:focus,
+    input[type=url]:focus,
+    textarea:focus,
+    select:focus {
+        border-color: #2563EB !important;
+        background: #FFFFFF !important;
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.15) !important;
+    }
+
+    /* ── Search bar ── */
+    #searchbar {
+        background: #F8FAFC !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 8px !important;
+        padding: 10px 16px !important;
+        font-size: 13.5px !important;
+        transition: all 0.2s ease !important;
+        outline: none !important;
+    }
+
+    #searchbar:focus {
+        border-color: #2563EB !important;
+        background: #FFFFFF !important;
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.15) !important;
+    }
+
+    /* ── Checkbox ── */
+    input[type=checkbox]:checked {
+        accent-color: #2563EB !important;
+    }
+
+    /* ══════════════════════════════════════════
+       FILTER SIDEBAR
+    ══════════════════════════════════════════ */
+    #changelist-filter {
+        background: #FFFFFF !important;
         border-radius: 12px !important;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+        border: 1px solid #E2E8F0 !important;
         overflow: hidden !important;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05) !important;
     }
 
-    tr:hover {
-        background: #f0f4ff !important;
+    #changelist-filter h2 {
+        background: #F8FAFC !important;
+        color: #475569 !important;
+        padding: 12px 16px !important;
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+        border-bottom: 1px solid #E2E8F0 !important;
+        border-left: none !important;
     }
 
-    a {
-        color: #0d6efd !important;
+    #changelist-filter h3 {
+        color: #94A3B8 !important;
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        padding: 12px 16px 4px !important;
+        letter-spacing: 0.8px !important;
     }
 
-    .success {
-        background: #d4edda !important;
-        color: #155724 !important;
+    #changelist-filter li a {
+        color: #475569 !important;
+        padding: 7px 16px !important;
+        display: block !important;
+        font-size: 13px !important;
+        transition: all 0.12s ease !important;
+        text-decoration: none !important;
+        border-radius: 6px !important;
+        margin: 2px 8px !important;
+    }
+
+    #changelist-filter li a:hover {
+        color: #2563EB !important;
+        background: #EFF6FF !important;
+    }
+
+    #changelist-filter li.selected a {
+        color: #2563EB !important;
+        font-weight: 600 !important;
+        background: #EFF6FF !important;
+        border-left: 3px solid #2563EB !important;
+    }
+
+    /* ══════════════════════════════════════════
+       GLOBAL LINKS
+    ══════════════════════════════════════════ */
+    a:link, a:visited {
+        color: #2563EB !important;
+    }
+
+    a:hover {
+        color: #1D4ED8 !important;
+    }
+
+    /* ══════════════════════════════════════════
+       MESSAGES / ALERTS
+    ══════════════════════════════════════════ */
+    .success,
+    li.success {
+        background: #ECFDF5 !important;
+        color: #065F46 !important;
         border-radius: 8px !important;
+        border-left: 4px solid #10B981 !important;
+        padding: 12px 16px !important;
+        font-size: 13.5px !important;
     }
 
-    .errornote {
-        background: #f8d7da !important;
+    .errornote,
+    li.error,
+    .errorlist li {
+        background: #FEF2F2 !important;
+        color: #991B1B !important;
         border-radius: 8px !important;
+        border-left: 4px solid #EF4444 !important;
+        padding: 12px 16px !important;
+        font-size: 13.5px !important;
     }
 
-    body {
-        font-family: 'Inter', Arial, sans-serif !important;
-        background: #f4f6f9 !important;
+    .warning {
+        background: #FFFBEB !important;
+        color: #92400E !important;
+        border-radius: 8px !important;
+        border-left: 4px solid #F59E0B !important;
+        padding: 12px 16px !important;
+    }
+
+    /* ══════════════════════════════════════════
+       PAGINATION
+    ══════════════════════════════════════════ */
+    .paginator {
+        color: #64748B !important;
+        padding: 16px !important;
+        font-size: 13px !important;
+    }
+
+    .paginator a,
+    .paginator span.this-page {
+        border-radius: 6px !important;
+        padding: 6px 12px !important;
+        margin: 0 2px !important;
+        border: 1px solid #E2E8F0 !important;
+        display: inline-block !important;
+        text-decoration: none !important;
+        font-weight: 500 !important;
+        transition: all 0.15s ease !important;
+    }
+
+    .paginator a:hover {
+        background: #EFF6FF !important;
+        border-color: #BFDBFE !important;
+        color: #2563EB !important;
+    }
+
+    .paginator span.this-page {
+        background: #2563EB !important;
+        color: #FFFFFF !important;
+        border-color: #2563EB !important;
+        font-weight: 600 !important;
+        box-shadow: 0 1px 3px rgba(37,99,235,0.3) !important;
+    }
+
+    /* ══════════════════════════════════════════
+       OBJECT TOOLS (top-right action buttons)
+    ══════════════════════════════════════════ */
+    .object-tools a {
+        background: #2563EB !important;
+        border-radius: 8px !important;
+        padding: 8px 16px !important;
+        color: white !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        text-decoration: none !important;
+        box-shadow: 0 1px 3px rgba(37,99,235,0.25) !important;
+        transition: all 0.15s ease !important;
+    }
+
+    .object-tools a:hover {
+        background: #1D4ED8 !important;
+        color: white !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(37,99,235,0.3) !important;
+    }
+
+    /* ══════════════════════════════════════════
+       CONTENT HEADING
+    ══════════════════════════════════════════ */
+    #content h1 {
+        color: #0F172A !important;
+        font-size: 22px !important;
+        font-weight: 700 !important;
+        margin-bottom: 20px !important;
+        letter-spacing: -0.3px !important;
+    }
+
+    /* ══════════════════════════════════════════
+       RECENT ACTIONS
+    ══════════════════════════════════════════ */
+    #recent-actions-module h2 {
+        background: #F8FAFC !important;
+        border-left: none !important;
+        color: #475569 !important;
+    }
+
+    .actionlist li {
+        border-bottom: 1px solid #F1F5F9 !important;
+        padding: 8px 0 !important;
+        font-size: 13px !important;
+        color: #334155 !important;
+    }
+
+    .actionlist .changelink,
+    .actionlist .addlink {
+        background: none !important;
+        border: none !important;
+        padding: 0 !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+    }
+
+    /* ══════════════════════════════════════════
+       CALENDAR / DATE WIDGET
+    ══════════════════════════════════════════ */
+    .calendarbox,
+    .clockbox {
+        border-radius: 12px !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important;
+        border: 1px solid #E2E8F0 !important;
+        background: #FFFFFF !important;
+    }
+
+    .calendar caption,
+    .calendarbox h2 {
+        background: #2563EB !important;
+        color: white !important;
+        border-radius: 8px 8px 0 0 !important;
+        font-weight: 600 !important;
+    }
+
+    td.selected a {
+        background: #2563EB !important;
+        color: white !important;
+        border-radius: 6px !important;
+    }
+
+    /* ══════════════════════════════════════════
+       INLINE ADMIN GROUPS
+    ══════════════════════════════════════════ */
+    .inline-group {
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        border: 1px solid #E2E8F0 !important;
+        margin-bottom: 16px !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04) !important;
+    }
+
+    .inline-related h3 {
+        background: #F8FAFC !important;
+        color: #475569 !important;
+        padding: 10px 16px !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        border-bottom: 1px solid #E2E8F0 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    /* ══════════════════════════════════════════
+       ACTION SELECTOR (bulk actions bar)
+    ══════════════════════════════════════════ */
+    .actions {
+        background: #F8FAFC !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 8px !important;
+        padding: 10px 16px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .actions select {
+        border-radius: 8px !important;
+        border: 1px solid #E2E8F0 !important;
+        background: #FFFFFF !important;
+        padding: 8px 12px !important;
+        color: #334155 !important;
+    }
+
+    /* ══════════════════════════════════════════
+       HELP TEXT & FIELD LABELS
+    ══════════════════════════════════════════ */
+    .help {
+        color: #94A3B8 !important;
+        font-size: 12px !important;
+        margin-top: 4px !important;
+    }
+
+    label {
+        font-weight: 600 !important;
+        font-size: 13px !important;
+        color: #374151 !important;
+    }
+
+    /* ══════════════════════════════════════════
+       ROW STRIPING (alternating)
+    ══════════════════════════════════════════ */
+    #result_list tbody tr:nth-child(even) td {
+        background: #FAFAFA !important;
+    }
+
+    #result_list tbody tr:nth-child(even):hover td {
+        background: #F0F7FF !important;
     }
 </style>
 {% endblock %}

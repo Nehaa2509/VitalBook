@@ -1,81 +1,358 @@
-﻿{% extends 'appointment/base.html' %}
+{% extends 'appointment/base.html' %}
 
-{% block title %}Our Services - VITALBOOK{% endblock %}
+{% block title %}Our Services - VitalBook{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Page Canvas ── */
+.services-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0B2B46 0%, #1a4a70 45%, #5c2d91 100%);
+    position: relative;
+    overflow: hidden;
+    padding-bottom: 80px;
+}
+.services-page::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Page Hero ── */
+.services-hero {
+    text-align: center;
+    padding: 60px 20px 48px;
+    position: relative;
+    z-index: 1;
+}
+.services-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(8px);
+    padding: 6px 20px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #93c5fd;
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+}
+.services-page-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+}
+.services-page-title span { color: #f97316; }
+.services-page-subtitle {
+    color: rgba(255,255,255,0.7);
+    font-size: 1.1rem;
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+/* ── Container ── */
+.services-container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Section Label ── */
+.section-label-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+}
+.section-label-text {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.5);
+    white-space: nowrap;
+}
+.section-label-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.12);
+}
+.section-main-title {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 32px;
+    letter-spacing: -0.5px;
+}
+
+/* ── Specialization Cards Grid ── */
+.spec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 22px;
+    margin-bottom: 60px;
+}
+
+.spec-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 32px 28px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    transition: all 0.35s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    animation: cardUp 0.4s ease both;
+}
+@keyframes cardUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.spec-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #0B2B46, #5c2d91);
+    border-radius: 20px 20px 0 0;
+}
+.spec-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+}
+
+.spec-card-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #0B2B46, #1a4a70);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    color: white;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 20px rgba(11,43,70,0.25);
+    flex-shrink: 0;
+}
+
+.spec-card h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0B2B46;
+    margin-bottom: 10px;
+}
+
+.spec-card p {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 24px;
+    flex: 1;
+}
+
+.btn-find-specialist {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 24px;
+    background: linear-gradient(135deg, #f97316, #fb923c);
+    color: white !important;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 6px 18px rgba(249,115,22,0.35);
+    transition: all 0.3s ease;
+    align-self: flex-start;
+}
+.btn-find-specialist:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(249,115,22,0.5);
+}
+
+/* ── Additional Services Grid ── */
+.additional-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.additional-card {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 20px;
+    padding: 28px 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    transition: all 0.3s ease;
+}
+.additional-card:hover {
+    background: rgba(255,255,255,0.13);
+    border-color: rgba(255,255,255,0.2);
+    transform: translateY(-4px);
+}
+.additional-card-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #f97316, #fb923c);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: white;
+    box-shadow: 0 6px 16px rgba(249,115,22,0.4);
+    flex-shrink: 0;
+}
+.additional-card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 5px;
+}
+.additional-card p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .spec-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+    .spec-grid, .additional-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<section class="page-header">
-    <div class="container">
-        <h1>Our Medical Services</h1>
-        <p>Comprehensive healthcare solutions for you and your family</p>
+<div class="services-page">
+    <!-- Hero -->
+    <div class="services-hero">
+        <div class="services-eyebrow"><i class="fas fa-stethoscope"></i> Medical Services</div>
+        <h1 class="services-page-title">Our <span>Medical</span> Services</h1>
+        <p class="services-page-subtitle">Comprehensive healthcare solutions for you and your entire family — all under one roof.</p>
     </div>
-</section>
 
-<section class="services-content">
-    <div class="container">
-        <div class="services-grid-large">
-            {% for spec in specializations %}
-            <div class="service-card-large">
-                <div class="service-icon-large">
-                    <i class="fas {{ spec.icon }}"></i>
-                </div>
-                <h3>{{ spec.name }}</h3>
-                <p>{{ spec.description|default:"Comprehensive medical care and treatment in "|add:spec.name }}</p>
-                <a href="{% url 'doctor_list' %}?specialization={{ spec.id }}" class="service-link">
-                    Find Specialists <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-            {% endfor %}
+    <div class="services-container">
+        <!-- Specializations -->
+        <div class="section-label-row">
+            <div class="section-label-text"><i class="fas fa-heartbeat"></i> Specializations</div>
+            <div class="section-label-line"></div>
         </div>
-    </div>
-</section>
 
-<section class="additional-services">
-    <div class="container">
-        <h2 class="section-title">Additional Services</h2>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-ambulance"></i>
-                </div>
-                <h3>Emergency Care</h3>
-                <p>24/7 emergency medical services</p>
+        <div class="spec-grid">
+            <!-- 1. Cardiology -->
+            <div class="spec-card" style="animation-delay: 0ms">
+                <div class="spec-card-icon"><i class="fas fa-heartbeat"></i></div>
+                <h3>Cardiology</h3>
+                <p>Comprehensive heart care including diagnostics, intervention, and rehabilitation.</p>
+                <a href="{% url 'doctor_list' %}?specialization=Cardiology" class="btn-find-specialist">Find Specialists <i class="fas fa-arrow-right"></i></a>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-vial"></i>
-                </div>
-                <h3>Laboratory</h3>
-                <p>Advanced diagnostic testing</p>
+            <!-- 2. Neurology -->
+            <div class="spec-card" style="animation-delay: 100ms">
+                <div class="spec-card-icon"><i class="fas fa-brain"></i></div>
+                <h3>Neurology</h3>
+                <p>Expert treatment for disorders of the brain, spine, and nervous system.</p>
+                <a href="{% url 'doctor_list' %}?specialization=Neurology" class="btn-find-specialist">Find Specialists <i class="fas fa-arrow-right"></i></a>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-x-ray"></i>
-                </div>
-                <h3>Radiology</h3>
-                <p>State-of-the-art imaging services</p>
+            <!-- 3. Orthopedics -->
+            <div class="spec-card" style="animation-delay: 200ms">
+                <div class="spec-card-icon"><i class="fas fa-bone"></i></div>
+                <h3>Orthopedics</h3>
+                <p>Advanced care for bones, joints, muscles, and sports injuries.</p>
+                <a href="{% url 'doctor_list' %}?specialization=Orthopedics" class="btn-find-specialist">Find Specialists <i class="fas fa-arrow-right"></i></a>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-pills"></i>
-                </div>
-                <h3>Pharmacy</h3>
-                <p>In-house pharmacy services</p>
+            <!-- 4. General Medicine -->
+            <div class="spec-card" style="animation-delay: 300ms">
+                <div class="spec-card-icon"><i class="fas fa-stethoscope"></i></div>
+                <h3>General Medicine</h3>
+                <p>Primary healthcare and diagnosis for common illnesses and chronic conditions.</p>
+                <a href="{% url 'doctor_list' %}?specialization=General Medicine" class="btn-find-specialist">Find Specialists <i class="fas fa-arrow-right"></i></a>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-bed"></i>
-                </div>
-                <h3>Inpatient Care</h3>
-                <p>Comfortable patient rooms</p>
+            <!-- 5. Pediatrics -->
+            <div class="spec-card" style="animation-delay: 400ms">
+                <div class="spec-card-icon"><i class="fas fa-baby"></i></div>
+                <h3>Pediatrics</h3>
+                <p>Specialized medical care for infants, children, and adolescents.</p>
+                <a href="{% url 'doctor_list' %}?specialization=Pediatrics" class="btn-find-specialist">Find Specialists <i class="fas fa-arrow-right"></i></a>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-laptop-medical"></i>
-                </div>
-                <h3>Telemedicine</h3>
-                <p>Online consultations available</p>
+            <!-- 6. Dermatology -->
+            <div class="spec-card" style="animation-delay: 500ms">
+                <div class="spec-card-icon"><i class="fas fa-allergies"></i></div>
+                <h3>Dermatology</h3>
+                <p>Comprehensive skin care, treatment for acne, eczema, and cosmetic procedures.</p>
+                <a href="{% url 'doctor_list' %}?specialization=Dermatology" class="btn-find-specialist">Find Specialists <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
+
+        <!-- Additional Services -->
+        <div class="section-label-row">
+            <div class="section-label-text"><i class="fas fa-plus-circle"></i> Additional Services</div>
+            <div class="section-label-line"></div>
+        </div>
+
+        <div class="additional-grid">
+            <div class="additional-card">
+                <div class="additional-card-icon"><i class="fas fa-ambulance"></i></div>
+                <div>
+                    <h3>Emergency Care</h3>
+                    <p>24/7 emergency medical services, always ready for critical moments.</p>
+                </div>
+            </div>
+            <div class="additional-card">
+                <div class="additional-card-icon"><i class="fas fa-vial"></i></div>
+                <div>
+                    <h3>Laboratory</h3>
+                    <p>Advanced diagnostic testing with rapid, accurate results.</p>
+                </div>
+            </div>
+            <div class="additional-card">
+                <div class="additional-card-icon"><i class="fas fa-x-ray"></i></div>
+                <div>
+                    <h3>Radiology</h3>
+                    <p>State-of-the-art imaging: X-Ray, MRI, CT Scan and more.</p>
+                </div>
+            </div>
+            <div class="additional-card">
+                <div class="additional-card-icon"><i class="fas fa-pills"></i></div>
+                <div>
+                    <h3>Pharmacy</h3>
+                    <p>In-house pharmacy services with all essential medicines.</p>
+                </div>
+            </div>
+            <div class="additional-card">
+                <div class="additional-card-icon"><i class="fas fa-bed"></i></div>
+                <div>
+                    <h3>Inpatient Care</h3>
+                    <p>Comfortable, hygienic patient rooms with round-the-clock support.</p>
+                </div>
+            </div>
+            <div class="additional-card">
+                <div class="additional-card-icon"><i class="fas fa-laptop-medical"></i></div>
+                <div>
+                    <h3>Telemedicine</h3>
+                    <p>Online consultations available from the comfort of your home.</p>
+                </div>
+            </div>
+        </div>
     </div>
-</section>
+</div>
 {% endblock %}

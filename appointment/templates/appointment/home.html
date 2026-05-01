@@ -3,51 +3,511 @@
 
 {% block title %}Home - VitalBook{% endblock %}
 
+{% block extra_css %}
+<style>
+/* ── Hero ── */
+.hero-section {
+    position: relative;
+    background: linear-gradient(135deg, #0B2B46 0%, #1a4a70 45%, #5c2d91 100%);
+    overflow: hidden;
+    padding: 90px 0 80px;
+}
+.hero-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+}
+.hero-section::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 0; right: 0;
+    height: 60px;
+    background: white;
+    clip-path: ellipse(55% 100% at 50% 100%);
+}
+
+.hero-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.hero-text { color: white; }
+
+.hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(8px);
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #93c5fd;
+    letter-spacing: 0.5px;
+    margin-bottom: 24px;
+}
+.hero-eyebrow i { font-size: 11px; }
+
+.hero-title {
+    font-size: clamp(2.4rem, 4vw, 3.8rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+    margin-bottom: 22px;
+    color: #fff;
+}
+.hero-title .highlight {
+    color: #f97316; /* Vibrant Orange */
+}
+
+.hero-subtitle {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.75);
+    margin-bottom: 36px;
+    max-width: 520px;
+}
+
+.hero-buttons { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 44px; }
+
+.btn-hero-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #f97316, #fb923c); /* Vibrant Orange CTA */
+    color: white !important;
+    padding: 15px 34px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 8px 28px rgba(249, 115, 22, 0.45);
+    transition: all 0.3s ease;
+    border: none;
+}
+.btn-hero-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 36px rgba(249, 115, 22, 0.55);
+}
+.btn-hero-primary i { font-size: 18px; }
+
+.btn-hero-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.08);
+    color: white !important;
+    padding: 15px 28px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1.5px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+}
+.btn-hero-outline:hover {
+    background: rgba(255,255,255,0.16);
+    border-color: rgba(255,255,255,0.5);
+    transform: translateY(-2px);
+}
+
+/* Hero stats */
+.hero-stats {
+    display: flex;
+    gap: 30px;
+    margin-top: 15px;
+}
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+}
+.stat-item i {
+    font-size: 28px;
+    color: #e2e8f0;
+}
+.stat-item h3 {
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 2px;
+    line-height: 1;
+    color: #ffffff;
+}
+.stat-item p {
+    font-size: 13px;
+    color: #f1f5f9;
+    line-height: 1;
+}
+
+/* Hero image */
+.hero-image {
+    position: relative;
+}
+.hero-image img {
+    width: 100%;
+    height: 440px;
+    object-fit: cover;
+    border-radius: 24px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+}
+.hero-badge {
+    position: absolute;
+    bottom: 24px;
+    right: 20px; /* Float entirely inside */
+    background: white;
+    padding: 14px 22px;
+    border-radius: 50px; /* Pill-shaped corners */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3); /* Softer, wider drop shadow */
+    font-weight: 700;
+    font-size: 14px;
+    color: #0B2B46;
+}
+.hero-badge i { color: #22c55e; font-size: 20px; }
+
+
+/* ── Features ── */
+.features-section {
+    padding: 90px 0;
+    background: white;
+}
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    margin-top: 50px;
+}
+.feature-card {
+    background: #f8faff;
+    border: 1px solid #e8efff;
+    border-radius: 20px;
+    padding: 36px 28px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+.feature-card:hover {
+    transform: translateY(-6px);
+    border-color: #3b82f6;
+    box-shadow: 0 16px 40px rgba(59,130,246,0.12);
+}
+.feature-icon {
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 28px;
+    color: white;
+    box-shadow: 0 8px 24px rgba(59,130,246,0.3);
+    transition: transform 0.3s;
+}
+.feature-card:hover .feature-icon { transform: scale(1.1) rotate(-4deg); }
+.feature-card h3 { font-size: 18px; font-weight: 700; color: #0B2B46; margin-bottom: 10px; }
+.feature-card p { color: #64748b; font-size: 14px; line-height: 1.6; }
+
+/* ── Specializations ── */
+.specializations-section { padding: 80px 0; background: #f8faff; }
+.specializations-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+    margin-top: 50px;
+}
+.service-card {
+    background: #ffffff;
+    border: 1px solid #edf2f7;
+    border-radius: 24px;
+    padding: 40px 30px;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+}
+
+.service-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(15, 43, 70, 0.08);
+    border-color: #ff8c00; /* VitalBook Orange */
+}
+
+/* Modernizing the Icons */
+.service-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: #fff7ed; /* Very light orange */
+    border-radius: 20px;
+    margin: 0 auto 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ff8c00;
+    font-size: 1.8rem;
+}
+
+.service-card h3 {
+    color: #0f2b46;
+    font-weight: 800;
+    margin-bottom: 15px;
+}
+
+.service-card p {
+    font-size: 13px; color: #64748b; margin-bottom: 14px; line-height: 1.5;
+}
+
+.service-card .find-link {
+    color: #ff8c00;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ── Doctors ── */
+.doctors-section { padding: 80px 0; background: white; }
+.doctors-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    margin-top: 50px;
+}
+.doctor-card {
+    background: #ffffff;
+    border-radius: 28px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+.doctor-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+    border-color: #ff8c00;
+}
+
+/* Premium Avatar Header */
+.doctor-header {
+    background: linear-gradient(135deg, #0f2b46 0%, #1a3a5a 100%);
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.doctor-initials {
+    font-size: 4rem;
+    font-weight: 900;
+    background: linear-gradient(to bottom, #ffffff, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    opacity: 0.2; /* Subtle "watermark" look */
+}
+
+/* The Info Area */
+.doctor-body {
+    padding: 30px;
+}
+
+.rating-badge {
+    background: #0f2b46;
+    color: #ff8c00;
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.doctor-body h3 { font-size: 18px; font-weight: 700; color: #0B2B46; margin-bottom: 6px; }
+.doctor-body .specialization {
+    color: #3b82f6;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+.doctor-body .experience { color: #64748b; font-size: 13px; margin-bottom: 6px; }
+.doctor-body .qualification { color: #64748b; font-size: 12px; margin-bottom: 16px; }
+.doctor-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 14px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.price-tag {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #0f2b46;
+}
+
+/* ── CTA ── */
+.cta-section {
+    background: linear-gradient(135deg, #0b2b46 0%, #1a3a5a 100%);
+    padding: 100px 0;
+    border-radius: 40px;
+    margin: 60px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle Animated Background Pattern */
+.cta-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(#ffffff 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.05;
+}
+
+.cta-content { position: relative; z-index: 1; text-align: center; color: white; }
+
+.cta-section h2 {
+    color: #ffffff;
+    font-size: 3rem;
+    font-weight: 900;
+    margin-bottom: 20px;
+}
+
+.cta-section p {
+    color: #cbd5e1;
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto 40px;
+}
+
+.btn-book-large {
+    background: #ffffff;
+    color: #0b2b46;
+    padding: 18px 45px;
+    border-radius: 50px;
+    font-weight: 800;
+    font-size: 1.1rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+.btn-book-large:hover {
+    transform: scale(1.05);
+    background: #ff8c00;
+    color: white;
+}
+
+/* ── Section headers ── */
+.section-header { text-align: center; }
+.section-header h2 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #0B2B46;
+    margin-bottom: 12px;
+    position: relative;
+    display: inline-block;
+}
+.section-header h2::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #6366f1);
+    border-radius: 2px;
+}
+.section-header p { color: #64748b; margin-top: 20px; font-size: 1rem; }
+
+.text-center { text-align: center; }
+
+@media (max-width: 992px) {
+    .hero-content { grid-template-columns: 1fr; text-align: center; }
+    .hero-image { display: none; }
+    .hero-stats { justify-content: center; }
+    .features-grid, .specializations-grid, .doctors-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 576px) {
+    .features-grid, .specializations-grid, .doctors-grid { grid-template-columns: 1fr; }
+    .hero-buttons { justify-content: center; }
+    .hero-stats { flex-wrap: wrap; gap: 20px; justify-content: center; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Hero Section -->
 <section class="hero-section">
     <div class="container">
         <div class="hero-content">
             <div class="hero-text">
-                <h1 class="hero-title">Your Health, Our Priority</h1>
-                <p class="hero-subtitle">Book appointments with expert doctors instantly. Quality healthcare at your fingertips.</p>
+                <div class="hero-eyebrow">
+                    <i class="fas fa-certificate"></i> India's Trusted Healthcare Platform
+                </div>
+                <h1 class="hero-title">
+                    Your Health,<br>
+                    <span class="highlight">Our Priority</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Book appointments with expert doctors instantly.
+                    Quality healthcare at your fingertips — anytime, anywhere in India.
+                </p>
                 <div class="hero-buttons">
-                    <a href="{% url 'doctor_list' %}" class="btn btn-primary btn-lg">
+                    <a href="{% url 'doctor_list' %}" class="btn-hero-primary">
                         <i class="fas fa-calendar-plus"></i> Book Appointment
                     </a>
-                    <a href="{% url 'services' %}" class="btn btn-outline btn-lg">
-                        <i class="fas fa-info-circle"></i> Learn More
+                    <a href="{% url 'services' %}" class="btn-hero-outline">
+                        <i class="fas fa-play-circle"></i> Learn More
                     </a>
                 </div>
-                
-                <!-- Stats -->
                 <div class="hero-stats">
                     <div class="stat-item">
                         <i class="fas fa-user-md"></i>
                         <div>
-                            <h3>{{ total_doctors }}+</h3>
+                            <h3>12+</h3>
                             <p>Expert Doctors</p>
                         </div>
                     </div>
                     <div class="stat-item">
                         <i class="fas fa-users"></i>
                         <div>
-                            <h3>{{ total_patients }}+</h3>
+                            <h3>25+</h3>
                             <p>Happy Patients</p>
                         </div>
                     </div>
                     <div class="stat-item">
                         <i class="fas fa-calendar-check"></i>
                         <div>
-                            <h3>{{ total_appointments }}+</h3>
+                            <h3>100+</h3>
                             <p>Appointments</p>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="hero-image">
-                <img src="https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=600" alt="Doctor">
+
+                <img src="https://images.unsplash.com/photo-1638202993928-7267aad84c31?auto=format&fit=crop&w=700&q=80" alt="Indian Doctor">
                 <div class="hero-badge">
                     <i class="fas fa-check-circle"></i>
                     <span>24/7 Available</span>
@@ -61,57 +521,39 @@
 <section class="features-section">
     <div class="container">
         <div class="section-header">
-            <h2>Why Choose Us</h2>
-            <p>We provide the best healthcare services with modern facilities</p>
+            <h2>Why Choose VitalBook?</h2>
+            <p>We provide world-class healthcare with a seamless digital experience</p>
         </div>
-        
         <div class="features-grid">
             <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-user-md"></i>
-                </div>
+                <div class="feature-icon"><i class="fas fa-user-md"></i></div>
                 <h3>Expert Doctors</h3>
-                <p>Highly qualified and experienced medical professionals</p>
+                <p>Highly qualified and experienced specialists across all medical fields</p>
             </div>
-            
             <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
+                <div class="feature-icon"><i class="fas fa-clock"></i></div>
                 <h3>24/7 Service</h3>
-                <p>Round the clock emergency and consultation services</p>
+                <p>Round-the-clock emergency and consultation services, always ready</p>
             </div>
-            
             <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-laptop-medical"></i>
-                </div>
+                <div class="feature-icon"><i class="fas fa-laptop-medical"></i></div>
                 <h3>Online Booking</h3>
-                <p>Easy and quick appointment booking system</p>
+                <p>Book your appointment in under 60 seconds from any device</p>
             </div>
-            
             <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
-                <h3>Safe & Secure</h3>
-                <p>Your health data is protected with us</p>
+                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                <h3>Safe &amp; Secure</h3>
+                <p>Your medical data is encrypted and fully protected with us</p>
             </div>
-            
             <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-rupee-sign"></i>
-                </div>
+                <div class="feature-icon"><i class="fas fa-rupee-sign"></i></div>
                 <h3>Affordable</h3>
-                <p>Quality healthcare at accessible prices for every Indian</p>
+                <p>Quality healthcare at accessible prices for every Indian family</p>
             </div>
-            
             <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-ambulance"></i>
-                </div>
+                <div class="feature-icon"><i class="fas fa-ambulance"></i></div>
                 <h3>Emergency Care</h3>
-                <p>Immediate medical attention when you need it</p>
+                <p>Immediate medical attention when every second counts</p>
             </div>
         </div>
     </div>
@@ -122,26 +564,26 @@
     <div class="container">
         <div class="section-header">
             <h2>Our Specializations</h2>
-            <p>Comprehensive medical services across various specialties</p>
+            <p>Comprehensive medical services across all major specialties</p>
         </div>
-        
         <div class="specializations-grid">
             {% for spec in specializations %}
-            <div class="spec-card">
-                <div class="spec-icon">
+            <div class="service-card">
+                <div class="service-icon-wrapper">
                     <i class="fas {{ spec.icon }}"></i>
                 </div>
                 <h3>{{ spec.name }}</h3>
                 <p>{{ spec.description|truncatewords:10 }}</p>
-                <a href="{% url 'doctor_list' %}?specialization={{ spec.id }}" class="spec-link">
+                <a href="{% url 'doctor_list' %}?specialization={{ spec.id }}" class="find-link">
                     Find Doctors <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
             {% endfor %}
         </div>
-        
-        <div class="text-center" style="margin-top: 30px;">
-            <a href="{% url 'services' %}" class="btn btn-primary">View All Services</a>
+        <div class="text-center" style="margin-top: 40px;">
+            <a href="{% url 'services' %}" class="btn-hero-primary" style="display:inline-flex;">
+                <i class="fas fa-th-large"></i> View All Services
+            </a>
         </div>
     </div>
 </section>
@@ -153,32 +595,34 @@
             <h2>Our Top Doctors</h2>
             <p>Meet our highly qualified medical professionals</p>
         </div>
-        
         <div class="doctors-grid">
             {% for doctor in top_doctors %}
-            <div class="doctor-card-home">
-                <div class="doctor-image">
-                    <img src="https://ui-avatars.com/api/?name={{ doctor.name }}&size=200&background=4A90E2&color=fff" alt="{{ doctor.name }}">
-                    <div class="doctor-rating">
+            <div class="doctor-card">
+                <div class="doctor-header">
+                    <div class="doctor-initials">{{ doctor.initials }}</div>
+                    <div class="rating-badge">
                         <i class="fas fa-star"></i> {{ doctor.rating }}
                     </div>
                 </div>
-                <div class="doctor-info">
-                    <h3>Dr. {{ doctor.name }}</h3>
-                    <p class="specialization">{{ doctor.specialization.name }}</p>
-                    <p class="experience"><i class="fas fa-briefcase"></i> {{ doctor.experience_years }} years experience</p>
+                <div class="doctor-body">
+                    <h3>{{ doctor.name }}</h3>
+                    <p class="specialization"><i class="fas fa-stethoscope"></i> {{ doctor.specialization.name }}</p>
+                    <p class="experience"><i class="fas fa-briefcase"></i> {{ doctor.experience_years }} yrs experience</p>
                     <p class="qualification">{{ doctor.qualification }}</p>
                     <div class="doctor-footer">
-                        <span class="fee"><i class="fas fa-rupee-sign"></i> {{ doctor.consultation_fee }}</span>
-                        <a href="{% url 'doctor_detail' doctor.id %}" class="btn btn-sm btn-primary">View Profile</a>
+                        <span class="price-tag">₹{{ doctor.consultation_fee }}</span>
+                        <a href="{% url 'doctor_detail' doctor.id %}" class="btn-hero-primary" style="padding:10px 20px;font-size:13px;background: linear-gradient(135deg, #ff8c00, #fb923c);">
+                            View Profile
+                        </a>
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
-        
-        <div class="text-center" style="margin-top: 30px;">
-            <a href="{% url 'doctor_list' %}" class="btn btn-primary">View All Doctors</a>
+        <div class="text-center" style="margin-top: 40px;">
+            <a href="{% url 'doctor_list' %}" class="btn-hero-primary" style="display:inline-flex;">
+                <i class="fas fa-user-md"></i> View All Doctors
+            </a>
         </div>
     </div>
 </section>
@@ -190,9 +634,13 @@
             <h2>Ready to Get Started?</h2>
             <p>Book your appointment today and take the first step towards better health</p>
             {% if user.is_authenticated %}
-                <a href="{% url 'doctor_list' %}" class="btn btn-light btn-lg">Book Appointment Now</a>
+                <a href="{% url 'doctor_list' %}" class="btn-book-large">
+                    <i class="fas fa-calendar-plus"></i> Book Appointment Now
+                </a>
             {% else %}
-                <a href="{% url 'register' %}" class="btn btn-light btn-lg">Register Now</a>
+                <a href="{% url 'register' %}" class="btn-book-large">
+                    <i class="fas fa-user-plus"></i> Register Now — It's Free
+                </a>
             {% endif %}
         </div>
     </div>

@@ -1,97 +1,2466 @@
 {% extends "admin/base.html" %}
 {% load static %}
 
+{% block title %}{{ title }} | VitalBook Admin{% endblock %}
+
 {% block extrastyle %}
-    {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/admin_theme.css' %}">
-    <style>
-        /* Pending Appointments Notification Bar — hidden by default, shown by JS */
-        #pending-notification-bar {
-            display: none;          /* JS sets to flex when count > 0 */
-            background: linear-gradient(135deg, #FF8C00, #e07000);
-            color: #fff;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: 600;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-            border-bottom: 2px solid #c05c00;
-            animation: pulse-bar 2s ease-in-out infinite alternate;
-        }
-        @keyframes pulse-bar {
-            from { box-shadow: 0 2px 8px rgba(255,140,0,0.3); }
-            to   { box-shadow: 0 2px 16px rgba(255,140,0,0.6); }
-        }
-        #pending-notification-bar a {
-            color: #fff !important;
-            text-decoration: underline;
-            font-weight: 700;
-        }
-        .pending-bell { font-size: 18px; animation: bell-shake 1s ease infinite; display: inline-block; }
-        @keyframes bell-shake {
-            0%,100% { transform: rotate(0); }
-            20%      { transform: rotate(-15deg); }
-            40%      { transform: rotate(15deg); }
-            60%      { transform: rotate(-8deg); }
-            80%      { transform: rotate(8deg); }
-        }
-    </style>
+{{ block.super }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+    /* 1. Style the Section Headers (Personal Info, etc.) */
+    .module h2,
+    .module caption {
+        background: #ff6b00 !important;
+        /* VitalBook Orange */
+        color: #fff !important;
+        border-radius: 8px 8px 0 0;
+        padding: 12px 20px !important;
+        font-size: 1rem;
+        text-transform: uppercase;
+    }
+
+    /* 2. Style the Rows to look like Cards */
+    .form-row {
+        background: #0d1b2a !important;
+        /* Deep Navy */
+        border-bottom: 1px solid #1a2a3a !important;
+        padding: 15px 20px !important;
+    }
+
+    /* 3. Make Inputs Modern and Visible */
+    div.form-row input[type="text"],
+    div.form-row input[type="email"],
+    div.form-row input[type="password"] {
+        background: #1a2a40 !important;
+        border: 1px solid #3d4d65 !important;
+        color: #ffffff !important;
+        border-radius: 6px;
+        padding: 8px 12px;
+        transition: border 0.3s ease;
+    }
+
+    /* 4. Orange Focus State */
+    div.form-row input:focus {
+        border-color: #ff6b00 !important;
+        outline: none;
+        box-shadow: 0 0 5px rgba(255, 107, 0, 0.4);
+    }
+
+    /* 5. Fix the Labels */
+    .form-row label {
+        color: #a0aec0 !important;
+        font-weight: 600;
+        width: 160px !important;
+    }
+
+    /* 6. Style the "Save" Buttons at the bottom */
+    .submit-row {
+        background: #0f1c2e !important;
+        border: none !important;
+        padding: 20px !important;
+        border-radius: 0 0 12px 12px;
+    }
+
+    .submit-row input[type="submit"] {
+        background: #ff6b00 !important;
+        border-radius: 25px !important;
+        padding: 10px 25px !important;
+        font-weight: bold;
+    }
+
+    .submit-row input[name="_save"]:hover {
+        background: #e65a00 !important;
+    }
+
+    /* 7. Style the Delete anchor link as a danger pill button */
+    .submit-row a.deletelink {
+        display: inline-block;
+        padding: 10px 25px;
+        background: #dc2626;
+        color: #ffffff !important;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: bold;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.875rem;
+        line-height: normal;
+        height: auto;
+        border: none;
+        transition: background 0.2s ease-in-out, transform 0.15s;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .submit-row a.deletelink:hover {
+        background: #b91c1c;
+        color: #ffffff !important;
+        transform: translateY(-1px);
+    }
+
+    /* 8. Fix button text overflow — prevents clipping on "No, take me back" etc. */
+    .button,
+    .cancel-link,
+    .deletelink,
+    .submit-row a.closelink {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+
+        /* Crucial fixes */
+        width: auto !important;        /* Lets button grow with its text */
+        min-width: 140px;              /* Ensures a professional minimum size */
+        height: auto !important;       /* Prevents vertical clipping */
+        padding: 10px 24px !important; /* Adds breathing room around text */
+
+        white-space: nowrap;           /* Keeps long text on one line */
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    /* Grey "No, take me back" cancel button */
+    .cancel-link {
+        background-color: #334155 !important; /* Slate-700 — visible on dark theme */
+        color: #ffffff !important;
+        border-radius: 25px !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .cancel-link:hover {
+        background-color: #475569 !important; /* Slate-600 on hover */
+        color: #ffffff !important;
+        transform: translateY(-1px);
+    }
+
+    /* Quick fix for Help Text */
+    .help {
+        color: #718096 !important;
+    }
+</style>
 {% endblock %}
 
-{% block branding %}
-    <h1 id="site-name"><a href="{% url 'admin:index' %}">
-        <span style="color: #FF8C00;">&#43;</span> VitalBook Admin
-    </a></h1>
+{% block extrahead %}
+{{ block.super }}
+
+{% if extra_css %}{{ extra_css }}{% endif %}
+
+<script>
+    // This runs instantly before the page even finishes rendering
+    const currentPath = window.location.pathname;
+
+    // Check if we are exactly on the main dashboard
+    if (currentPath === '/admin/') {
+        // Tell Django's native script to keep the sidebar CLOSED
+        localStorage.setItem('django.admin.navSidebarIsOpen', 'false');
+    } else {
+        // On any other page (like Billings, Patients, etc.), tell Django to keep it OPEN
+        localStorage.setItem('django.admin.navSidebarIsOpen', 'true');
+    }
+</script>
+
+
+<style>
+    /* ══════════════════════════════════════════════════════════
+   VITALBOOK ADMIN — POLISHED DARK THEME v3
+   Navy (#0B192C) + Orange (#F97316) + Inter font
+   ══════════════════════════════════════════════════════════ */
+
+    /* 0. CSS Variables */
+    :root {
+        --n900: #060F1E;
+        --n800: #0B192C;
+        --n700: #0E2038;
+        --n600: #112B46;
+        --n500: #163554;
+        --n400: #1A3C5E;
+        --n300: #244d78;
+        --s300: #CBD5E1;
+        --s400: #94A3B8;
+        --s500: #64748B;
+        --or: #F97316;
+        --or2: #EA580C;
+        --or-d: rgba(249, 115, 22, 0.12);
+        --bdr: rgba(255, 255, 255, 0.07);
+        --r: 14px;
+        /* Global border-radius - soft curves */
+        --r-lg: 18px;
+        --font: 'Inter', -apple-system, sans-serif;
+        --sh: 0 4px 24px rgba(0, 0, 0, 0.3);
+        --sh-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    /* 0. Reset */
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    html,
+    body {
+        font-family: var(--font) !important;
+        background: var(--n800) !important;
+        background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 16v8M16 20h8' stroke='rgba(255,255,255,0.022)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+        color: var(--s300) !important;
+        -webkit-font-smoothing: antialiased !important;
+    }
+
+    a {
+        color: var(--or);
+        text-decoration: none;
+        transition: color .2s;
+    }
+
+    a:hover {
+        color: var(--or2);
+    }
+
+    /* ── 1. HEADER / TOP NAV ── */
+    /* --- ADMIN HEADER SPACING FIX --- */
+    #header {
+        /* 1. Spacing: Matches the 16px padding from your user site */
+        padding: 16px 40px !important; 
+        
+        /* 2. Alignment: Centers the logo and admin links perfectly */
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        height: auto !important;
+        
+        /* 3. Color: Matches the exact #0b3b60 from your user navbar */
+        background: #0b3b60 !important;
+        border-bottom: 2px solid #ff8c00 !important; /* The VitalBook Orange line */
+        box-shadow: var(--sh) !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 1000 !important;
+    }
+
+    /* Make the top "Home > Appt" breadcrumb bar look cleaner with the new spacing */
+    #header + nav {
+        background: #082d47 !important; /* Slightly darker navy for the sub-bar */
+        padding: 8px 40px !important;
+    }
+
+    /* Ensure the branding (logo) doesn't have extra margins */
+    #branding {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    /* Logo */
+    #branding h1 {
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 1.25rem !important;
+        font-weight: 800 !important;
+    }
+
+    #branding a {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        text-decoration: none !important;
+        color: #FFFFFF !important;
+        font-size: 19px !important;
+        font-weight: 800 !important;
+        letter-spacing: -.4px !important;
+    }
+
+    .logo-box {
+        background: var(--or) !important;
+        width: 34px !important;
+        height: 34px !important;
+        border-radius: 8px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: #fff !important;
+        font-size: 16px !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Align the "Dashboard / ADMIN" links on the right */
+    .header-right-actions {
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 20px;
+    }
+
+    .nav-btn {
+        color: #F8FAFC !important;
+        /* Made it brighter white to match your public site 'Home' button */
+        text-decoration: none !important;
+        font-weight: 600 !important;
+        font-size: 15px !important;
+        /* Slightly larger text */
+        transition: color 0.2s !important;
+    }
+
+    /* --- 2. THE DROPDOWN BUTTON --- */
+    /* Remove the pill border so it looks like plain text with an arrow, matching your public site */
+    .user-dropdown-toggle {
+        background-color: transparent !important;
+        border: none !important;
+        color: #F8FAFC !important;
+        padding: 0 !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    /* --- 3. THE DROPDOWN MENU FIX --- */
+    .dropdown-menu {
+        display: none;
+        /* Hidden by default */
+        position: absolute;
+        right: 0;
+        top: 150%;
+        background-color: #101929;
+        min-width: 180px;
+        border: 1px solid #1E293B;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        flex-direction: column;
+        /* Ready to stack nicely */
+    }
+
+    /* The Javascript class that actually shows the menu */
+    .dropdown-menu.show-menu {
+        display: flex !important;
+    }
+
+    /* Menu Links */
+    .dropdown-menu a {
+        color: #cbd5e1 !important;
+        padding: 12px 16px !important;
+        text-decoration: none !important;
+        font-size: 13px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        transition: background 0.2s !important;
+        border-bottom: 1px solid #1E293B !important;
+    }
+
+    .dropdown-menu a:last-child {
+        border-bottom: none !important;
+    }
+
+    .dropdown-menu a:hover {
+        background-color: #1E293B !important;
+        color: #F8FAFC !important;
+    }
+
+
+    /* ── 2. PENDING NOTIFICATION BAR ── */
+    #pending-notification-bar {
+        display: none;
+        background: linear-gradient(90deg, rgba(249, 115, 22, .1), rgba(249, 115, 22, .04));
+        color: #FCD34D;
+        padding: 8px 36px;
+        font-size: 13px;
+        font-weight: 600;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        border-bottom: 1px solid rgba(249, 115, 22, .2);
+    }
+
+    #pending-notification-bar a {
+        color: #fff !important;
+        text-decoration: underline;
+        font-weight: 700;
+    }
+
+    .pending-bell {
+        animation: bell-shake 1.8s ease infinite;
+        display: inline-block;
+    }
+
+    @keyframes bell-shake {
+
+        0%,
+        100% {
+            transform: rotate(0)
+        }
+
+        20% {
+            transform: rotate(-10deg)
+        }
+
+        40% {
+            transform: rotate(10deg)
+        }
+
+        60% {
+            transform: rotate(-5deg)
+        }
+
+        80% {
+            transform: rotate(5deg)
+        }
+    }
+
+    #pending-notification-bar button {
+        background: none;
+        border: 1px solid rgba(255, 255, 255, .2);
+        color: #fff;
+        padding: 4px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-family: var(--font);
+    }
+
+    #pending-notification-bar button:hover {
+        background: rgba(255, 255, 255, .1);
+    }
+
+    /* ── 3. LAYOUT — full width, no cut-off ── */
+    #container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        width: 100% !important;
+        max-width: 100vw !important;
+        overflow-x: hidden;
+    }
+
+    .main.shifted {
+        display: flex !important;
+        flex: 1;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .main {
+        display: flex !important;
+        flex: 1;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    #content {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 1 !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Force absolutely all changelist components to snap to full width and eliminate centering margins */
+    #content-main,
+    #changelist-form,
+    .changelist-form-container,
+    .changelist-form-container>div,
+    .results,
+    #result_list {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        display: block !important;
+    }
+
+    /* OVERRIDE DJANGO'S NATIVE FILTER CALC(100% - 270PX) WITH MAX SPECIFICITY */
+    #changelist .changelist-form-container:has(#changelist-filter)>div,
+    #changelist .changelist-form-container:not(:has(#changelist-filter))>div {
+        max-width: 100% !important;
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+
+    #changelist {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        display: block !important;
+    }
+
+    #result_list {
+        display: table !important;
+    }
+
+    #toolbar,
+    .actions {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* When sidebar is hidden, content takes full width */
+    .main:not(.shifted) #content {
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    /* ── 4. SIDEBAR TOGGLE BUTTON ── */
+    /* Django renders a toggle button with class .sticky or a toggle icon — style it */
+    #nav-sidebar-toggle,
+    .sidebar-toggle,
+    button[aria-controls="nav-sidebar"] {
+        background: var(--n600) !important;
+        border: 1px solid var(--bdr) !important;
+        border-radius: 8px !important;
+        color: var(--s400) !important;
+        padding: 6px 10px !important;
+        cursor: pointer !important;
+        font-size: 16px !important;
+        transition: all .2s !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    #nav-sidebar-toggle:hover,
+    .sidebar-toggle:hover,
+    button[aria-controls="nav-sidebar"]:hover {
+        background: var(--n500) !important;
+        color: #fff !important;
+    }
+
+    /* The «/» collapse toggle rendered by Django as a span/div */
+    #toggle-nav-sidebar,
+    .toggle-nav-sidebar {
+        background: var(--n700) !important;
+        border: none !important;
+        border-right: 1px solid var(--bdr) !important;
+        color: var(--s400) !important;
+        width: 24px !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 14px !important;
+        transition: all .2s !important;
+        padding: 0 !important;
+    }
+
+    #toggle-nav-sidebar:hover,
+    .toggle-nav-sidebar:hover {
+        color: var(--or) !important;
+    }
+
+    /* ── 5. LEFT SIDEBAR ── */
+    #nav-sidebar,
+    div#nav-sidebar,
+    .main #nav-sidebar,
+    .main.shifted #nav-sidebar {
+        background: var(--n700) !important;
+        background-color: var(--n700) !important;
+        width: 240px !important;
+        min-width: 240px !important;
+        flex-shrink: 0 !important;
+        border-right: 1px solid var(--bdr) !important;
+        padding: 20px 12px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        height: calc(100vh - 60px) !important;
+        position: sticky !important;
+        top: 60px !important;
+        scrollbar-width: thin !important;
+        scrollbar-color: var(--n400) transparent !important;
+        box-shadow: none !important;
+    }
+
+    #nav-sidebar::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    #nav-sidebar::-webkit-scrollbar-thumb {
+        background: var(--n400);
+        border-radius: 4px;
+    }
+
+    /* Sidebar filter/search input */
+    #nav-sidebar input[type="search"],
+    #nav-sidebar input[type="text"] {
+        background: var(--n800) !important;
+        color: #fff !important;
+        border: 1px solid var(--n400) !important;
+        border-radius: var(--r) !important;
+        padding: 8px 12px !important;
+        font-size: 13px !important;
+        width: 100% !important;
+        margin-bottom: 14px !important;
+        font-family: var(--font) !important;
+        outline: none !important;
+        box-sizing: border-box !important;
+    }
+
+    #nav-sidebar input[type="search"]:focus,
+    #nav-sidebar input[type="text"]:focus {
+        border-color: var(--or) !important;
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, .15) !important;
+    }
+
+    #nav-sidebar input::placeholder {
+        color: var(--s500) !important;
+    }
+
+    /* ----- HIDE unwanted sidebar items ----- */
+    /* Remove OTP Verifications and Payments from sidebar */
+    #nav-sidebar th a[href*="otpverification"],
+    #nav-sidebar th a[href*="otpverification"]~*,
+    #nav-sidebar th a[href*="payment"] {
+        display: none !important;
+    }
+
+    /* Hide the entire <tr> containing those links */
+    #nav-sidebar tr:has(th a[href*="otpverification"]),
+    #nav-sidebar tr:has(th a[href*="payment"]) {
+        display: none !important;
+    }
+
+    /* Sidebar content panels (the white rectangles in screenshot) */
+    #nav-sidebar .module {
+        margin-bottom: 6px !important;
+        background: var(--n600) !important;
+        border-radius: var(--r-lg) !important;
+        border: 1px solid var(--bdr) !important;
+        overflow: hidden !important;
+    }
+
+    /* Section caption */
+    #nav-sidebar .module {
+        margin-bottom: 6px !important;
+    }
+
+    #nav-sidebar caption {
+        display: block !important;
+        padding: 14px 10px 6px !important;
+        background: transparent !important;
+        text-align: left !important;
+    }
+
+    #nav-sidebar caption a {
+        color: var(--s500) !important;
+        font-size: 10px !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1.3px !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+    }
+
+    #nav-sidebar caption a:hover {
+        color: var(--or) !important;
+    }
+
+    /* Hide appointment app caption (items shown directly) */
+    #nav-sidebar .app-appointment caption,
+    #nav-sidebar .app-hospital caption {
+        display: none !important;
+    }
+
+    /* Table structure — strip all default row/cell backgrounds */
+    #nav-sidebar table {
+        width: 100% !important;
+        border-spacing: 0 !important;
+        background: transparent !important;
+    }
+
+    #nav-sidebar tbody {
+        background: transparent !important;
+    }
+
+    #nav-sidebar tr {
+        background: transparent !important;
+    }
+
+    #nav-sidebar tr:nth-child(even),
+    #nav-sidebar tr:nth-child(odd) {
+        background: transparent !important;
+    }
+
+    #nav-sidebar td {
+        display: none !important;
+        background: transparent !important;
+    }
+
+    #nav-sidebar th {
+        padding: 2px 0 !important;
+        border: none !important;
+        display: block !important;
+        background: transparent !important;
+    }
+
+    /* Nav pill */
+    #nav-sidebar th a {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 10px !important;
+        color: var(--s400) !important;
+        padding: 10px 14px !important;
+        border-radius: var(--r) !important;
+        text-decoration: none !important;
+        font-size: 13.5px !important;
+        font-weight: 500 !important;
+        margin-bottom: 3px !important;
+        background: transparent !important;
+        border: none !important;
+        transition: background .18s, color .18s, transform .15s !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    #nav-sidebar th a:hover {
+        background: rgba(249, 115, 22, .1) !important;
+        color: var(--or) !important;
+        transform: translateX(3px) !important;
+    }
+
+    /* Active — solid orange */
+    #nav-sidebar .current-model th a,
+    #nav-sidebar th a[aria-current="page"] {
+        background: var(--or) !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+    }
+
+    #nav-sidebar .current-model th a:hover,
+    #nav-sidebar th a[aria-current="page"]:hover {
+        background: var(--or2) !important;
+        transform: none !important;
+    }
+
+    /* Icons */
+    #nav-sidebar th a::before {
+        font-family: "Font Awesome 6 Free";
+        font-size: 13px;
+        width: 16px;
+        text-align: center;
+        flex-shrink: 0;
+        opacity: .8;
+    }
+
+    #nav-sidebar th a[href*="appointment"]::before {
+        content: "\f274";
+        font-weight: 400;
+    }
+
+    #nav-sidebar th a[href*="billing"]::before {
+        content: "\f15c";
+        font-weight: 400;
+    }
+
+    #nav-sidebar th a[href*="contactmessage"]::before {
+        content: "\f4ad";
+        font-weight: 400;
+    }
+
+    #nav-sidebar th a[href*="doctor"]::before {
+        content: "\f0f0";
+        font-weight: 400;
+    }
+
+    #nav-sidebar th a[href*="patient"]::before {
+        content: "\f0c0";
+        font-weight: 400;
+    }
+
+    #nav-sidebar th a[href*="prescription"]::before {
+        content: "\f0f9";
+        font-weight: 400;
+    }
+
+    #nav-sidebar th a[href*="review"]::before {
+        content: "\f005";
+        font-weight: 400;
+    }
+
+    #nav-sidebar th a[href*="specialization"]::before {
+        content: "\f7d9";
+        font-weight: 900;
+    }
+
+    #nav-sidebar th a[href*="group"]::before {
+        content: "\f0c0";
+        font-weight: 400;
+    }
+
+    #nav-sidebar th a[href*="user"]::before {
+        content: "\f007";
+        font-weight: 400;
+    }
+
+    /* ── 6. MAIN CONTENT AREA — full width, no cut-off ── */
+    #content {
+        flex: 1 !important;
+        padding: 28px 32px 28px 32px !important;
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+        min-height: calc(100vh - 60px) !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    #content-main {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    #content h1 {
+        color: #fff !important;
+        font-size: 20px !important;
+        font-weight: 700 !important;
+        margin: 0 0 18px !important;
+        letter-spacing: -.3px !important;
+    }
+
+    /* ── 7. BREADCRUMBS ── */
+    .breadcrumbs {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        background: var(--n700) !important;
+        border: 1px solid var(--bdr) !important;
+        border-radius: var(--r-lg) !important;
+        padding: 10px 18px !important;
+        margin-bottom: 20px !important;
+        font-size: 13px !important;
+        color: var(--s400) !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.18) !important;
+    }
+
+    .breadcrumbs a {
+        color: var(--or) !important;
+        font-weight: 600 !important;
+        text-decoration: none !important;
+        transition: color .2s !important;
+        padding: 2px 6px !important;
+        border-radius: 4px !important;
+    }
+
+    .breadcrumbs a:hover {
+        color: #fff !important;
+        background: rgba(249,115,22,0.15) !important;
+    }
+
+    /* The › separators */
+    .breadcrumbs > * {
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+
+    /* Style the plain text (current page) */
+    .breadcrumbs > *:last-child {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }
+
+    .dashboard .breadcrumbs {
+        display: none !important;
+    }
+
+    /* ── 8. "ADD" BUTTON (top-right of changelist) ── */
+    .object-tools {
+        margin: 0 0 14px !important;
+        float: none !important;
+        text-align: right !important;
+    }
+
+    .object-tools a.addlink,
+    .object-tools li a {
+        background: var(--or) !important;
+        color: #fff !important;
+        border: none !important;
+        border-radius: var(--r) !important;
+        padding: 9px 18px !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        font-family: var(--font) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        transition: all .2s !important;
+    }
+
+    .object-tools a.addlink:hover,
+    .object-tools li a:hover {
+        background: var(--or2) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* ── 9. TOOLBAR / SEARCH BAR ── */
+    #toolbar {
+        background: var(--n600) !important;
+        border: 1px solid var(--bdr) !important;
+        border-radius: var(--r-lg) !important;
+        padding: 14px 16px !important;
+        margin-bottom: 14px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        flex-wrap: wrap !important;
+    }
+
+    #toolbar form {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex: 1 !important;
+    }
+
+    #toolbar label {
+        color: var(--s400) !important;
+        font-size: 13px !important;
+        white-space: nowrap !important;
+    }
+
+    /* Search input — same height as button */
+    #toolbar input[type="text"] {
+        background: var(--n800) !important;
+        color: #fff !important;
+        border: 1px solid var(--n400) !important;
+        border-radius: var(--r) !important;
+        padding: 9px 14px !important;
+        font-size: 13.5px !important;
+        font-family: var(--font) !important;
+        height: 40px !important;
+        /* ← Fixed height to match button */
+        flex: 1 !important;
+        min-width: 160px !important;
+        max-width: 340px !important;
+        transition: border-color .2s, box-shadow .2s !important;
+        outline: none !important;
+    }
+
+    #toolbar input[type="text"]:focus {
+        border-color: var(--or) !important;
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, .15) !important;
+    }
+
+    #toolbar input[type="text"]::placeholder {
+        color: var(--s500) !important;
+    }
+
+    /* Search button — same height */
+    #toolbar input[type="submit"] {
+        background: var(--or) !important;
+        color: #fff !important;
+        border: none !important;
+        border-radius: var(--r) !important;
+        padding: 0 20px !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        font-family: var(--font) !important;
+        cursor: pointer !important;
+        height: 40px !important;
+        /* ← Same height as input */
+        white-space: nowrap !important;
+        transition: background .2s !important;
+    }
+
+    #toolbar input[type="submit"]:hover {
+        background: var(--or2) !important;
+    }
+
+    /* ── 10. DATE HIERARCHY (‹ All dates / March 2026 etc.) ── */
+    /* This shows up above the result list in changelist */
+    .xfull,
+    #changelist .xfull,
+    .date-hierarchy,
+    #changelist-filter p,
+    div[class*="date-hierarchy"],
+    ul.toplinks {
+        background: var(--n600) !important;
+        border: 1px solid var(--bdr) !important;
+        border-radius: var(--r-lg) !important;
+        padding: 12px 16px !important;
+        margin-bottom: 14px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0 !important;
+        flex-wrap: wrap !important;
+    }
+
+    ul.toplinks {
+        list-style: none !important;
+        gap: 6px !important;
+    }
+
+    ul.toplinks li {
+        display: inline !important;
+    }
+
+    ul.toplinks li a,
+    .date-hierarchy a {
+        color: var(--s400) !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        padding: 5px 12px !important;
+        border-radius: 20px !important;
+        background: rgba(255, 255, 255, .06) !important;
+        border: 1px solid var(--bdr) !important;
+        transition: all .2s !important;
+        text-decoration: none !important;
+        display: inline-block !important;
+    }
+
+    ul.toplinks li a:hover,
+    .date-hierarchy a:hover,
+    ul.toplinks li.selected a {
+        background: var(--or-d) !important;
+        color: var(--or) !important;
+    }
+
+    ul.toplinks li.this-month a {
+        background: var(--or-d) !important;
+        color: var(--or) !important;
+    }
+
+    /* The ‹ back arrow pill */
+    ul.toplinks li.back-arrow a,
+    .date-hierarchy .back {
+        color: var(--s400) !important;
+    }
+
+    ul.toplinks .separator {
+        color: var(--s500) !important;
+        padding: 0 4px !important;
+    }
+
+    /* ── 11. ACTIONS BAR ── */
+    .actions {
+        background: var(--n600) !important;
+        border: 1px solid var(--bdr) !important;
+        border-radius: var(--r) !important;
+        padding: 10px 16px !important;
+        margin-bottom: 12px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        flex-wrap: wrap !important;
+    }
+
+    .actions p {
+        margin: 0 !important;
+        color: var(--s400) !important;
+        font-size: 13px !important;
+    }
+
+    .actions label {
+        color: var(--s400) !important;
+        font-size: 13px !important;
+        white-space: nowrap !important;
+    }
+
+    .actions select {
+        background: var(--n800) !important;
+        color: #fff !important;
+        border: 1px solid var(--n400) !important;
+        border-radius: var(--r) !important;
+        padding: 0 12px !important;
+        font-size: 13px !important;
+        font-family: var(--font) !important;
+        height: 38px !important;
+        cursor: pointer !important;
+    }
+
+    .actions button,
+    .actions input[type="submit"] {
+        background: var(--n500) !important;
+        color: #fff !important;
+        border: 1px solid var(--n400) !important;
+        border-radius: var(--r) !important;
+        padding: 0 16px !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        font-family: var(--font) !important;
+        cursor: pointer !important;
+        height: 38px !important;
+        transition: background .2s !important;
+    }
+
+    .actions button:hover,
+    .actions input[type="submit"]:hover {
+        background: var(--or) !important;
+        border-color: var(--or) !important;
+    }
+
+    .actions .action-counter {
+        color: var(--s400) !important;
+        font-size: 12.5px !important;
+    }
+
+    /* ── 12. RESULT TABLE ── */
+    #result_list {
+        width: 100% !important;
+        background: var(--n600) !important;
+        border: 1px solid var(--bdr) !important;
+        border-radius: var(--r-lg) !important;
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+        overflow: hidden !important;
+    }
+
+    #result_list thead {
+        background: var(--n700) !important;
+    }
+
+    #result_list thead tr {
+        background: transparent !important;
+    }
+
+    #result_list thead th {
+        background: transparent !important;
+        color: var(--or) !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: .8px !important;
+        padding: 13px 16px !important;
+        border-bottom: 1px solid var(--bdr) !important;
+        white-space: nowrap !important;
+        border-right: none !important;
+        border-left: none !important;
+    }
+
+    #result_list thead th a {
+        color: var(--or) !important;
+    }
+
+    #result_list thead th a:hover {
+        color: var(--or) !important;
+    }
+
+    #result_list thead th.sorted a,
+    #result_list thead th.sorted {
+        color: var(--or) !important;
+    }
+
+    #result_list thead th input[type="checkbox"] {
+        accent-color: var(--or);
+    }
+
+    #result_list tbody tr {
+        background: transparent !important;
+        transition: background .15s !important;
+    }
+
+    #result_list tbody tr:nth-child(even) {
+        background: rgba(255, 255, 255, .02) !important;
+    }
+
+    #result_list tbody tr:hover td,
+    #result_list tbody tr:hover th {
+        background: rgba(249, 115, 22, .06) !important;
+    }
+
+    #result_list tbody td,
+    #result_list tbody th {
+        background: transparent !important;
+        color: var(--s300) !important;
+        font-size: 13.5px !important;
+        padding: 13px 16px !important;
+        border-bottom: 1px solid rgba(255, 255, 255, .045) !important;
+        vertical-align: middle !important;
+        border-right: none !important;
+        border-left: none !important;
+        border-top: none !important;
+    }
+
+    #result_list tbody tr:last-child td,
+    #result_list tbody tr:last-child th {
+        border-bottom: none !important;
+    }
+
+    #result_list tbody th {
+        padding-left: 18px !important;
+    }
+
+    #result_list tbody th a {
+        color: #fff !important;
+        font-weight: 600 !important;
+    }
+
+    #result_list tbody th a:hover {
+        color: var(--or) !important;
+    }
+
+    #result_list tbody td a {
+        color: #93C5FD !important;
+        font-weight: 500 !important;
+    }
+
+    #result_list tbody td a:hover {
+        color: var(--or) !important;
+    }
+
+    #result_list tbody input[type="checkbox"] {
+        accent-color: var(--or);
+    }
+
+    /* ── 13. PAGINATOR ── */
+    .paginator {
+        background: var(--n600) !important;
+        border: 1px solid var(--bdr) !important;
+        border-radius: var(--r) !important;
+        padding: 11px 20px !important;
+        margin-top: 10px !important;
+        color: var(--s400) !important;
+        font-size: 13px !important;
+        display: flex !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+    }
+
+    .paginator a {
+        color: var(--or) !important;
+        font-weight: 600 !important;
+        padding: 3px 9px !important;
+        border-radius: 6px !important;
+    }
+
+    .paginator a:hover {
+        background: var(--or-d) !important;
+    }
+
+    .paginator .this-page {
+        background: var(--or) !important;
+        color: #fff !important;
+        border-radius: 6px !important;
+        padding: 3px 9px !important;
+        font-weight: 700 !important;
+    }
+
+    .paginator li {
+        display: inline !important;
+    }
+
+    /* ── 14. HIDE OLD FILTER SIDEBAR COMPLETELY ── */
+    #changelist-filter {
+        display: none !important;
+    }
+
+    .filtered #changelist {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    .results {
+        width: 100% !important;
+    }
+
+    /* ── 14b. FILTER BUTTON (in toolbar, right side) ── */
+    #filter-trigger-btn {
+        background: var(--n500) !important;
+        color: var(--s300) !important;
+        border: 1px solid var(--bdr) !important;
+        border-radius: var(--r) !important;
+        padding: 0 16px !important;
+        height: 40px !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        font-family: var(--font) !important;
+        cursor: pointer !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        transition: all .2s !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+    }
+
+    #filter-trigger-btn:hover {
+        background: var(--or) !important;
+        color: #fff !important;
+        border-color: var(--or) !important;
+    }
+
+    #filter-trigger-btn .filter-badge {
+        background: var(--or) !important;
+        color: #fff !important;
+        border-radius: 50% !important;
+        width: 18px !important;
+        height: 18px !important;
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    #filter-trigger-btn .filter-badge {
+        display: none !important;
+    }
+
+    #filter-trigger-btn.has-filters .filter-badge {
+        display: inline-flex !important;
+    }
+
+    /* ── 14c. MODAL FILTER POPUP ── */
+    #filter-modal-overlay {
+        display: none !important;
+        position: fixed !important;
+        inset: 0 !important;
+        z-index: 10000 !important;
+        background: rgba(6, 15, 30, 0.7) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    #filter-modal-overlay.open {
+        display: flex !important;
+    }
+
+    #filter-modal {
+        background: var(--n700) !important;
+        border: 1px solid var(--bdr) !important;
+        border-radius: var(--r-lg) !important;
+        width: 95% !important;
+        max-width: 520px !important;
+        max-height: 85vh !important;
+        overflow-y: auto !important;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5) !important;
+        animation: modalIn .2s ease !important;
+    }
+
+    @keyframes modalIn {
+        from {
+            opacity: 0;
+            transform: translateY(12px) scale(.97);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    #filter-modal-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 18px 24px !important;
+        border-bottom: 1px solid var(--bdr) !important;
+        background: var(--n800) !important;
+        border-radius: var(--r-lg) var(--r-lg) 0 0 !important;
+    }
+
+    #filter-modal-header h3 {
+        color: #fff !important;
+        font-size: 16px !important;
+        font-weight: 700 !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    #filter-modal-header h3::before {
+        content: "\f0b0";
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        color: var(--or);
+        font-size: 14px;
+    }
+
+    #filter-modal-close {
+        background: none !important;
+        border: none !important;
+        color: var(--s400) !important;
+        font-size: 18px !important;
+        cursor: pointer !important;
+        padding: 4px 8px !important;
+        border-radius: 6px !important;
+        transition: all .15s !important;
+    }
+
+    #filter-modal-close:hover {
+        background: var(--n600) !important;
+        color: #fff !important;
+    }
+
+    #filter-modal-body {
+        padding: 20px 24px !important;
+    }
+
+    .filter-section {
+        margin-bottom: 18px !important;
+    }
+
+    .filter-section:last-child {
+        margin-bottom: 0 !important;
+    }
+
+    .filter-section label {
+        display: block !important;
+        color: var(--s400) !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: .8px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .filter-section select,
+    .filter-section input[type="date"] {
+        width: 100% !important;
+        background: var(--n800) !important;
+        color: #F8FAFC !important;
+        border: 1px solid var(--n400) !important;
+        border-radius: 6px !important;
+        padding: 10px 14px !important;
+        font-size: 14px !important;
+        font-family: var(--font) !important;
+        line-height: normal !important;
+        outline: none !important;
+        transition: border-color .2s, box-shadow .2s !important;
+        box-sizing: border-box !important;
+        min-height: 42px !important;
+    }
+
+    /* Fix for Windows Chrome where text shrinks if padding is added to native selects */
+    .filter-section select {
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23CBD5E1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 12px center !important;
+        background-size: 16px !important;
+        padding-right: 36px !important;
+        /* Space for the custom arrow */
+    }
+
+    .filter-section select:focus,
+    .filter-section input[type="date"]:focus {
+        border-color: var(--or) !important;
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, .15) !important;
+    }
+
+    .filter-section select option {
+        background: var(--n800) !important;
+        color: #F8FAFC !important;
+        font-size: 14px !important;
+        padding: 10px !important;
+    }
+
+    .filter-row {
+        display: flex !important;
+        gap: 12px !important;
+    }
+
+    .filter-row .filter-section {
+        flex: 1 !important;
+    }
+
+    #filter-modal-footer {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 16px 24px !important;
+        border-top: 1px solid var(--bdr) !important;
+        background: var(--n800) !important;
+        border-radius: 0 0 var(--r-lg) var(--r-lg) !important;
+    }
+
+    #filter-apply-btn {
+        background: var(--or) !important;
+        color: #fff !important;
+        border: none !important;
+        border-radius: var(--r) !important;
+        padding: 10px 24px !important;
+        font-size: 13.5px !important;
+        font-weight: 600 !important;
+        font-family: var(--font) !important;
+        cursor: pointer !important;
+        transition: all .2s !important;
+    }
+
+    #filter-apply-btn:hover {
+        background: var(--or2) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    #filter-clear-btn {
+        background: transparent !important;
+        color: var(--s400) !important;
+        border: 1px solid var(--bdr) !important;
+        border-radius: var(--r) !important;
+        padding: 10px 20px !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        font-family: var(--font) !important;
+        cursor: pointer !important;
+        transition: all .2s !important;
+    }
+
+    #filter-clear-btn:hover {
+        background: var(--n600) !important;
+        color: #fff !important;
+    }
+
+    /* ── 14d. MODAL FILTER INPUT READABILITY (appointment modal-* IDs) ── */
+    #modal-status,
+    #modal-specialization,
+    #modal-payment,
+    #modal-date-from,
+    #modal-date-to {
+        background-color: #1E293B !important;
+        border: 1px solid #475569 !important;
+        color: #F8FAFC !important;
+    }
+
+    #modal-status:focus,
+    #modal-specialization:focus,
+    #modal-payment:focus,
+    #modal-date-from:focus,
+    #modal-date-to:focus {
+        border-color: var(--or) !important;
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, .18) !important;
+        outline: none !important;
+    }
+
+    #modal-status option,
+    #modal-specialization option,
+    #modal-payment option {
+        color: #F8FAFC !important;
+        background-color: #0F172A !important;
+        font-size: 16px !important;
+        padding: 10px !important;
+    }
+
+    /* Date picker calendar icon — makes the dark icon visible on dark bg */
+    #modal-date-from::-webkit-calendar-picker-indicator,
+    #modal-date-to::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+        opacity: 0.7;
+        cursor: pointer;
+    }
+
+
+
+    /* ── 15. CHANGELIST LAYOUT & Premium Buttons ── */
+
+    /* --- PREMIUM STATUS BADGES (Dark Mode Optimized) --- */
+    .saas-badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 4px 12px !important;
+        border-radius: 9999px !important;
+        /* Perfect pill shape */
+        font-size: 11.5px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    /* Success Badge (Soft glowing green) */
+    .saas-badge.badge-success {
+        background-color: rgba(34, 197, 94, 0.15) !important;
+        color: #4ADE80 !important;
+        border: 1px solid rgba(34, 197, 94, 0.3) !important;
+    }
+
+    /* Danger Badge (Soft glowing red) */
+    .saas-badge.badge-danger {
+        background-color: rgba(239, 68, 68, 0.15) !important;
+        color: #F87171 !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    }
+
+    /* Warning Badge (Soft glowing orange) */
+    .saas-badge.badge-warning {
+        background-color: rgba(250, 204, 21, 0.15) !important;
+        color: #FACC15 !important;
+        border: 1px solid rgba(250, 204, 21, 0.3) !important;
+    }
+
+    /* Info Badge (Soft glowing blue) */
+    .saas-badge.badge-info {
+        background-color: rgba(56, 189, 248, 0.15) !important;
+        color: #38BDF8 !important;
+        border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    }
+
+    /* Neutral Badge (In case you need it for 'Pending' or 'Draft') */
+    .saas-badge.badge-neutral {
+        background-color: rgba(148, 163, 184, 0.15) !important;
+        color: #94A3B8 !important;
+        border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    }
+
+
+    /* --- PREMIUM PAYMENT INDICATORS --- */
+    .payment-status {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+    }
+
+    /* Ensure the icons look crisp next to the text */
+    .payment-status i {
+        font-size: 14px !important;
+    }
+
+    .text-success {
+        color: #4ADE80 !important;
+        /* Bright crisp green */
+    }
+
+    .text-danger {
+        color: #F87171 !important;
+        /* Bright crisp red */
+    }
+
+    /* --- PREMIUM ACTION BUTTON --- */
+    .action-btn-complete {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        padding: 6px 14px !important;
+
+        /* Sleek Outline Design */
+        background-color: transparent !important;
+        color: #38BDF8 !important;
+        /* Professional crisp blue */
+        border: 1px solid #38BDF8 !important;
+        border-radius: 6px !important;
+
+        /* Typography */
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        text-decoration: none !important;
+
+        /* Smooth Hover Animation */
+        transition: all 0.2s ease-in-out !important;
+        cursor: pointer !important;
+    }
+
+    /* The Hover State (Fills with color) */
+    .action-btn-complete:hover {
+        background-color: #38BDF8 !important;
+        color: #0F172A !important;
+        /* Deep navy text for contrast */
+        box-shadow: 0 0 12px rgba(56, 189, 248, 0.2) !important;
+        border-color: #38BDF8 !important;
+    }
+
+    /* Ensure the icon spacing looks perfect */
+    .action-btn-complete i {
+        font-size: 13px !important;
+    }
+
+    /* --- PULSE DOT STATUS INDICATOR --- */
+    .status-indicator {
+        height: 10px;
+        width: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 10px;
+    }
+
+    .status-online {
+        background-color: #10b981 !important;
+        box-shadow: 0 0 8px #10b981 !important;
+        animation: pulse-green 2s infinite !important;
+    }
+
+    .status-busy {
+        background-color: #ef4444 !important;
+        opacity: 0.6 !important;
+    }
+
+    @keyframes pulse-green {
+        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    #changelist {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        display: block !important;
+    }
+
+    #changelist-form {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .changelist-form-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: block !important;
+    }
+
+    .results {
+        overflow-x: auto !important;
+        border-radius: var(--r-lg) !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* ── 16. ADD/CHANGE FORM VIEWS ── */
+    fieldset.module {
+        background: var(--n600) !important;
+        border: 1px solid var(--bdr) !important;
+        border-radius: var(--r-lg) !important;
+        margin-bottom: 20px !important;
+        overflow: hidden !important;
+        padding: 0 !important;
+    }
+
+    fieldset.module h2 {
+        background: var(--n700) !important;
+        color: #fff !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        padding: 13px 20px !important;
+        margin: 0 !important;
+        border-bottom: 1px solid var(--bdr) !important;
+        letter-spacing: .2px !important;
+    }
+
+    .form-row {
+        padding: 13px 20px !important;
+        border-bottom: 1px solid var(--bdr) !important;
+        display: flex !important;
+        align-items: flex-start !important;
+        gap: 14px !important;
+    }
+
+    .form-row:last-child {
+        border-bottom: none !important;
+    }
+
+    .form-row label,
+    label {
+        color: var(--s400) !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+    }
+
+    /* All inputs */
+    input[type="text"],
+    input[type="number"],
+    input[type="email"],
+    input[type="password"],
+    input[type="date"],
+    input[type="time"],
+    input[type="datetime-local"],
+    textarea {
+        background: var(--n800) !important;
+        border: 1px solid var(--n400) !important;
+        color: #fff !important;
+        border-radius: var(--r) !important;
+        padding: 9px 13px !important;
+        font-size: 14px !important;
+        font-family: var(--font) !important;
+        line-height: normal !important;
+        transition: border-color .2s, box-shadow .2s !important;
+        outline: none !important;
+    }
+    
+    select {
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+        background: var(--n800) !important;
+        border: 1px solid var(--n400) !important;
+        color: #fff !important;
+        border-radius: var(--r) !important;
+        padding: 0 36px 0 13px !important;
+        font-size: 14px !important;
+        font-family: var(--font) !important;
+        height: 42px !important;
+        line-height: 40px !important;
+        transition: border-color .2s, box-shadow .2s !important;
+        outline: none !important;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23CBD5E1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 12px center !important;
+        background-size: 16px !important;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+        border-color: var(--or) !important;
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, .15) !important;
+    }
+
+    textarea {
+        min-height: 90px !important;
+        resize: vertical !important;
+    }
+
+    select option {
+        background: var(--n700) !important;
+        color: #fff !important;
+    }
+
+    .help,
+    p.help {
+        color: var(--s500) !important;
+        font-size: 12px !important;
+        margin-top: 4px !important;
+    }
+
+    .errornote,
+    .errorlist li {
+        background: rgba(239, 68, 68, .1) !important;
+        border: 1px solid rgba(239, 68, 68, .25) !important;
+        color: #FCA5A5 !important;
+        border-radius: var(--r) !important;
+        padding: 10px 14px !important;
+        font-size: 13px !important;
+        margin-bottom: 12px !important;
+    }
+
+    /* ── 17. SUBMIT ROW ── */
+    .submit-row {
+        background: var(--n700) !important;
+        border: 1px solid var(--bdr) !important;
+        border-radius: var(--r-lg) !important;
+        padding: 15px 20px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        flex-wrap: wrap !important;
+        justify-content: flex-end !important;
+        margin-top: 20px !important;
+    }
+
+    .submit-row input,
+    .submit-row a {
+        border-radius: var(--r) !important;
+        padding: 10px 22px !important;
+        font-size: 13.5px !important;
+        font-weight: 600 !important;
+        font-family: var(--font) !important;
+        cursor: pointer !important;
+        transition: all .2s !important;
+        text-decoration: none !important;
+    }
+
+    .submit-row input[name="_save"],
+    .submit-row input[type="submit"] {
+        background: var(--or) !important;
+        color: #fff !important;
+        border: none !important;
+    }
+
+    .submit-row input[name="_save"]:hover {
+        background: var(--or2) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    .submit-row input[name="_addanother"] {
+        background: var(--n500) !important;
+        color: #fff !important;
+        border: 1px solid var(--bdr) !important;
+    }
+
+    .submit-row input[name="_continue"] {
+        background: transparent !important;
+        color: var(--or) !important;
+        border: 1px solid rgba(249, 115, 22, .4) !important;
+    }
+
+    .submit-row input[name="_continue"]:hover {
+        background: var(--or-d) !important;
+    }
+
+    .submit-row p {
+        display: none !important;
+    }
+
+    .deletelink {
+        background: rgba(239, 68, 68, .1) !important;
+        color: #FCA5A5 !important;
+        border: 1px solid rgba(239, 68, 68, .25) !important;
+        padding: 10px 22px !important;
+        border-radius: var(--r) !important;
+        font-weight: 600 !important;
+        font-size: 13.5px !important;
+    }
+
+    .deletelink:hover {
+        background: rgba(239, 68, 68, .2) !important;
+        color: #FECACA !important;
+    }
+
+    /* ── 18. SUCCESS/ERROR MESSAGES ── */
+    .messagelist {
+        list-style: none !important;
+        padding: 0 !important;
+        margin-bottom: 18px !important;
+    }
+
+    .messagelist li {
+        border-radius: var(--r) !important;
+        padding: 11px 16px !important;
+        font-size: 13.5px !important;
+        font-weight: 500 !important;
+        margin-bottom: 8px !important;
+    }
+
+    .messagelist .success {
+        background: rgba(16, 185, 129, .12) !important;
+        border: 1px solid rgba(16, 185, 129, .25) !important;
+        color: #6EE7B7 !important;
+    }
+
+    .messagelist .warning {
+        background: rgba(245, 158, 11, .12) !important;
+        border: 1px solid rgba(245, 158, 11, .25) !important;
+        color: #FDE68A !important;
+    }
+
+    .messagelist .error {
+        background: rgba(239, 68, 68, .12) !important;
+        border: 1px solid rgba(239, 68, 68, .25) !important;
+        color: #FCA5A5 !important;
+    }
+
+    .messagelist .info {
+        background: rgba(59, 130, 246, .12) !important;
+        border: 1px solid rgba(59, 130, 246, .25) !important;
+        color: #93C5FD !important;
+        list-style: none !important;
+    }
+
+    /* Hide the broken 'i' icon Django inserts before info messages */
+    .messagelist .info::before {
+        display: none !important;
+        content: none !important;
+    }
+
+    /* ── 19. MODULE CARDS (general) ── */
+    .module,
+    div.module {
+        background: var(--n600) !important;
+        border: 1px solid var(--bdr) !important;
+        border-radius: var(--r-lg) !important;
+    }
+
+    /* Don't affect transparent wrappers */
+    #changelist,
+    .actions,
+    .breadcrumbs,
+    .messagelist,
+    .submit-row,
+    #nav-sidebar .module {
+        background: revert;
+        border: none !important;
+        border-radius: 0 !important;
+    }
+
+    /* ── 20. INLINE TABULAR ── */
+    .tabular.inline-related thead th {
+        background: var(--n700) !important;
+        color: var(--s400) !important;
+        font-size: 11px !important;
+        text-transform: uppercase !important;
+        letter-spacing: .8px !important;
+        padding: 11px 14px !important;
+        border-bottom: 1px solid var(--bdr) !important;
+    }
+
+    .tabular.inline-related tbody td {
+        background: transparent !important;
+        border-bottom: 1px solid var(--bdr) !important;
+        padding: 10px 14px !important;
+    }
+
+    .add-row td {
+        background: var(--n700) !important;
+        padding: 10px 14px !important;
+    }
+
+    .add-row a {
+        color: var(--or) !important;
+        font-weight: 600 !important;
+    }
+
+    /* ── 21. SCROLLBARS ── */
+    ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--n400);
+        border-radius: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--n300);
+    }
+
+    /* ── 22. REMOVE ADD APPOINTMENT BUTTON ── */
+    /* Removes the "Add Appointment +" button from the Appointment changelist */
+    .model-appointment .object-tools a.addlink {
+        display: none !important;
+    }
+
+    /* ── 23. LOGIN PAGE ── */
+    body.login {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-height: 100vh !important;
+    }
+
+    #login-form {
+        background: var(--n600) !important;
+        border: 1px solid var(--bdr) !important;
+        border-radius: var(--r-lg) !important;
+        padding: 40px 36px !important;
+        width: 360px !important;
+        box-shadow: var(--sh-lg) !important;
+    }
+
+    body.login #header {
+        position: static !important;
+    }
+
+    .login .submit-row {
+        background: transparent !important;
+        border: none !important;
+        padding: 16px 0 0 !important;
+        margin: 0 !important;
+    }
+
+    .login .submit-row input[type="submit"] {
+        width: 100% !important;
+        padding: 12px !important;
+    }
+
+    /* ── FIX: Content full width, no cut-off ── */
+    #container,
+    #container>.main,
+    .main.shifted,
+    #content {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    #content {
+        padding-right: 40px !important;
+        padding-left: 40px !important;
+    }
+
+    #changelist,
+    #changelist-form,
+    .results {
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    #toolbar,
+    .actions,
+    #result_list {
+        width: 100% !important;
+        max-width: none !important;
+        box-sizing: border-box !important;
+    }
+
+    /* --- PERFECT TABLE SYMMETRY FIX --- */
+
+    /* 1. Force the table to behave */
+    #result_list {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: auto;
+    }
+
+    /* 2. Aggressively center ALL headers, cells, and specific Django text classes */
+    #result_list th,
+    #result_list td,
+    #result_list th .text,
+    #result_list td.field-name,
+    #result_list th.column-name,
+    #result_list td.field-designation {
+        text-align: center !important;
+        vertical-align: middle !important;
+        padding: 16px 20px !important;
+        border-bottom: 1px solid #1E293B;
+        white-space: nowrap;
+    }
+
+    /* 3. Ensure clickable links (like the Doctor's name) stay centered inside their cells */
+    #result_list td a {
+        display: inline-block;
+        text-align: center;
+    }
+
+    /* 4. Keep the checkbox column tightly fitted */
+    #result_list th.action-checkbox-column,
+    #result_list td.action-checkbox {
+        width: 40px;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+
+    /* 5. Improve the look of the 'Action' bar above the table */
+    .actions {
+        padding: 16px !important;
+        background-color: #101929;
+        /* Match your deep navy */
+        border-bottom: 1px solid #1E293B;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    /* 6. Clean up the pagination/save footer */
+    .paginator {
+        padding: 16px !important;
+        background-color: #101929;
+        border-top: 1px solid #1E293B;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+</style>
+
+{# ── Filter Modal + Script ── #}
+<div id="filter-modal-overlay">
+    <div id="filter-modal">
+        <div id="filter-modal-header">
+            <h3 id="filter-modal-title">Filters</h3>
+            <button id="filter-modal-close" onclick="closeFilterModal()">&times;</button>
+        </div>
+        <div id="filter-modal-body"></div>
+        <div id="filter-modal-footer">
+            <button id="filter-clear-btn" onclick="clearAllFilters()">Clear All</button>
+            <button id="filter-apply-btn" onclick="applyFilters()">Apply Filters</button>
+        </div>
+    </div>
+</div>
+<script>
+    (function () {
+        var APPT = 'appointment';
+
+        function getModel() {
+            var p = location.pathname;
+            if (p.includes('/admin/appointment/appointment/')) return APPT;
+            if (p.includes('/admin/appointment/billing/')) return 'billing';
+            if (p.includes('/admin/appointment/contactmessage/')) return 'contactmessage';
+            if (p.includes('/admin/appointment/doctor/')) return 'doctor';
+            if (p.includes('/admin/appointment/patient/')) return 'patient';
+            if (p.includes('/admin/appointment/prescription/')) return 'prescription';
+            if (p.includes('/admin/appointment/review/')) return 'review';
+            if (p.includes('/admin/appointment/specialization/')) return 'specialization';
+            if (p.includes('/admin/appointment/payment/')) return 'payment';
+            return null;
+        }
+        function countAF() {
+            var c = 0, keys = ['status', 'specialization', 'date_from', 'date_to', 'payment',
+                'billing_type', 'is_paid', 'is_read', 'gender', 'blood_group', 'rating',
+                'payment_status', 'payment_method', 'specialization__name', 'is_available',
+                'created_at__gte', 'created_at__lte', 'date__gte', 'date__lte'];
+            new URLSearchParams(location.search).forEach(function (v, k) { if (keys.indexOf(k) !== -1 && v) c++; });
+            return c;
+        }
+
+        var sp = [['Cardiology', 'Cardiology'], ['Dermatology', 'Dermatology'],
+        ['Neurology', 'Neurology'], ['Orthopedics', 'Orthopedics'],
+        ['Pediatrics', 'Pediatrics'], ['General Medicine', 'General Medicine']];
+
+        function bf(m) {
+            // Generic select builder: isModal=true uses 'modal-' prefix, false uses 'f-'
+            var sel = function (id, lb, opts, isModal) {
+                var pfx = isModal ? 'modal-' : 'f-';
+                return '<div class="filter-section"><label>' + lb + '</label>'
+                    + '<select id="' + pfx + id + '"><option value="">All</option>'
+                    + opts.map(function (o) { return '<option value="' + o[0] + '">' + o[1] + '</option>'; }).join('')
+                    + '</select></div>';
+            };
+            var dr = function (aId, aLb, bId, bLb, isModal) {
+                var pfx = isModal ? 'modal-' : 'f-';
+                return '<div class="filter-row">'
+                    + '<div class="filter-section"><label>' + aLb + '</label><input type="date" id="' + pfx + aId + '"></div>'
+                    + '<div class="filter-section"><label>' + bLb + '</label><input type="date" id="' + pfx + bId + '"></div>'
+                    + '</div>';
+            };
+            switch (m) {
+                case APPT:
+                    // modal-* IDs → matched by model-aware applyFilters & get_queryset
+                    return sel('status', 'Status', [['Pending', 'Pending'], ['Confirmed', 'Confirmed'], ['Completed', 'Completed'], ['Cancelled', 'Cancelled']], true)
+                        + sel('specialization', 'Specialization', sp, true)
+                        + dr('date-from', 'Date From', 'date-to', 'Date To', true)
+                        + sel('payment', 'Payment', [['paid', 'Paid'], ['unpaid', 'Unpaid']], true);
+                case 'billing':
+                    return sel('billing_type', 'Type', [['Consultation', 'Consultation'], ['Cancellation Fee', 'Cancellation Fee']])
+                        + sel('is_paid', 'Payment', [['True', 'Paid'], ['False', 'Unpaid']])
+                        + dr('created_at__gte', 'Date From', 'created_at__lte', 'Date To');
+                case 'contactmessage':
+                    return sel('is_read', 'Read Status', [['True', 'Read'], ['False', 'Unread']])
+                        + dr('created_at__gte', 'Date From', 'created_at__lte', 'Date To');
+                case 'doctor':
+                    return sel('specialization__name', 'Specialization', sp)
+                        + sel('is_available', 'Availability', [['True', 'Available'], ['False', 'Not Available']]);
+                case 'patient':
+                    return sel('gender', 'Gender', [['Male', 'Male'], ['Female', 'Female'], ['Other', 'Other']])
+                        + sel('blood_group', 'Blood Group', [['A+', 'A+'], ['A-', 'A-'], ['B+', 'B+'], ['B-', 'B-'], ['AB+', 'AB+'], ['AB-', 'AB-'], ['O+', 'O+'], ['O-', 'O-']])
+                        + dr('created_at__gte', 'From', 'created_at__lte', 'To');
+                case 'review':
+                    return sel('rating', 'Rating', [['5', '★★★★★ (5)'], ['4', '★★★★ (4)'], ['3', '★★★ (3)'], ['2', '★★ (2)'], ['1', '★ (1)']])
+                        + dr('created_at__gte', 'From', 'created_at__lte', 'To');
+                case 'payment':
+                    return sel('payment_status', 'Status', [['Pending', 'Pending'], ['Processing', 'Processing'], ['Completed', 'Completed'], ['Failed', 'Failed']])
+                        + sel('payment_method', 'Method', [['UPI', 'UPI'], ['Card', 'Card'], ['NetBanking', 'Net Banking'], ['Wallet', 'Wallet'], ['Razorpay', 'Razorpay']])
+                        + dr('created_at__gte', 'From', 'created_at__lte', 'To');
+                default:
+                    return '<p style="color:var(--s400);font-size:13px;text-align:center;padding:20px 0;">No filters available.</p>';
+            }
+        }
+
+        // Restore saved filter values into modal inputs from current URL
+        function pv() {
+            var p = new URLSearchParams(location.search);
+            if (getModel() === APPT) {
+                var map = {
+                    'modal-status': 'status', 'modal-specialization': 'specialization',
+                    'modal-date-from': 'date_from', 'modal-date-to': 'date_to', 'modal-payment': 'payment'
+                };
+                Object.keys(map).forEach(function (id) {
+                    var el = document.getElementById(id);
+                    if (el) el.value = p.get(map[id]) || '';
+                });
+            } else {
+                document.querySelectorAll('#filter-modal-body select,#filter-modal-body input[type=date]').forEach(function (el) {
+                    el.value = p.get(el.id.replace('f-', '')) || '';
+                });
+            }
+        }
+
+        window.openFilterModal = function () {
+            var m = getModel(); if (!m) return;
+            document.getElementById('filter-modal-title').textContent = 'Filter ' + m.charAt(0).toUpperCase() + m.slice(1);
+            document.getElementById('filter-modal-body').innerHTML = bf(m);
+            pv();
+            document.getElementById('filter-modal-overlay').classList.add('open');
+        };
+        window.closeFilterModal = function () { document.getElementById('filter-modal-overlay').classList.remove('open'); };
+
+        // Apply filters: appointment → 5 clean params; others → f-* param names
+        window.applyFilters = function () {
+            var m = getModel();
+            if (m === APPT) {
+                var url = new URL(window.location.href);
+                var fields = [
+                    { id: 'modal-status', key: 'status' },
+                    { id: 'modal-specialization', key: 'specialization' },
+                    { id: 'modal-date-from', key: 'date_from' },
+                    { id: 'modal-date-to', key: 'date_to' },
+                    { id: 'modal-payment', key: 'payment' }
+                ];
+                fields.forEach(function (f) {
+                    var el = document.getElementById(f.id);
+                    var v = el ? el.value.trim() : '';
+                    if (v && v !== 'All') url.searchParams.set(f.key, v);
+                    else url.searchParams.delete(f.key);
+                });
+                window.location.href = url.toString();
+            } else {
+                var p = new URLSearchParams();
+                document.querySelectorAll('#filter-modal-body select,#filter-modal-body input[type=date]').forEach(function (el) {
+                    var v = el.value.trim(); if (v) p.set(el.id.replace('f-', ''), v);
+                });
+                location.href = location.pathname + (p.toString() ? '?' + p.toString() : '');
+            }
+        };
+        window.clearAllFilters = function () { location.href = location.pathname; };
+        function inj() {
+            var t = document.getElementById('toolbar');
+            if (!t) t = document.querySelector('#changelist #toolbar');
+            if (!t) t = document.querySelector('.changelist #toolbar');
+            if (!t || !getModel() || document.getElementById('filter-trigger-btn')) return;
+            var b = document.createElement('button');
+            b.id = 'filter-trigger-btn'; b.type = 'button';
+            b.innerHTML = '<i class="fas fa-sliders-h"></i> Filters <span class="filter-badge"></span>';
+            b.style.cssText = 'display:inline-flex!important;align-items:center!important;gap:6px!important;flex-shrink:0!important;background:#163554!important;color:#CBD5E1!important;border:1px solid rgba(255,255,255,0.07)!important;border-radius:14px!important;padding:0 16px!important;height:40px!important;font-size:13px!important;font-weight:600!important;cursor:pointer!important;white-space:nowrap!important;font-family:Inter,sans-serif!important;';
+            b.onmouseenter = function () { this.style.background = '#F97316'; this.style.color = '#fff'; };
+            b.onmouseleave = function () { this.style.background = '#163554'; this.style.color = '#CBD5E1'; };
+            b.onclick = function () { openFilterModal(); };
+            var c = countAF(); if (c > 0) { b.classList.add('has-filters'); var badge = b.querySelector('.filter-badge'); badge.style.cssText = 'display:inline-flex!important;background:#F97316!important;color:#fff!important;border-radius:50%!important;width:18px!important;height:18px!important;font-size:10px!important;font-weight:700!important;align-items:center!important;justify-content:center!important;'; badge.textContent = c; }
+            t.appendChild(b);
+        }
+        function go() { inj(); var r = 0; var iv = setInterval(function () { r++; inj(); if (r > 15 || document.getElementById('filter-trigger-btn')) clearInterval(iv); }, 200); document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeFilterModal(); }); }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
+    })();
+</script>
 {% endblock %}
 
+{# ── Pending notification bar ── #}
 {% block nav-global %}
-    <!-- 🔔 Live Pending Appointments Notification Bar -->
-    <div id="pending-notification-bar" role="alert">
-        <span>
-            <span class="pending-bell">🔔</span>
-            &nbsp;<strong id="pending-bar-count">0</strong> appointment(s) are waiting for your confirmation!
-            &nbsp;|&nbsp;
-            <a href="/admin/appointment/appointment/?status__exact=Pending">View &amp; Confirm All →</a>
-        </span>
-        <button onclick="document.getElementById('pending-notification-bar').classList.add('hidden')"
-                style="background:none;border:1px solid rgba(255,255,255,0.6);color:#fff;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;">
-            Dismiss
-        </button>
+<style>
+    #pending-notification-bar {
+        display: none;
+        background: linear-gradient(90deg, rgba(249, 115, 22, .1), rgba(249, 115, 22, .04));
+        color: #FCD34D;
+        padding: 8px 36px;
+        font-size: 13px;
+        font-weight: 600;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        border-bottom: 1px solid rgba(249, 115, 22, .2);
+    }
+
+    #pending-notification-bar a {
+        color: #fff !important;
+        text-decoration: underline;
+        font-weight: 700;
+    }
+
+    .pending-bell {
+        animation: bell-shake 1.8s ease infinite;
+        display: inline-block;
+    }
+
+    #pending-notification-bar button {
+        background: none;
+        border: 1px solid rgba(255, 255, 255, .2);
+        color: #fff;
+        padding: 4px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-family: 'Inter', sans-serif;
+    }
+
+    #pending-notification-bar button:hover {
+        background: rgba(255, 255, 255, .1);
+    }
+</style>
+<div id="pending-notification-bar" role="alert">
+    <span>
+        <span class="pending-bell">🔔</span>
+        &nbsp;<strong id="pending-bar-count">0</strong> paid appointment(s) awaiting confirmation!
+        &nbsp;|&nbsp;
+        <a href="/admin/appointment/appointment/?status__exact=Pending">View &amp; Confirm All →</a>
+    </span>
+    <button onclick="document.getElementById('pending-notification-bar').style.display='none'">Dismiss</button>
+</div>
+<script>
+    (function () {
+        var bar = document.getElementById('pending-notification-bar');
+        var countEl = document.getElementById('pending-bar-count');
+        function loadPending() {
+            fetch('/admin/appointment/appointment/pending-count/', { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (r) { var ct = r.headers.get('content-type') || ''; if (!ct.includes('application/json')) return null; return r.json(); })
+                .then(function (data) { if (!data) return; if (data.count > 0) { countEl.textContent = data.count; bar.style.display = 'flex'; } else { bar.style.display = 'none'; } })
+                .catch(function () { bar.style.display = 'none'; });
+        }
+        document.addEventListener('DOMContentLoaded', loadPending);
+        setInterval(loadPending, 60000);
+    })();
+</script>
+
+
+{% endblock %}
+
+{# ── Top Navigation Bar ── #}
+{% block header %}
+<div id="header">
+    <div id="branding">
+        <h1>
+            <a href="{% url 'admin:index' %}">
+                <div class="logo-box"><i class="fas fa-plus"></i></div>
+                VitalBook
+            </a>
+        </h1>
     </div>
 
-    <script>
-        (function() {
-            var bar     = document.getElementById('pending-notification-bar');
-            var countEl = document.getElementById('pending-bar-count');
+    <div class="header-right-actions">
+        <a href="{% url 'admin:index' %}" class="nav-btn">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
 
-            function loadPending() {
-                fetch('/admin/appointment/appointment/pending-count/', {
-                    credentials: 'same-origin',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(function(r) {
-                    // If not JSON (e.g. redirected to login page), do nothing
-                    var ct = r.headers.get('content-type') || '';
-                    if (!ct.includes('application/json')) return null;
-                    return r.json();
-                })
-                .then(function(data) {
-                    if (!data) return;
-                    if (data.count > 0) {
-                        countEl.textContent = data.count;
-                        bar.style.display = 'flex';
-                    } else {
-                        bar.style.display = 'none';
-                    }
-                })
-                .catch(function() { bar.style.display = 'none'; });
-            }
+        {% if user.is_active and user.is_staff %}
+        <div class="custom-user-dropdown" id="user-dropdown-container">
+            <button class="user-dropdown-toggle" id="user-dropdown-btn">
+                <i class="fas fa-user-circle"></i> {{ user.username|upper }} <i class="fas fa-chevron-down"></i>
+            </button>
 
-            // Run immediately when DOM ready
-            document.addEventListener('DOMContentLoaded', loadPending);
-            // Auto-refresh every 60 seconds
-            setInterval(loadPending, 60000);
-        })();
-    </script>
+            <div class="dropdown-menu" id="user-dropdown-menu">
+                <a href="{% url 'admin:auth_user_change' user.id %}">
+                    <i class="fas fa-user-edit"></i> Edit Profile
+                </a>
+                <a href="{% url 'admin:logout' %}" class="logout-link">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extrabody %}
+{{ block.super }}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const dropdownBtn = document.getElementById('user-dropdown-btn');
+        const dropdownMenu = document.getElementById('user-dropdown-menu');
+
+        if (dropdownBtn && dropdownMenu) {
+            // Toggle menu when button is clicked
+            dropdownBtn.addEventListener('click', function (e) {
+                e.stopPropagation(); // Stop click from immediately closing it
+                dropdownMenu.classList.toggle('show-menu');
+            });
+
+            // Close menu if user clicks anywhere else on the screen
+            document.addEventListener('click', function (e) {
+                if (!dropdownMenu.contains(e.target)) {
+                    dropdownMenu.classList.remove('show-menu');
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

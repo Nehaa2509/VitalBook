@@ -1,0 +1,304 @@
+{% extends "admin/index.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+/* ── Admin Header Panel ── */
+.admin-header-panel {
+    background: linear-gradient(135deg, #0B2B46 0%, #1a4a70 100%);
+    border-radius: 16px;
+    padding: 32px 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 28px rgba(11,43,70,0.35);
+}
+.admin-header-panel h3 {
+    color: rgba(255,255,255,0.85);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 2px;
+}
+.admin-header-panel h1 {
+    color: white;
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin: 0 0 6px;
+}
+.admin-header-panel .subtitle {
+    color: rgba(255,255,255,0.55);
+    font-size: 0.85rem;
+    margin: 0 0 20px;
+}
+.admin-header-panel .d-flex {
+    display: flex !important;
+    gap: 14px !important;
+    flex-wrap: wrap;
+}
+.admin-header-panel .flex-fill {
+    flex: 1 1 0 !important;
+    min-width: 110px;
+}
+
+/* ── Stat Boxes ── */
+.header-stat-box {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 18px 16px;
+    text-align: center;
+    transition: all 0.2s;
+}
+.header-stat-box:hover {
+    background: rgba(255,255,255,0.1);
+    transform: translateY(-2px);
+}
+.header-stat-box h4 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0 0 4px;
+    line-height: 1;
+}
+.header-stat-box .stat-label {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+/* Text Color Utilities */
+.text-info { color: #60a5fa !important; }
+.text-warning { color: #fb923c !important; }
+.text-success { color: #22c55e !important; }
+.text-purple { color: #a78bfa !important; }
+.text-muted { color: rgba(255,255,255,0.55) !important; }
+.text-white { color: white !important; }
+.font-weight-bold { font-weight: 800 !important; }
+.small { font-size: 0.75rem !important; }
+.text-uppercase { text-transform: uppercase !important; }
+.mb-1 { margin-bottom: 4px !important; }
+.mb-3 { margin-bottom: 12px !important; }
+.mb-4 { margin-bottom: 16px !important; }
+.gap-3 { gap: 1rem !important; }
+
+/* ── Override default admin styles ── */
+#content-main a[href*="appointment/appointment/"] { display: none !important; }
+#content-main table { border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); width: 100%; margin-bottom: 20px; }
+#content-main table th { background: linear-gradient(135deg, #0B2B46, #1a4a70); color: white; font-weight: 700; font-size: 12px; text-transform: uppercase; padding: 12px 16px; }
+#content-main table td { padding: 10px 16px; border-top: 1px solid #f1f5f9; }
+#content-main table tr:hover td { background: #f0f7ff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<style>
+    .flex-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .btn-outline-brand {
+        border: 2px solid #F97316;
+        color: #F97316;
+        padding: 8px 16px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+    .btn-outline-brand:hover {
+        background-color: #F97316;
+        color: white;
+    }
+    .stat-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-top: 24px;
+    }
+    .header-stat-box {
+        background: rgba(255, 255, 255, 0.03) !important;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 16px;
+        transition: transform 0.3s ease, border-color 0.3s ease;
+        padding: 16px;
+        text-align: center;
+    }
+    .header-stat-box:hover {
+        transform: translateY(-5px);
+        border-color: #ff8c00 !important; /* VitalBook Orange */
+    }
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        margin-top: 24px;
+    }
+    .metric-card {
+        padding: 24px;
+        border-radius: 24px !important;
+        border: none !important;
+        color: white;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+    }
+    /* Inner glow */
+    .metric-card::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+        pointer-events: none;
+    }
+    .metric-card h1 { 
+        font-size: 2.2rem !important; 
+        font-weight: 800 !important; 
+        letter-spacing: -1px;
+        margin: 12px 0; 
+        color: white; 
+        position: relative;
+        z-index: 1;
+    }
+    .metric-card p { opacity: 0.9; margin-bottom: 16px; font-size: 14px; position: relative; z-index: 1;}
+    .metric-card a, .view-all-link { 
+        color: white; 
+        font-size: 0.75rem; 
+        text-transform: uppercase; 
+        font-weight: 700; 
+        letter-spacing: 1px; 
+        text-decoration: none; 
+        opacity: 0.8;
+        position: relative;
+        z-index: 1;
+        transition: opacity 0.2s;
+    }
+    .metric-card a:hover { opacity: 1; }
+    .badge-pill { background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; position: relative; z-index: 1;}
+
+    .admin-greeting h1 {
+        font-size: 2.5rem;
+        font-weight: 900;
+        background: linear-gradient(to right, #ffffff, #94a3b8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 8px;
+    }
+</style>
+
+<div class="flex-header">
+    <div>
+        <p style="color: #94A3B8; margin-bottom: 4px; font-size: 14px;">{{ current_date|date:"l, d F Y" }}</p>
+        <h2 style="color: white; margin: 0; font-weight: bold;">Hospital Dashboard</h2>
+    </div>
+    <a href="/admin/appointment/appointment/" class="btn-outline-brand">
+        <i class="fas fa-calendar-alt"></i> View Appointments
+    </a>
+</div>
+
+<div class="admin-greeting" style="background-color: #0b1523; border-radius: 16px; padding: 28px; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+    <!-- Subtle Grid Background -->
+    <div style="position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 20px 20px; opacity: 0.5; pointer-events: none;"></div>
+    
+    <div style="position: relative; z-index: 1;">
+        <h3 style="color: #94A3B8; margin-bottom: 4px; font-size: 1.1rem;">{{ greeting|default:"Good Evening" }},</h3>
+        <h1>Admin</h1>
+        <p style="color: #94A3B8; margin-bottom: 0;">Here's what's happening with VitalBook today</p>
+    </div>
+
+    <div class="stat-row">
+        <div class="header-stat-box">
+            <h2 style="color: #3B82F6; margin: 0; font-weight: bold;">{{ todays_appts|default:"0" }}</h2>
+            <span style="color: #94A3B8; font-size: 11px; text-transform: uppercase; font-weight: bold;">Today's Appts</span>
+        </div>
+        <div class="header-stat-box">
+            <h2 style="color: #F97316; margin: 0; font-weight: bold;">{{ pending_appts|default:"0" }}</h2>
+            <span style="color: #94A3B8; font-size: 11px; text-transform: uppercase; font-weight: bold;">Pending</span>
+        </div>
+        <div class="header-stat-box">
+            <h2 style="color: #10B981; margin: 0; font-weight: bold;">{{ confirmed_appts|default:"0" }}</h2>
+            <span style="color: #94A3B8; font-size: 11px; text-transform: uppercase; font-weight: bold;">Confirmed</span>
+        </div>
+        <div class="header-stat-box">
+            <h2 style="color: #A855F7; margin: 0; font-weight: bold;">₹{{ todays_revenue|default:"0" }}</h2>
+            <span style="color: #94A3B8; font-size: 11px; text-transform: uppercase; font-weight: bold;">Today's Revenue</span>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="metric-card" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%);">
+        <i class="fas fa-users" style="position: absolute; right: -20px; bottom: -20px; font-size: 8rem; opacity: 0.1; transform: rotate(-10deg); z-index: 0;"></i>
+        <div style="display: flex; justify-content: space-between; align-items: start; position: relative; z-index: 1;">
+            <i class="fas fa-users fa-2x" style="opacity: 1; color: #ffffff;"></i>
+            <span class="badge-pill">+12%</span>
+        </div>
+        <div style="position: relative; z-index: 1;">
+            <h1>{{ total_patients|default:"0" }}</h1>
+            <p>Total Patients</p>
+            <a href="/admin/appointment/patient/" class="view-all-link">View All &rarr;</a>
+        </div>
+    </div>
+    
+    <div class="metric-card" style="background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);">
+        <i class="fas fa-calendar-check" style="position: absolute; right: -20px; bottom: -20px; font-size: 8rem; opacity: 0.1; transform: rotate(-15deg); z-index: 0;"></i>
+        <div style="display: flex; justify-content: space-between; align-items: start; position: relative; z-index: 1;">
+            <i class="fas fa-calendar-check fa-2x" style="opacity: 1; color: #ffffff;"></i>
+            <span class="badge-pill">ALL TIME</span>
+        </div>
+        <div style="position: relative; z-index: 1;">
+            <h1>{{ total_appointments|default:"0" }}</h1>
+            <p>Total Appointments</p>
+            <a href="/admin/appointment/appointment/" class="view-all-link">View All &rarr;</a>
+        </div>
+    </div>
+
+    <div class="metric-card" style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);">
+        <i class="fas fa-user-md" style="position: absolute; right: -20px; bottom: -20px; font-size: 8rem; opacity: 0.1; transform: rotate(-10deg); z-index: 0;"></i>
+        <div style="display: flex; justify-content: space-between; align-items: start; position: relative; z-index: 1;">
+            <i class="fas fa-user-md fa-2x" style="opacity: 1; color: #ffffff;"></i>
+            <span class="badge-pill">ACTIVE</span>
+        </div>
+        <div style="position: relative; z-index: 1;">
+            <h1>{{ total_doctors|default:"0" }}</h1>
+            <p>Active Doctors</p>
+            <a href="/admin/appointment/doctor/" class="view-all-link">View All &rarr;</a>
+        </div>
+    </div>
+
+    <div class="metric-card" style="background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);">
+        <i class="fas fa-chart-line" style="position: absolute; right: -20px; bottom: -30px; font-size: 8rem; opacity: 0.1; transform: rotate(-10deg); z-index: 0;"></i>
+        <div style="display: flex; justify-content: space-between; align-items: start; position: relative; z-index: 1;">
+            <i class="fas fa-rupee-sign fa-2x" style="opacity: 1; color: #ffffff;"></i>
+            <span class="badge-pill">+20%</span>
+        </div>
+        
+        <div class="sparkline" style="margin: 10px 0; position: relative; z-index: 1;">
+            <svg width="100%" height="30" viewBox="0 0 100 30" preserveAspectRatio="none">
+                <!-- Drop shadow for the line -->
+                <path d="M0 25 C 20 5, 40 30, 60 15 S 80 25, 100 5" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="4" stroke-linecap="round" transform="translate(0, 3)"/>
+                <!-- Glow Line -->
+                <path d="M0 25 C 20 5, 40 30, 60 15 S 80 25, 100 5" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round"/>
+                <!-- Fill area underneath -->
+                <path d="M0 25 C 20 5, 40 30, 60 15 S 80 25, 100 5 L 100 30 L 0 30 Z" fill="rgba(255,255,255,0.15)" />
+            </svg>
+        </div>
+
+        <div style="position: relative; z-index: 1;">
+            <h1 style="margin-bottom: 2px;">₹{{ total_revenue|default:"0" }}</h1>
+            <p style="margin-bottom: 0;">Total Revenue <span style="font-size: 11px; opacity: 0.7; margin-left: 5px;">(All Time)</span></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,3 +1,5 @@
+import random
+import string
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
@@ -7,16 +9,25 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings as django_settings
 from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime, timedelta
-from .models import Doctor, Patient, Appointment, Specialization, Review, ContactMessage, Billing, Prescription, Payment, OTPVerification
+from .models import Doctor, Patient, Appointment, Specialization, Review, ContactMessage, Billing, Prescription, Payment, OTPVerification, MedicalRecord
+from .forms import AppointmentForm
 from django.contrib.auth.models import User
 from . import email_utils
 from . import otp_utils
+from .decorators import patient_required
+from .upi_utils import create_upi_order, verify_upi_payment, create_cashfree_cancellation_order
+import json
 import qrcode
 import io
 import os
 import uuid
+import threading
+import pytz
 from django.core.files.base import ContentFile
+from .reminder_scheduler import schedule_same_day_reminders, send_final_one_hour_reminder
+
 
 
 def generate_qr_code(appointment):
@@ -118,96 +129,84 @@ def contact(request):
 
 
 def doctor_list(request):
-    # Annotate doctors with review statistics
-    doctors = Doctor.objects.filter(is_available=True).annotate(
+    # ── 1. Base Queryset ─────────────────────────────────────────────────
+    doctors = Doctor.objects.select_related('specialization').annotate(
         avg_rating=Avg('reviews__rating'),
         total_reviews=Count('reviews')
     )
-    
-    # Search functionality
-    search_query = request.GET.get('search', '').strip()
-    if search_query:
+
+    # ── 2. Capture GET Parameters ────────────────────────────────────────
+    search_q          = request.GET.get('search', '').strip()
+    specialization    = request.GET.get('specialization', '').strip()
+    min_fee           = request.GET.get('min_fee', '').strip()
+    max_fee           = request.GET.get('max_fee', '').strip()
+    min_rating        = request.GET.get('min_rating', '').strip()
+    min_exp           = request.GET.get('min_exp', '').strip()
+    availability      = request.GET.get('availability', '').strip()
+
+    # ── 3. Apply Dynamic Filters ─────────────────────────────────────────
+    if search_q:
         doctors = doctors.filter(
-            Q(name__icontains=search_query) |
-            Q(specialization__name__icontains=search_query) |
-            Q(qualification__icontains=search_query) |
-            Q(bio__icontains=search_query)
+            Q(name__icontains=search_q) |
+            Q(specialization__name__icontains=search_q) |
+            Q(qualification__icontains=search_q) |
+            Q(bio__icontains=search_q)
         )
-    
-    # Filter by specialization
-    specialization_id = request.GET.get('specialization', '')
-    if specialization_id:
-        doctors = doctors.filter(specialization__id=specialization_id)
-    
-    # Filter by consultation fee range
-    min_fee = request.GET.get('min_fee', '')
-    max_fee = request.GET.get('max_fee', '')
+
+    if specialization and specialization != 'All Specializations':
+        doctors = doctors.filter(specialization__name=specialization)
+
     if min_fee:
         try:
             doctors = doctors.filter(consultation_fee__gte=float(min_fee))
         except ValueError:
             pass
+
     if max_fee:
         try:
             doctors = doctors.filter(consultation_fee__lte=float(max_fee))
         except ValueError:
             pass
-    
-    # Filter by minimum rating
-    min_rating = request.GET.get('min_rating', '')
+
     if min_rating:
         try:
-            # Use the pre-calculated rating field or annotated avg_rating
-            doctors = doctors.filter(
-                Q(rating__gte=float(min_rating)) | Q(avg_rating__gte=float(min_rating))
-            )
+            doctors = doctors.filter(rating__gte=float(min_rating))
         except ValueError:
             pass
-    
-    # Filter by availability (day of week)
-    availability = request.GET.get('availability', '')
-    if availability:
-        doctors = doctors.filter(available_days__icontains=availability)
-    
-    # Filter by experience
-    min_experience = request.GET.get('min_experience', '')
-    if min_experience:
+
+    if min_exp:
         try:
-            doctors = doctors.filter(experience_years__gte=int(min_experience))
+            doctors = doctors.filter(experience_years__gte=int(min_exp))
         except ValueError:
             pass
-    
-    # Sorting
-    sort_by = request.GET.get('sort_by', 'name')
-    sort_options = {
-        'name': 'name',
-        'fee_low': 'consultation_fee',
-        'fee_high': '-consultation_fee',
-        'rating': '-rating',
-        'experience': '-experience_years',
-        'reviews': '-total_reviews',
-    }
-    doctors = doctors.order_by(sort_options.get(sort_by, 'name'))
-    
-    # Get all specializations for filter dropdown
+
+    if availability:
+        day_map = {
+            'Mon': 0, 'Tue': 1, 'Wed': 2,
+            'Thu': 3, 'Fri': 4, 'Sat': 5, 'Sun': 6
+        }
+        if availability in day_map:
+            mapped_day = day_map[availability]
+            doctors = doctors.filter(
+                Q(availability__day=mapped_day) | 
+                Q(available_days__icontains=availability)
+            ).distinct()
+
+    # ── 4. Context Memory: pass all params back to template ──────────────
     specializations = Specialization.objects.all()
-    
-    # Check if today is available for each doctor
-    today = timezone.now().strftime('%A')[:3]  # Get first 3 letters (Mon, Tue, etc.)
-    
+
     context = {
-        'doctors': doctors,
-        'specializations': specializations,
-        'search_query': search_query,
-        'selected_specialization': specialization_id,
-        'selected_min_fee': min_fee,
-        'selected_max_fee': max_fee,
-        'selected_min_rating': min_rating,
-        'selected_availability': availability,
-        'selected_min_experience': min_experience,
-        'sort_by': sort_by,
-        'total_results': doctors.count(),
-        'today': today,
+        'doctors':             doctors,
+        'specializations':     specializations,
+        'total_results':       doctors.count(),
+        # Selected filter values (for UI state persistence)
+        'sel_search':          search_q,
+        'sel_specialization':  specialization,
+        'sel_min_fee':         min_fee,
+        'sel_max_fee':         max_fee,
+        'sel_min_rating':      min_rating,
+        'sel_min_exp':         min_exp,
+        'sel_availability':    availability,
     }
     return render(request, 'appointment/doctor_list.html', context)
 
@@ -229,140 +228,170 @@ def doctor_detail(request, doctor_id):
 
 def register(request):
     if request.method == 'POST':
-        username   = request.POST.get('username', '').strip()
-        email      = request.POST.get('email', '').strip()
-        password   = request.POST.get('password', '')
-        confirm_pw = request.POST.get('confirm_password', '')
-        name       = request.POST.get('name', '').strip()
-        phone      = request.POST.get('phone', '').strip()
-        dob        = request.POST.get('date_of_birth', '').strip()
-        gender     = request.POST.get('gender', '').strip()
-        blood_group = request.POST.get('blood_group', '').strip()
-        address    = request.POST.get('address', '').strip()
+        name = request.POST.get('name', '').strip()
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        password = request.POST.get('password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+        date_of_birth = request.POST.get('date_of_birth', '')
+        gender = request.POST.get('gender', '')
+        blood_group = request.POST.get('blood_group', '')
+        address = request.POST.get('address', '').strip()
 
-        # Keep form data so user doesn't retype on error
-        form_data = {
-            'username': username, 'email': email, 'name': name,
-            'phone': phone, 'dob': dob, 'gender': gender,
-            'blood_group': blood_group, 'address': address,
-        }
+        # Split name to support User model first/last name
+        name_parts = name.split(maxsplit=1)
+        first_name = name_parts[0] if name_parts else ''
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
 
-        # ── Required field checks ──────────────────────────────────────────
-        errors = []
-        if not name:
-            errors.append('Full Name is required.')
-        if not username:
-            errors.append('Username is required.')
-        if not email:
-            errors.append('Email is required.')
-        if not phone:
-            errors.append('Phone number is required.')
-        if not password:
-            errors.append('Password is required.')
-        if not gender:
-            errors.append('Please select your Gender.')
-        if not blood_group:
-            errors.append('Please select your Blood Group.')
-        if not address:
-            errors.append('Address is required.')
+        # Validations
+        if not all([name, username, email, phone, password, confirm_password, gender, blood_group, address]):
+            messages.error(request, 'All fields are required!')
+            return render(request, 'appointment/register.html')
 
-        if errors:
-            for e in errors:
-                messages.error(request, e)
-            return render(request, 'appointment/register.html', {'form_data': form_data})
-
-        # ── Password checks ───────────────────────────────────────────────
-        if password != confirm_pw:
+        if password != confirm_password:
             messages.error(request, 'Passwords do not match!')
-            return render(request, 'appointment/register.html', {'form_data': form_data})
+            return render(request, 'appointment/register.html')
 
-        if len(password) < 6:
-            messages.error(request, 'Password must be at least 6 characters.')
-            return render(request, 'appointment/register.html', {'form_data': form_data})
+        if len(password) < 8:
+            messages.error(request, 'Password must be at least 8 characters!')
+            return render(request, 'appointment/register.html')
 
-        # ── Uniqueness checks ─────────────────────────────────────────────
         if User.objects.filter(username=username).exists():
-            messages.error(request, f'Username "{username}" is already taken. Please choose another.')
-            return render(request, 'appointment/register.html', {'form_data': form_data})
+            messages.error(request, 'Username already taken!')
+            return render(request, 'appointment/register.html')
 
         if User.objects.filter(email=email).exists():
-            messages.error(request, f'An account with email "{email}" already exists. Please login instead.')
-            return render(request, 'appointment/register.html', {'form_data': form_data})
+            messages.error(request, 'Email already registered!')
+            return render(request, 'appointment/register.html')
 
-        # ── DOB validation (optional field but must be valid if given) ────
-        import datetime as dt
-        dob_obj = None
-        if dob:
-            try:
-                dob_obj = dt.date.fromisoformat(dob)
-                if dob_obj > dt.date.today():
-                    messages.error(request, 'Date of Birth cannot be a future date.')
-                    return render(request, 'appointment/register.html', {'form_data': form_data})
-                if dob_obj.year < 1900:
-                    messages.error(request, 'Please enter a valid Date of Birth.')
-                    return render(request, 'appointment/register.html', {'form_data': form_data})
-            except ValueError:
-                messages.error(request, 'Invalid Date of Birth format.')
-                return render(request, 'appointment/register.html', {'form_data': form_data})
+        # Generate 6-digit OTP
+        otp = ''.join(random.choices(string.digits, k=6))
 
-        # ── Create user (inactive until OTP) ─────────────────────────────
-        user = User.objects.create_user(username=username, email=email, password=password)
-        user.is_active = False
-        user.save()
+        # Store in session
+        request.session['reg_otp'] = otp
+        request.session['reg_email'] = email
+        request.session['reg_username'] = username
+        request.session['reg_password'] = password
+        request.session['reg_first_name'] = first_name
+        request.session['reg_last_name'] = last_name
+        request.session['reg_name'] = name
+        request.session['reg_phone'] = phone
+        request.session['reg_date_of_birth'] = date_of_birth
+        request.session['reg_gender'] = gender
+        request.session['reg_blood_group'] = blood_group
+        request.session['reg_address'] = address
+        request.session['otp_created_at'] = str(timezone.now())
 
-        Patient.objects.create(
-            user=user,
-            name=name,
-            email=email,
-            phone=phone,
-            date_of_birth=dob_obj,
-            gender=gender,
-            blood_group=blood_group,
-            address=address,
-        )
+        # Send real email
+        try:
+            send_mail(
+                subject='🔐 VitalBook — Your OTP Verification Code',
+                message=f'''
+Dear {first_name},
 
-        # ── OTP: prefer SMS if phone given, fall back to email ────────────
-        otp_method = 'mobile' if phone else 'email'
-        otp_obj = OTPVerification.objects.create(user=user, otp_type=otp_method)
-        otp = otp_obj.generate_otp()
+Your OTP verification code for VitalBook is:
 
-        if otp_method == 'mobile':
-            sms_sent = otp_utils.send_mobile_otp(phone, otp)
-            if not sms_sent:
-                otp_utils.send_email_otp(user, otp)
-            channel_msg = 'phone number'
-        else:
-            otp_utils.send_email_otp(user, otp)
-            channel_msg = 'email'
+{otp}
 
-        request.session['user_id']    = user.id
-        request.session['user_email'] = user.email
+This code is valid for 10 minutes.
+Do not share this code with anyone.
 
-        messages.success(
-            request,
-            f'Registration successful! A 6-digit OTP has been sent to your {channel_msg}. '
-            f'Please verify to activate your account.'
-        )
+If you did not request this, please ignore this email.
+
+Best regards,
+Team VitalBook
+                ''',
+                from_email=django_settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+                html_message=f'''
+<!DOCTYPE html>
+<html>
+<body style="font-family:Inter,Arial,sans-serif;background:#f4f6f9;padding:40px 0;margin:0;">
+<div style="max-width:500px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#0d6efd,#0056b3);padding:32px;text-align:center;">
+        <div style="background:#f97316;width:48px;height:48px;border-radius:12px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:white;">+</div>
+        <h1 style="color:white;margin:0;font-size:22px;font-weight:700;">VitalBook</h1>
+        <p style="color:rgba(255,255,255,0.8);margin:6px 0 0;font-size:13px;">Your Health, Our Priority</p>
+    </div>
+
+    <!-- Body -->
+    <div style="padding:36px 32px;text-align:center;">
+        <h2 style="color:#0f172a;font-size:20px;margin:0 0 8px;">Verify Your Email</h2>
+        <p style="color:#64748b;font-size:14px;margin:0 0 28px;">
+            Hi <strong>{first_name}</strong>, use the code below to verify your account.
+        </p>
+
+        <!-- OTP Box -->
+        <div style="background:#f0f7ff;border:2px dashed #0d6efd;border-radius:12px;padding:24px;margin:0 0 24px;">
+            <p style="color:#64748b;font-size:12px;margin:0 0 8px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Your OTP Code</p>
+            <div style="font-size:42px;font-weight:800;color:#0d6efd;letter-spacing:12px;font-family:monospace;">
+                {otp}
+            </div>
+        </div>
+
+        <p style="color:#94a3b8;font-size:13px;margin:0 0 6px;">
+            ⏰ This code expires in <strong>10 minutes</strong>
+        </p>
+        <p style="color:#94a3b8;font-size:12px;margin:0;">
+            🔒 Never share this code with anyone
+        </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="background:#f8fafc;padding:20px;text-align:center;border-top:1px solid #e2e8f0;">
+        <p style="color:#94a3b8;font-size:12px;margin:0;">
+            © 2026 VitalBook. All rights reserved.<br>
+            If you didn't create an account, ignore this email.
+        </p>
+    </div>
+
+</div>
+</body>
+</html>
+                '''
+            )
+            messages.success(request, f'OTP sent to {email}! Check your inbox.')
+        except Exception as e:
+            print(f'Email error: {e}')
+            messages.warning(request, f'Could not send email. Please verify your SMTP settings.')
+
         return redirect('verify_otp')
 
     return render(request, 'appointment/register.html')
 
 
-
 def user_login(request):
+    if request.user.is_authenticated:
+        if request.user.is_staff or request.user.is_superuser:
+            return redirect('/admin/')
+        elif hasattr(request.user, 'doctor_profile'):
+            return redirect('doctor_dashboard')
+        return redirect('home')
+
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
         user = authenticate(request, username=username, password=password)
-        
+
         if user is not None:
             login(request, user)
-            messages.success(request, f'Welcome back, {user.username}!')
-            next_url = request.GET.get('next', 'home')
-            return redirect(next_url)
+            messages.success(request, f'Welcome back, {user.get_full_name() or user.username}!')
+            
+            # Smart Routing: Admin -> Admin Panel, Doctor -> Dashboard, Patient -> Home
+            if user.is_staff or user.is_superuser:
+                return redirect('/admin/')
+            elif hasattr(user, 'doctor_profile'):
+                return redirect('doctor_dashboard')
+            else:
+                next_url = request.POST.get('next') or request.GET.get('next') or 'home'
+                return redirect(next_url)
         else:
-            messages.error(request, 'Invalid username or password!')
-    
+            messages.error(request, 'Invalid username or password. Please try again.')
+
     return render(request, 'appointment/login.html')
 
 
@@ -418,7 +447,22 @@ def profile(request):
 
 
 @login_required
+@patient_required
 def book_appointment(request, doctor_id):
+    # ── GATEKEEPER: unverified users cannot book ──────────────────────────
+    is_verified = OTPVerification.objects.filter(
+        user=request.user, is_verified=True
+    ).exists()
+    if not is_verified:
+        messages.error(
+            request,
+            '⚠️ You must verify your mobile/email OTP before booking an appointment. '
+            'Please complete verification first.'
+        )
+        # Put the user back in session so verify_otp knows who they are
+        request.session['user_id'] = request.user.id
+        return redirect('verify_otp')
+
     doctor = get_object_or_404(Doctor, id=doctor_id)
     patient, _ = Patient.objects.get_or_create(
         user=request.user,
@@ -429,42 +473,84 @@ def book_appointment(request, doctor_id):
     )
     
     if request.method == 'POST':
-        date = request.POST['date']
-        time = request.POST['time']
-        reason = request.POST.get('reason', '')
-        symptoms = request.POST.get('symptoms', '')
-        
-        # Check if slot is already booked
-        if Appointment.objects.filter(doctor=doctor, date=date, time=time).exclude(status='Cancelled').exists():
-            messages.error(request, 'This time slot is already booked. Please choose another time.')
+        form = AppointmentForm(request.POST)
+        form.instance.doctor = doctor
+
+        if form.is_valid():
+            try:
+                appointment = form.save(commit=False)
+                appointment.patient = patient
+                appointment.status = 'Pending'
+                appointment.save()
+            except Exception:
+                # Race condition: another user booked the same slot simultaneously
+                messages.error(request, 'This time slot was just booked by someone else. Please choose another time.')
+                return redirect('book_appointment', doctor_id=doctor_id)
+
+            # Generate QR code for check-in
+            try:
+                generate_qr_code(appointment)
+            except Exception:
+                pass  # QR code generation is non-critical
+
+            # Create a Billing record for the consultation fee
+            Billing.objects.create(
+                appointment=appointment,
+                total_amount=doctor.consultation_fee,
+                billing_type='Consultation',
+                is_paid=False,
+            )
+
+            appointment.refresh_from_db()
+            # Email handled by post_save signal OR manual send
+            # Let's send booking confirmation manually if not relying on signals
+            # from .email_utils import send_appointment_booked_email
+            # send_appointment_booked_email(appointment)
+
+            today = timezone.now().date()
+            IST = pytz.timezone('Asia/Kolkata')
+            now = datetime.now(IST)
+
+            if appointment.date == today:
+                # Calculate hours until appointment
+                appt_datetime = IST.localize(
+                    datetime.combine(appointment.date, appointment.time)
+                )
+                minutes_left = (appt_datetime - now).total_seconds() / 60
+
+                if minutes_left > 60:
+                    # More than 1 hour left — start hourly reminders
+                    print(f'Starting hourly reminders for VB-{appointment.id}')
+
+                    # Send first immediate reminder
+                    hours_left = round(minutes_left / 60, 1)
+                    from .email_utils import send_reminder_email
+                    send_reminder_email(
+                        appointment=appointment,
+                        reminder_label=f'Booking Confirmed — {hours_left} Hours Until Appointment',
+                        hours_left=hours_left,
+                        is_final=False,
+                    )
+
+                    # Schedule hourly reminders in background
+                    thread = threading.Thread(
+                        target=schedule_same_day_reminders,
+                        args=(appointment,),
+                        daemon=True
+                    )
+                    thread.start()
+
+                elif 0 < minutes_left <= 60:
+                    # Less than 1 hour — send final reminder immediately
+                    send_final_one_hour_reminder(appointment)
+
+            messages.success(request, 'Appointment booked! Please complete the payment to confirm.')
+            return redirect('checkout', appointment_id=appointment.id)
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, error)
             return redirect('book_appointment', doctor_id=doctor_id)
-        
-        appointment = Appointment.objects.create(
-            patient=patient,
-            doctor=doctor,
-            date=date,
-            time=time,
-            reason=reason,
-            symptoms=symptoms,
-            status='Pending'  # Keep as Pending until payment
-        )
-
-        # Generate QR code for check-in
-        try:
-            generate_qr_code(appointment)
-        except Exception:
-            pass  # QR code generation is non-critical
-
-        # Create a Billing record for the consultation fee
-        Billing.objects.create(
-            appointment=appointment,
-            total_amount=doctor.consultation_fee,
-            billing_type='Consultation',
-            is_paid=False,
-        )
-
-        messages.success(request, 'Appointment created! Please complete the payment to confirm.')
-        return redirect('checkout', appointment_id=appointment.id)
     
     # Get booked slots for this doctor
     today = timezone.now().date()
@@ -472,10 +558,13 @@ def book_appointment(request, doctor_id):
         doctor=doctor,
         date__gte=today
     ).exclude(status='Cancelled').values_list('date', 'time')
+    import json
+    # Convert dates and times to strings for safe JSON serialization to frontend JS
+    booked_slots_list = [[str(slot[0]), str(slot[1])] for slot in booked_slots]
     
     context = {
         'doctor': doctor,
-        'booked_slots': list(booked_slots),
+        'booked_slots': json.dumps(booked_slots_list),
         'today': today.isoformat(),
     }
     return render(request, 'appointment/book_appointment.html', context)
@@ -483,32 +572,8 @@ def book_appointment(request, doctor_id):
 
 @login_required
 def my_appointments(request):
-    patient, _ = Patient.objects.get_or_create(
-        user=request.user,
-        defaults={
-            'name': request.user.get_full_name() or request.user.username,
-            'email': request.user.email
-        }
-    )
-    
-    # Filter appointments
-    status_filter = request.GET.get('status', 'all')
-    appointments = Appointment.objects.filter(patient=patient)
-    
-    if status_filter != 'all':
-        appointments = appointments.filter(status=status_filter)
-    
-    # Separate upcoming and past appointments
-    today = timezone.now().date()
-    upcoming = appointments.filter(date__gte=today).exclude(status__in=['Completed', 'Cancelled'])
-    past = appointments.filter(Q(date__lt=today) | Q(status__in=['Completed', 'Cancelled']))
-    
-    context = {
-        'upcoming_appointments': upcoming,
-        'past_appointments': past,
-        'status_filter': status_filter,
-    }
-    return render(request, 'appointment/my_appointments.html', context)
+    # Redirect to patient dashboard upcoming section
+    return redirect('/patient/dashboard/#upcoming-appointments')
 
 
 @login_required
@@ -545,45 +610,127 @@ def appointment_detail(request, appointment_id):
 @login_required
 def cancel_appointment(request, appointment_id):
     appointment = get_object_or_404(Appointment, id=appointment_id)
-    
-    if appointment.patient.user == request.user:
-        if appointment.status in ['Pending', 'Confirmed']:
-            cancellation_fee = 0
-
-            # Check if more than 24 hours have passed since booking
-            if not appointment.can_cancel_free():
-                cancellation_fee = 500  # ₹500 cancellation fee
-                appointment.cancellation_fee_applied = cancellation_fee
-
-                # Create a billing record for the cancellation fee
-                Billing.objects.create(
-                    appointment=appointment,
-                    total_amount=cancellation_fee,
-                    billing_type='Cancellation Fee',
-                    is_paid=False,
-                )
-
-            appointment.status = 'Cancelled'
-            appointment.cancelled_at = timezone.now()
-            appointment.save()
-            
-            # Send cancellation emails
-            email_utils.send_appointment_cancelled(appointment, cancelled_by='patient')
-
-            if cancellation_fee > 0:
-                messages.warning(
-                    request,
-                    f'Appointment cancelled. A cancellation fee of ₹{cancellation_fee} has been applied '
-                    f'as the cancellation was made after the 24-hour free cancellation window.'
-                )
-            else:
-                messages.success(request, 'Appointment cancelled successfully within the free cancellation window!')
-        else:
-            messages.error(request, 'This appointment cannot be cancelled.')
-    else:
-        messages.error(request, 'You do not have permission to cancel this appointment.')
-    
+    appointment.status = 'Cancelled'
+    appointment.save()
+    messages.success(request, 'Appointment cancelled.')
     return redirect('my_appointments')
+
+
+@login_required
+def request_cancellation(request, appointment_id):
+    """
+    Handles appointment cancellation with 24-hour business policy.
+    - Free cancellation if > 24 hours before appointment.
+    - ₹200 Cashfree UPI penalty if < 24 hours before appointment.
+    """
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+
+    # Security check
+    if appointment.patient.user != request.user:
+        messages.error(request, 'You do not have permission to cancel this appointment.')
+        return redirect('patient_dashboard')
+
+    # Only Pending or Confirmed appointments can be cancelled
+    if appointment.status not in ['Pending', 'Confirmed']:
+        messages.error(request, 'This appointment cannot be cancelled.')
+        return redirect('patient_dashboard')
+
+    # Combine date and time into a timezone-aware datetime object
+    appt_datetime = timezone.make_aware(
+        timezone.datetime.combine(appointment.date, appointment.time)
+    )
+    now = timezone.now()
+    hours_until_appointment = (appt_datetime - now).total_seconds() / 3600
+
+    # FREE Cancellation: more than 24 hours away
+    if hours_until_appointment > 24:
+        appointment.status = 'Cancelled'
+        appointment.cancelled_at = timezone.now()
+        appointment.save()
+        messages.success(request, 'Appointment cancelled successfully (no fee applied).')
+        return redirect('patient_dashboard')
+
+    # PENALTY Cancellation: less than 24 hours — create a Cashfree order
+    order_result = create_cashfree_cancellation_order(appointment)
+
+    if not order_result['success']:
+        messages.error(request, f'Could not connect to payment gateway: {order_result.get("error", "")}')
+        return redirect('patient_dashboard')
+
+    context = {
+        'appointment':        appointment,
+        'cancellation_fee':   200,
+        'hours_remaining':    round(hours_until_appointment, 1),
+        'order_id':           order_result['order_id'],
+        'payment_session_id': order_result.get('payment_session_id', ''),
+        'cashfree_env':       django_settings.CASHFREE_ENV,
+    }
+    return render(request, 'appointment/cancellation_checkout.html', context)
+
+
+@login_required
+def verify_cancellation_payment(request, appointment_id):
+    """
+    Cashfree return URL after the ₹200 cancellation fee is paid.
+    Verifies the order status with Cashfree, then cancels the appointment.
+    """
+    order_id = request.GET.get('order_id', '')
+
+    if not order_id:
+        messages.error(request, 'Invalid payment verification request.')
+        return redirect('patient_dashboard')
+
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+
+    # Security: only the appointment owner can verify
+    if appointment.patient.user != request.user:
+        messages.error(request, 'You do not have permission to perform this action.')
+        return redirect('patient_dashboard')
+
+    # Idempotency guard — never double-cancel
+    if appointment.status == 'Cancelled':
+        messages.info(request, 'This appointment has already been cancelled.')
+        return redirect('patient_dashboard')
+
+    # Ask Cashfree for the real payment status
+    result = verify_upi_payment(order_id)
+
+    if result['success']:
+        # Cancel the appointment
+        appointment.status = 'Cancelled'
+        appointment.cancelled_at = timezone.now()
+        appointment.cancellation_fee_applied = 200
+        appointment.save()
+
+        # Record the cancellation fee payment
+        Payment.objects.create(
+            appointment=appointment,
+            amount=200,
+            payment_status='Completed',
+            payment_method='UPI',
+            transaction_id=order_id,
+            razorpay_order_id=order_id,
+            razorpay_payment_id=order_id,
+            payment_date=timezone.now(),
+        )
+
+        # Create billing record
+        Billing.objects.create(
+            appointment=appointment,
+            total_amount=200,
+            billing_type='Cancellation Fee',
+            is_paid=True,
+        )
+
+        messages.success(request, 'Cancellation fee paid. Your appointment has been cancelled.')
+    else:
+        messages.error(
+            request,
+            f'Payment not verified (status: {result.get("status", "unknown")}). '
+            'Please try again or contact support.'
+        )
+
+    return redirect('patient_dashboard')
 
 
 @login_required
@@ -777,123 +924,291 @@ def search_doctors(request):
 
 @login_required
 def checkout(request, appointment_id):
-    """Display checkout page for payment."""
+    """Display Cashfree UPI checkout page — creates a Cashfree payment order."""
     appointment = get_object_or_404(Appointment, id=appointment_id)
-    
-    # Ensure patient can only checkout their own appointments
+
+    # Security: patients can only checkout their own appointments
     if appointment.patient.user != request.user:
         messages.error(request, 'You do not have permission to access this page.')
         return redirect('my_appointments')
-    
-    # Check if already paid
-    if appointment.status == 'Confirmed' and appointment.payments.filter(payment_status='Completed').exists():
+
+    # If already fully paid, skip checkout
+    if appointment.payments.filter(payment_status='Completed').exists():
         messages.info(request, 'This appointment has already been paid for.')
         return redirect('appointment_detail', appointment_id=appointment_id)
-    
+
+    if request.method == 'POST':
+        return redirect('payment_receipt', appointment_id=appointment.id)
+
+    doctor = appointment.doctor
+
+    # Create a Cashfree UPI order
+    order_result = create_upi_order(appointment)
+
+    if not order_result['success']:
+        messages.error(request, 'Payment setup failed. Please try again.')
+        return redirect('my_appointments')
+
     context = {
-        'appointment': appointment,
-        'doctor': appointment.doctor,
-        'amount': appointment.doctor.consultation_fee,
+        'appointment':         appointment,
+        'doctor':              doctor,
+        'order_id':            order_result['order_id'],
+        'payment_session_id':  order_result.get('payment_session_id', ''),
+        'amount':              float(doctor.consultation_fee),
+        'cashfree_env':        django_settings.CASHFREE_ENV,
     }
     return render(request, 'appointment/checkout.html', context)
 
 
 @login_required
 def process_payment(request):
-    """Process payment via AJAX and return JSON response."""
-    if request.method != 'POST':
-        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+    """Legacy AJAX payment endpoint — kept for backward compatibility."""
+    if request.method == 'GET':
+        # Handle GET gracefully without blocking to avoid 405s
+        return JsonResponse({'status': 'info', 'message': 'Payment endpoint ready for POST'}, status=200)
+
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            appointment_id = data.get('appointment_id')
+            payment_method = data.get('payment_method')
+
+            if not appointment_id or not payment_method:
+                return JsonResponse({'status': 'error', 'message': 'Missing required fields'}, status=400)
+
+            appointment = get_object_or_404(Appointment, id=appointment_id)
+
+            if appointment.patient.user != request.user:
+                return JsonResponse({'status': 'error', 'message': 'Permission denied'}, status=403)
+
+            booking_id = f"VB-{uuid.uuid4().hex[:8].upper()}"
+
+            payment = Payment.objects.create(
+                appointment=appointment,
+                amount=appointment.doctor.consultation_fee,
+                payment_status='Completed',
+                payment_method=payment_method,
+                transaction_id=booking_id,
+                payment_date=timezone.now(),
+            )
+
+            billing = appointment.billings.filter(billing_type='Consultation').first()
+            if billing:
+                billing.is_paid = True
+                billing.save()
+
+            email_utils.send_payment_receipt(appointment, payment)
+
+            return JsonResponse({
+                'status': 'success',
+                'booking_id': booking_id,
+                'doctor_name': appointment.doctor.name,
+                'appointment_date': appointment.date.strftime('%d %b, %Y'),
+                'appointment_time': appointment.time.strftime('%I:%M %p'),
+                'amount': str(appointment.doctor.consultation_fee),
+                'payment_method': payment_method,
+            })
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     
-    try:
-        import json
-        data = json.loads(request.body)
-        appointment_id = data.get('appointment_id')
-        payment_method = data.get('payment_method')
-        
-        if not appointment_id or not payment_method:
-            return JsonResponse({'status': 'error', 'message': 'Missing required fields'}, status=400)
-        
-        appointment = get_object_or_404(Appointment, id=appointment_id)
-        
-        # Ensure patient can only pay for their own appointments
-        if appointment.patient.user != request.user:
-            return JsonResponse({'status': 'error', 'message': 'Permission denied'}, status=403)
-        
-        # Generate unique booking ID
-        booking_id = f"VB-{uuid.uuid4().hex[:8].upper()}"
-        
-        # Create payment record
+    return JsonResponse({'status': 'error', 'message': 'Unsupported method'}, status=400)
+
+
+@csrf_exempt
+def verify_payment(request):
+    """Cashfree return URL — verifies UPI payment status and records the transaction."""
+    order_id       = request.GET.get('order_id', '')
+    appointment_id = request.GET.get('appointment_id', '')
+
+    if not order_id or not appointment_id:
+        messages.error(request, 'Invalid payment verification request.')
+        return redirect('my_appointments')
+
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+
+    # Idempotency guard — never double-record
+    if appointment.payments.filter(payment_status='Completed').exists():
+        return redirect('payment_receipt', appointment_id=appointment.id)
+
+    # Ask Cashfree for the real payment status
+    result = verify_upi_payment(order_id)
+
+    if result['success']:
+        # Record the payment
         payment = Payment.objects.create(
             appointment=appointment,
             amount=appointment.doctor.consultation_fee,
             payment_status='Completed',
-            payment_method=payment_method,
-            transaction_id=booking_id,
+            payment_method='UPI',
+            transaction_id=order_id,
+            razorpay_order_id=order_id,   # re-use field for CF order id
+            razorpay_payment_id=order_id,
             payment_date=timezone.now(),
         )
-        
-        # Update appointment status
-        appointment.status = 'Confirmed'
-        appointment.save()
-        
-        # Update billing record
+
+        # Mark billing as paid
         billing = appointment.billings.filter(billing_type='Consultation').first()
         if billing:
             billing.is_paid = True
             billing.save()
+
+        # Send payment receipt email
+        try:
+            email_utils.send_payment_receipt(appointment, payment)
+        except Exception:
+            pass
+
+        messages.success(request, '✅ Payment successful! Your appointment is confirmed.')
+        return redirect('payment_receipt', appointment_id=appointment.id)
+    else:
+        status_text = result.get('status', 'Unknown')
         
-        # Send confirmation and payment receipt emails
-        email_utils.send_appointment_confirmation(appointment)
-        email_utils.send_payment_receipt(appointment, payment)
-        
-        return JsonResponse({
-            'status': 'success',
-            'booking_id': booking_id,
-            'doctor_name': appointment.doctor.name,
-            'appointment_date': appointment.date.strftime('%d %b, %Y'),
-            'appointment_time': appointment.time.strftime('%I:%M %p'),
-            'amount': str(appointment.doctor.consultation_fee),
-            'payment_method': payment_method,
-        })
-        
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        # If still pending/active, don't fail immediately - just tell user it's pending
+        if status_text in ['ACTIVE', 'PENDING']:
+            messages.info(request, 'Payment is still pending. If you just paid, please wait a moment.')
+            return redirect('appointment_detail', appointment_id=appointment.id)
+            
+        messages.error(request, f'Payment not completed. Status: {status_text}. Please try again.')
+        return redirect('payment_failed')
+
+
+@csrf_exempt
+def process_payment(request):
+    """Cashfree S2S payment endpoint (replaces JS SDK)"""
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+        except:
+            data = request.POST
+
+        payment_session_id = data.get('payment_session_id')
+        upi_id = data.get('upi_id')
+
+        url = "https://sandbox.cashfree.com/pg/orders/sessions"
+
+        headers = {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "x-api-version": "2023-08-01",
+            "x-client-id": getattr(django_settings, 'CASHFREE_APP_ID', ''),
+            "x-client-secret": getattr(django_settings, 'CASHFREE_SECRET_KEY', '')
+        }
+
+        payload = {
+            "payment_session_id": payment_session_id,
+            "payment_method": {
+                "upi": {
+                    "channel": "collect",
+                    "upi_id": upi_id if upi_id else None
+                }
+            }
+        }
+
+        import requests
+        try:
+            response = requests.post(url, json=payload, headers=headers, timeout=15)
+            return JsonResponse(response.json())
+        except Exception as e:
+            return JsonResponse({'message': str(e)}, status=500)
+    
+    return JsonResponse({'message': 'Invalid request'}, status=400)
+
+
+@csrf_exempt
+def payment_webhook(request):
+    """Cashfree webhook endpoint — auto-confirms appointments on backend payment events."""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'method not allowed'}, status=405)
+
+    try:
+        payload = json.loads(request.body)
+        event_type = payload.get('type', '')
+
+        if event_type == 'PAYMENT_SUCCESS_WEBHOOK':
+            order_id = (
+                payload.get('data', {})
+                       .get('order', {})
+                       .get('order_id', '')
+            )
+            if order_id and order_id.startswith('VB-'):
+                parts = order_id.split('-')
+                if len(parts) >= 2:
+                    try:
+                        appt = Appointment.objects.get(id=parts[1])
+                        if not appt.payments.filter(payment_status='Completed').exists():
+                            Payment.objects.create(
+                                appointment=appt,
+                                amount=appt.doctor.consultation_fee,
+                                payment_status='Completed',
+                                payment_method='UPI',
+                                transaction_id=order_id,
+                                razorpay_order_id=order_id,
+                                razorpay_payment_id=order_id,
+                                payment_date=timezone.now(),
+                            )
+                    except Appointment.DoesNotExist:
+                        pass
+
+        return JsonResponse({'status': 'ok'})
+    except Exception as exc:
+        return JsonResponse({'status': 'error', 'message': str(exc)})
+
+
+@login_required
+def payment_receipt(request, appointment_id):
+    """Show a clean payment receipt after successful UPI transaction."""
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+
+    if appointment.patient.user != request.user:
+        messages.error(request, 'Access denied.')
+        return redirect('my_appointments')
+
+    payment = appointment.payments.filter(payment_status='Completed').order_by('-created_at').first()
+    if not payment:
+        messages.warning(request, 'No completed payment found for this appointment.')
+        return redirect('appointment_detail', appointment_id=appointment_id)
+
+    return render(request, 'appointment/payment_receipt.html', {
+        'appointment': appointment,
+        'payment': payment,
+    })
+
+
+def payment_failed(request):
+    """Shown when UPI payment verification fails or is cancelled."""
+    return render(request, 'appointment/payment_failed.html')
 
 
 @login_required
 def payment_success(request, appointment_id):
-    """Handle successful payment."""
+    """Legacy success page — kept for backward compatibility with old flow."""
     appointment = get_object_or_404(Appointment, id=appointment_id)
-    
-    # Ensure patient can only access their own payment success page
+
     if appointment.patient.user != request.user:
         messages.error(request, 'You do not have permission to access this page.')
         return redirect('my_appointments')
-    
-    # Get the latest payment for this appointment
-    payment = appointment.payments.filter(payment_status='Processing').first()
-    
-    if payment:
-        # Update payment status
-        payment.payment_status = 'Completed'
-        payment.payment_date = timezone.now()
-        payment.save()
-        
-        # Update appointment status
-        appointment.status = 'Confirmed'
-        appointment.save()
-        
-        # Update billing record
-        billing = appointment.billings.filter(billing_type='Consultation').first()
-        if billing:
-            billing.is_paid = True
-            billing.save()
-    
-    context = {
-        'appointment': appointment,
-        'payment': payment,
-    }
-    return render(request, 'appointment/payment_success.html', context)
+
+    if request.method == 'POST' or request.method == 'GET':
+        payment = appointment.payments.filter(payment_status='Processing').first()
+
+        if payment:
+            payment.payment_status = 'Completed'
+            payment.payment_date = timezone.now()
+            payment.save()
+
+            billing = appointment.billings.filter(billing_type='Consultation').first()
+            if billing:
+                billing.is_paid = True
+                billing.save()
+
+        context = {
+            'appointment': appointment,
+            'payment': payment,
+        }
+        return render(request, 'appointment/payment_success.html', context)
+
+
 
 
 @login_required
@@ -943,6 +1258,9 @@ def patient_dashboard(request):
     else:
         greeting = "Good Evening"
     
+    # Get patient's uploaded medical records
+    medical_records = patient.medical_records.all()
+
     context = {
         'patient': patient,
         'greeting': greeting,
@@ -950,12 +1268,13 @@ def patient_dashboard(request):
         'upcoming_count': upcoming_count,
         'completed_count': completed_count,
         'cancelled_count': cancelled_count,
-        'upcoming_appointments': upcoming[:5],  # Show first 5
-        'completed_appointments': completed[:5],  # Show first 5
-        'cancelled_appointments': cancelled[:5],  # Show first 5
-        'payments': payments[:10],  # Show last 10
+        'upcoming_appointments': upcoming,
+        'completed_appointments': completed,
+        'cancelled_appointments': cancelled,
+        'payments': payments,
         'total_spent': total_spent,
         'reviews': reviews,
+        'medical_records': medical_records,
     }
     return render(request, 'appointment/patient_dashboard.html', context)
 
@@ -1155,88 +1474,150 @@ def update_doctor_profile(request):
 
 
 def verify_otp(request):
-    """Verify OTP for user registration."""
-    user_id = request.session.get('user_id')
-    if not user_id:
+    if not request.session.get('reg_otp'):
         messages.error(request, 'Session expired. Please register again.')
         return redirect('register')
-    
-    try:
-        user = User.objects.get(id=user_id)
-    except User.DoesNotExist:
-        messages.error(request, 'User not found. Please register again.')
-        return redirect('register')
-    
+
+    email = request.session.get('reg_email', '')
+
     if request.method == 'POST':
         entered_otp = request.POST.get('otp', '').strip()
-        
-        try:
-            otp_obj = OTPVerification.objects.filter(
-                user=user,
-                is_verified=False
-            ).latest('created_at')
+        stored_otp = request.session.get('reg_otp')
+        otp_created_at = request.session.get('otp_created_at')
+
+        # Check expiry (10 minutes)
+        if otp_created_at:
+            created_time = datetime.fromisoformat(otp_created_at.replace('+00:00', ''))
+            if datetime.utcnow() > created_time.replace(tzinfo=None) + timedelta(minutes=10):
+                messages.error(request, '⏰ OTP expired! Please register again.')
+                # Clear session
+                for key in ['reg_otp','reg_email','reg_username','reg_password','reg_first_name','reg_last_name','otp_created_at']:
+                    request.session.pop(key, None)
+                return redirect('register')
+
+        if entered_otp == stored_otp:
+            reg_username = request.session.get('reg_username')
             
-            if otp_obj.is_expired():
-                messages.error(request, 'OTP expired. Please request a new one.')
-            elif otp_obj.otp == entered_otp:
-                # OTP is correct
-                otp_obj.is_verified = True
-                otp_obj.save()
-                
-                # Activate user account
+            # Protection against double-click race conditions
+            if User.objects.filter(username=reg_username).exists():
+                for key in ['reg_otp','reg_email','reg_username','reg_password','reg_first_name',
+                            'reg_last_name','reg_name','reg_phone','reg_date_of_birth',
+                            'reg_gender','reg_blood_group','reg_address','otp_created_at']:
+                    request.session.pop(key, None)
+                messages.success(request, '✅ Account verified! Welcome to VitalBook.')
+                return redirect('login')
+
+            # Create the user
+            try:
+                user = User.objects.create_user(
+                    username=request.session['reg_username'],
+                    email=request.session['reg_email'],
+                    password=request.session['reg_password'],
+                    first_name=request.session['reg_first_name'],
+                    last_name=request.session.get('reg_last_name', ''),
+                )
                 user.is_active = True
                 user.save()
-                
-                # Send welcome email
+
+                # Create patient profile and link extra details
                 try:
-                    patient = user.patient
-                    email_utils.send_welcome_email(user, patient)
+                    patient, created = Patient.objects.get_or_create(user=user)
+                    if created or not patient.name:
+                        patient.name = request.session.get('reg_name', '')
+                        patient.email = request.session.get('reg_email', '')
+                        patient.phone = request.session.get('reg_phone', '')
+                        dob = request.session.get('reg_date_of_birth', '')
+                        if dob:
+                            patient.date_of_birth = dob
+                        patient.gender = request.session.get('reg_gender', '')
+                        patient.blood_group = request.session.get('reg_blood_group', '')
+                        patient.address = request.session.get('reg_address', '')
+                        patient.save()
                 except:
                     pass
-                
+
                 # Clear session
-                del request.session['user_id']
-                if 'user_email' in request.session:
-                    del request.session['user_email']
-                
-                messages.success(request, 'Account verified successfully! You can now login.')
+                for key in ['reg_otp','reg_email','reg_username','reg_password',
+                            'reg_first_name','reg_last_name','reg_name','reg_phone',
+                            'reg_date_of_birth','reg_gender','reg_blood_group','reg_address',
+                            'otp_created_at']:
+                    request.session.pop(key, None)
+
+                # Send welcome email
+                try:
+                    send_mail(
+                        subject='🎉 Welcome to VitalBook!',
+                        message=f'Welcome {user.first_name}! Your account has been verified.',
+                        from_email=django_settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[user.email],
+                        fail_silently=True,
+                        html_message=f'''
+<div style="font-family:Inter,Arial,sans-serif;max-width:500px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+    <div style="background:linear-gradient(135deg,#0d6efd,#0056b3);padding:32px;text-align:center;">
+        <h1 style="color:white;margin:0;">🎉 Welcome to VitalBook!</h1>
+    </div>
+    <div style="padding:32px;text-align:center;">
+        <h2 style="color:#0f172a;">Hi {user.first_name}! 👋</h2>
+        <p style="color:#64748b;">Your account has been successfully verified. You can now book appointments with top doctors.</p>
+        <a href="http://127.0.0.1:8000/login/" style="background:#0d6efd;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;margin-top:16px;">Login Now →</a>
+    </div>
+</div>
+                        '''
+                    )
+                except:
+                    pass
+
+                messages.success(request, '✅ Account verified! Welcome to VitalBook.')
                 return redirect('login')
-            else:
-                messages.error(request, 'Invalid OTP. Please try again.')
-        except OTPVerification.DoesNotExist:
-            messages.error(request, 'No OTP found. Please request a new one.')
-    
-    context = {
-        'user': user,
-        'email': user.email
-    }
-    return render(request, 'appointment/verify_otp.html', context)
+
+            except Exception as e:
+                messages.error(request, f'Error creating account: {str(e)}')
+        else:
+            messages.error(request, '❌ Invalid OTP! Please try again.')
+
+    # Mask email for display
+    masked_email = email[:3] + '****' + email[email.find('@'):]
+
+    return render(request, 'appointment/verify_otp.html', {
+        'masked_email': masked_email,
+    })
+
 
 
 def resend_otp(request):
-    """Resend OTP to user."""
-    user_id = request.session.get('user_id')
-    if not user_id:
+    email = request.session.get('reg_email')
+    first_name = request.session.get('reg_first_name', 'User')
+
+    if not email:
         messages.error(request, 'Session expired. Please register again.')
         return redirect('register')
-    
-    try:
-        user = User.objects.get(id=user_id)
-        
-        # Create new OTP
-        otp_obj = OTPVerification.objects.create(user=user, otp_type='email')
-        otp = otp_obj.generate_otp()
-        otp_utils.send_email_otp(user, otp)
-        
-        messages.success(request, 'New OTP sent to your email.')
-    except User.DoesNotExist:
-        messages.error(request, 'User not found.')
-        return redirect('register')
-    except Exception as e:
-        messages.error(request, 'Error sending OTP. Please try again.')
-    
-    return redirect('verify_otp')
 
+    # Generate new OTP
+    otp = ''.join(random.choices(string.digits, k=6))
+    request.session['reg_otp'] = otp
+    request.session['otp_created_at'] = str(timezone.now())
+
+    try:
+        send_mail(
+            subject='🔐 VitalBook — New OTP Code',
+            message=f'Your new OTP is: {otp}. Valid for 10 minutes.',
+            from_email=django_settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            fail_silently=False,
+            html_message=f'''
+<div style="font-family:Arial,sans-serif;max-width:400px;margin:0 auto;padding:32px;text-align:center;">
+    <h2 style="color:#0d6efd;">New OTP Code</h2>
+    <div style="font-size:42px;font-weight:800;color:#0d6efd;letter-spacing:12px;background:#f0f7ff;padding:20px;border-radius:12px;margin:20px 0;">{otp}</div>
+    <p style="color:#64748b;">Valid for 10 minutes. Do not share this code.</p>
+</div>
+            '''
+        )
+        messages.success(request, f'✅ New OTP sent to {email}!')
+    except Exception as e:
+        print(f'Email send error: {e}')
+        messages.warning(request, f'Email failed to send.')
+
+    return redirect('verify_otp')
 
 @login_required
 def download_prescription_pdf(request, appointment_id):
@@ -1269,3 +1650,273 @@ def download_prescription_pdf(request, appointment_id):
         return redirect('appointment_detail', appointment_id=appointment_id)
 
     return response
+
+
+@login_required
+def view_prescription(request, appointment_id):
+    """Anti-Gravity web view for Digital Prescription"""
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    
+    # Security check: only patient or doctor/staff can view
+    is_patient = hasattr(request.user, 'patient') and appointment.patient.user == request.user
+    is_doctor = hasattr(request.user, 'doctor_profile') and appointment.doctor.user == request.user
+    if not (is_patient or is_doctor or request.user.is_staff):
+        messages.error(request, 'You do not have permission to view this prescription.')
+        return redirect('home')
+
+    prescription = Prescription.objects.filter(appointment=appointment).first()
+    if not prescription:
+        messages.error(request, 'No prescription found for this appointment.')
+        return redirect('patient_dashboard')
+
+    # Heuristic: active if appointment was <= 14 days ago (since duration varies)
+    days_since = (timezone.now().date() - appointment.date).days
+    is_active = days_since <= 14
+
+    # Parse medicines text
+    parsed_medicines = []
+    lines = prescription.medicines.strip().split('\n')
+    for line in lines:
+        parts = line.split('-')
+        if len(parts) >= 3:
+            name = parts[0].strip()
+            dosage = parts[1].strip()
+            duration = '-'.join(parts[2:]).strip()
+            parsed_medicines.append({'name': name, 'dosage': dosage, 'duration': duration})
+        elif line.strip(): # Fallback if malformed
+            parsed_medicines.append({'name': line.strip(), 'dosage': 'As directed', 'duration': 'As directed'})
+
+    context = {
+        'appointment': appointment,
+        'prescription': prescription,
+        'medicines': parsed_medicines,
+        'is_active': is_active,
+    }
+    return render(request, 'appointment/view_prescription.html', context)
+
+from django.contrib.admin.views.decorators import staff_member_required
+
+# ── Existing admin changelist action views (redirect → changelist) ────────────
+
+@staff_member_required
+def confirm_appointment_admin(request, appointment_id):
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    appointment.status = 'Confirmed'
+    appointment.save()
+    messages.success(request, f'Appointment VB-{appointment_id} confirmed!')
+    return redirect('/admin/appointment/appointment/')
+
+@staff_member_required
+def cancel_appointment_admin(request, appointment_id):
+    """Cancel an appointment from the changelist action button."""
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    appointment.status = 'Cancelled'
+    appointment.cancelled_at = timezone.now()
+    appointment.save()
+    try:
+        email_utils.send_appointment_cancelled(appointment, cancelled_by='admin')
+    except Exception:
+        pass
+    messages.warning(request, f'❌ Appointment #{appointment.id} has been cancelled.')
+    return redirect('admin:appointment_appointment_changelist')
+
+@staff_member_required
+def complete_appointment_admin(request, appointment_id):
+    """Mark an appointment as Completed from the changelist action button."""
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    appointment.status = 'Completed'
+    appointment.save()
+    messages.info(request, f'🏁 Appointment #{appointment.id} marked as completed.')
+    return redirect('admin:appointment_appointment_changelist')
+
+
+# ── Dashboard Approval Workflow views (redirect → admin:index) ────────────────
+
+ADMIN_INDEX = '/admin/'   # fallback direct URL (custom admin site)
+
+@staff_member_required
+def admin_approve_appointment(request, appointment_id):
+    """
+    Approve (Confirm) a Pending appointment from the admin dashboard modal.
+    Accepts POST (from the CSRF-protected form) and GET (direct URL access).
+    Redirects back to the admin dashboard index.
+    """
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+
+    if appointment.status != 'Pending':
+        messages.warning(
+            request,
+            f'⚠️ Appointment #{appointment.id} is already {appointment.status} '
+            f'and cannot be approved again.'
+        )
+        return redirect(ADMIN_INDEX)
+
+    appointment.status = 'Confirmed'
+    appointment.save()
+
+    # Notify patient by email (silent fail — email is non-critical)
+    try:
+        email_utils.send_appointment_confirmation(appointment)
+    except Exception:
+        pass
+
+    messages.success(
+        request,
+        f'✅ Appointment #{appointment.id} for {appointment.patient.name} '
+        f'with Dr. {appointment.doctor.name} confirmed. Patient notified.'
+    )
+    return redirect(ADMIN_INDEX)
+
+
+@staff_member_required
+def admin_cancel_appointment(request, appointment_id):
+    """
+    Cancel a Pending/Confirmed appointment from the admin dashboard modal.
+    Accepts POST (from the CSRF-protected form) and GET (direct URL access).
+    Redirects back to the admin dashboard index.
+    """
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+
+    if appointment.status not in ('Pending', 'Confirmed'):
+        messages.warning(
+            request,
+            f'⚠️ Appointment #{appointment.id} is already {appointment.status} '
+            f'and cannot be cancelled.'
+        )
+        return redirect(ADMIN_INDEX)
+
+    appointment.status = 'Cancelled'
+    appointment.cancelled_at = timezone.now()
+    appointment.save()
+
+    # Notify patient by email (silent fail)
+    try:
+        email_utils.send_appointment_cancelled(appointment, cancelled_by='admin')
+    except Exception:
+        pass
+
+    messages.warning(
+        request,
+        f'❌ Appointment #{appointment.id} for {appointment.patient.name} has been cancelled.'
+    )
+    return redirect(ADMIN_INDEX)
+
+
+def ajax_load_slots(request):
+    """
+    AJAX endpoint to load dynamic time slots based on doctor availability.
+    """
+    from datetime import datetime
+    from .slot_utils import get_available_slots
+
+    doctor_id = request.GET.get('doctor_id')
+    date_str = request.GET.get('date')
+    
+    if not doctor_id or not date_str:
+        return JsonResponse({'slots': [], 'error': 'Missing parameters'})
+
+    try:
+        selected_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        slots = get_available_slots(doctor_id, selected_date)
+        return JsonResponse({'slots': slots})
+    except Exception as e:
+        return JsonResponse({'slots': [], 'error': str(e)})
+
+
+# ── Medical Records ────────────────────────────────────────────────────────────
+
+@login_required
+def upload_medical_record(request):
+    """Patient uploads a PDF medical report from their dashboard."""
+    patient, _ = Patient.objects.get_or_create(
+        user=request.user,
+        defaults={
+            'name':  request.user.get_full_name() or request.user.username,
+            'email': request.user.email,
+            'phone': '0000000000',
+        }
+    )
+
+    if request.method == 'POST':
+        report_name = request.POST.get('report_name', '').strip()
+        pdf_file    = request.FILES.get('pdf_file')
+
+        if not report_name:
+            messages.error(request, 'Please enter a report name.')
+            return redirect('patient_dashboard')
+        if not pdf_file:
+            messages.error(request, 'Please select a PDF file to upload.')
+            return redirect('patient_dashboard')
+        if not pdf_file.name.lower().endswith('.pdf'):
+            messages.error(request, 'Only PDF files are allowed.')
+            return redirect('patient_dashboard')
+        if pdf_file.size > 10 * 1024 * 1024:          # 10 MB cap
+            messages.error(request, 'File is too large. Maximum size is 10 MB.')
+            return redirect('patient_dashboard')
+
+        MedicalRecord.objects.create(
+            patient=patient,
+            report_name=report_name,
+            pdf_file=pdf_file,
+        )
+        messages.success(request, f'"{report_name}" uploaded successfully.')
+    else:
+        messages.error(request, 'Invalid request.')
+
+    return redirect('patient_dashboard')
+
+
+@login_required
+def delete_medical_record(request, record_id):
+    """Patient deletes one of their own medical records."""
+    record = get_object_or_404(MedicalRecord, id=record_id)
+
+    # Security: only the owner may delete
+    patient = getattr(request.user, 'patient', None)
+    if not patient or record.patient != patient:
+        messages.error(request, 'You do not have permission to delete this record.')
+        return redirect('patient_dashboard')
+
+    if request.method == 'POST':
+        name = record.report_name
+        # Remove the physical file from disk as well
+        if record.pdf_file:
+            record.pdf_file.delete(save=False)
+        record.delete()
+        messages.success(request, f'"{name}" has been removed.')
+    else:
+        messages.error(request, 'Invalid request method.')
+
+    return redirect('patient_dashboard')
+
+
+from django.http import JsonResponse
+from django.contrib.admin.views.decorators import staff_member_required
+
+@staff_member_required
+def admin_appointment_details(request, appointment_id):
+    try:
+        appointment = Appointment.objects.select_related('patient', 'doctor', 'doctor__specialization').get(id=appointment_id)
+    except Appointment.DoesNotExist:
+        return JsonResponse({'error': 'Appointment not found'}, status=404)
+
+    spec_name = appointment.doctor.specialization.name if appointment.doctor.specialization else 'General'
+
+    medicine_mapping = {
+        'Cardiologist': 'Aspirin 75mg - 1 tablet daily - 30 Days\nAtorvastatin 10mg - 1 tablet nightly - 30 Days',
+        'Dermatologist': 'Cetirizine 10mg - 1 tablet daily - 5 Days\nKetoconazole Cream - Apply twice daily - 14 Days',
+        'Pediatrician': 'Paracetamol Syrup 250mg - 5ml as needed - 3 Days\nVitamin C Drops - 5 drops daily - 10 Days',
+        'Orthopedist': 'Ibuprofen 400mg - 1 tablet twice daily - 5 Days\nCalcium + Vitamin D3 - 1 tablet daily - 30 Days',
+        'Neurologist': 'Pregabalin 50mg - 1 tablet nightly - 14 Days\nVitamin B12 - 1 tablet daily - 30 Days',
+        'Dentist': 'Amoxicillin 500mg - 1 tablet 3 times a day - 5 Days\nIbuprofen 400mg - 1 tablet twice daily - 3 Days',
+        'Ophthalmologist': 'Refresh Tears - 1 drop 4 times a day - 14 Days\nOlopatadine Eye Drops - 1 drop twice daily - 7 Days',
+    }
+    
+    suggested_medicines = medicine_mapping.get(spec_name, 'Paracetamol 500mg - 1 tablet as needed - 3 Days\nVitamin C - 1 tablet daily - 10 Days')
+
+    return JsonResponse({
+        'patient_name': appointment.patient.name,
+        'doctor_name': appointment.doctor.name,
+        'doctor_specialization': spec_name,
+        'suggested_medicines': suggested_medicines
+    })

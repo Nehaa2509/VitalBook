@@ -1,0 +1,420 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Anti-Gravity Dark Mode Theme Base */
+        body, #content {
+            background-color: #0b1523 !important;
+            color: #f1f5f9 !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        /* The Document Card */
+        #content-main {
+            background: #0f1c2e;
+            max-width: 900px;
+            margin: 40px auto;
+            border-radius: 20px;
+            padding: 50px 60px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid #162436;
+        }
+        
+        .prescription-header {
+            border-bottom: 2px solid #1e293b;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rx-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .rx-brand-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #ff6b00, #f97316);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .status-badge {
+            padding: 8px 24px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            background: #ff6b00;
+            color: white;
+        }
+
+        /* Hide ONLY the specific django fields we are replacing */
+        .field-medicines, .field-instructions {
+            display: none !important;
+        }
+
+        /* Style the remaining native django fields (like Appointment) */
+        fieldset.module {
+            background: #162436;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: none;
+        }
+        .form-row { border-bottom: 1px solid #1e293b; padding: 10px 0; display: flex; align-items: center; }
+        .form-row:last-child { border-bottom: none; }
+        .form-row label { color: #94a3b8 !important; font-weight: 600; font-size: 0.9rem; min-width: 150px; }
+        .form-row select, .form-row input {
+            background: #0f1c2e !important; border: 1px solid #1e293b !important; color: #f1f5f9 !important;
+            padding: 10px 12px !important; border-radius: 6px !important; flex: 1;
+            height: auto !important; min-height: 42px; box-sizing: border-box; line-height: 1.5 !important; font-size: 0.95rem;
+        }
+
+        /* Medication List Section */
+        .rx-table-section {
+            margin-top: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #ff6b00;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .rx-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+
+        .rx-table td {
+            background: #162436;
+            padding: 15px;
+        }
+
+        .rx-table tr td:first-child { border-radius: 12px 0 0 12px; border-left: 2px solid transparent; }
+        .rx-table tr td:last-child { border-radius: 0 12px 12px 0; }
+        .rx-table tr:focus-within td:first-child { border-left: 2px solid #ff6b00; }
+
+        input.med-input, textarea.med-textarea {
+            width: 100%;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: #f1f5f9 !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 5px !important;
+            margin: 0;
+        }
+        input.med-input:focus, textarea.med-textarea:focus {
+            outline: none !important;
+        }
+        input.med-input::placeholder { color: #94a3b8; font-weight: 400; }
+
+        .add-row-btn {
+            background: transparent;
+            border: 1px solid #ff6b00;
+            color: #ff6b00;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: 0.2s;
+        }
+        .add-row-btn:hover { background: #ff6b00; color: white; }
+        .remove-btn { color: #ef4444; cursor: pointer; font-weight: 800; background:none; border:none; }
+
+        /* Doctor's Advice Textarea */
+        .advice-box {
+            background: #162436;
+            border-left: 4px solid #ff6b00;
+            padding: 20px;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 40px;
+        }
+        .advice-box textarea {
+            width: 100%;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: #f1f5f9 !important;
+            font-family: 'Inter', sans-serif !important;
+            min-height: 100px;
+            resize: vertical;
+            padding: 10px !important;
+            box-sizing: border-box;
+        }
+        .advice-box textarea:focus { outline: none !important; }
+
+        /* Fancy Sticky Footer */
+        .submit-row {
+            background: #0f1c2e !important;
+            border-radius: 0 0 20px 20px;
+            border: none !important;
+            padding: 20px 0 0 0 !important;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+
+        .submit-row input[type=submit] {
+            background: #ff6b00;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+        .submit-row input[type=submit]:hover { background: #ea580c; }
+        .submit-row input[name="_continue"] { background: #162436; color: #ff6b00; border: 1px solid #ff6b00; }
+        .submit-row input[name="_continue"]:hover { background: #1e293b; color: #ff6b00; }
+
+        /* Delete anchor → danger pill button */
+        .submit-row a.deletelink {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #dc2626;
+            color: #ffffff !important;
+            border-radius: 50px;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            line-height: normal;
+            height: auto;
+            border: none;
+            margin-right: auto;  /* pushes delete to the far left */
+            transition: background 0.2s ease, transform 0.15s;
+        }
+        .submit-row a.deletelink:hover {
+            background: #b91c1c;
+            color: #ffffff !important;
+            transform: translateY(-1px);
+        }
+
+        /* ── Error Alert Box ── */
+        .rx-error-alert {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-left: 4px solid #ef4444;
+            border-radius: 0 10px 10px 0;
+            padding: 16px 20px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .rx-error-alert .error-icon { font-size: 1.2rem; flex-shrink: 0; }
+        .rx-error-alert .error-body { flex: 1; }
+        .rx-error-alert .error-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #ef4444;
+            margin-bottom: 6px;
+        }
+        .rx-error-alert .error-list {
+            list-style: none;
+            padding: 0; margin: 0;
+            color: #fca5a5;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* ── Empty State Notice ── */
+        .rx-empty-notice {
+            background: rgba(255, 107, 0, 0.08);
+            border: 1px dashed rgba(255, 107, 0, 0.4);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        .rx-empty-notice strong { color: #ff6b00; }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="prescription-header">
+        <h2 class="rx-title">
+            <span class="rx-brand-icon">+</span>
+            VITALBOOK PRESCRIPTION
+        </h2>
+        <div class="status-badge" id="dynamic-status">Active</div>
+    </div>
+
+    {# ── Validation Error Alerts (styled) ── #}
+    {% if adminform.form.errors or adminform.form.non_field_errors %}
+    <div class="rx-error-alert">
+        <div class="error-icon">⚠️</div>
+        <div class="error-body">
+            <div class="error-title">Prescription Cannot Be Saved</div>
+            <ul class="error-list">
+                {% for field in adminform.form %}
+                    {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in adminform.form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+    <!-- The custom UI -->
+    <div class="rx-table-section">
+        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 10px;">
+            <div class="section-title">MEDICATION LIST</div>
+            <button type="button" class="add-row-btn" id="add-med-btn">+ Add Medication</button>
+        </div>
+        
+        <table class="rx-table">
+            <tbody id="med-table-body">
+                <!-- Rows injected via JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section-title">DOCTOR's ADVICE / NOTES</div>
+    <div class="advice-box">
+        <textarea id="custom-instructions" placeholder="Enter clinical notes, lifestyle advice, or next steps here..."></textarea>
+    </div>
+
+    <form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.model_name }}_form" novalidate>
+        {% csrf_token %}
+        <div>
+            {% for fieldset in adminform %}
+                {% include "admin/includes/fieldset.html" %}
+            {% endfor %}
+            {% block after_field_sets %}{% endblock %}
+            {% for inline_admin_formset in inline_admin_formsets %}
+                {% include inline_admin_formset.opts.template %}
+            {% endfor %}
+            {% block after_related_objects %}{% endblock %}
+        </div>
+        
+        <div class="submit-row">
+            {% if show_delete_link %}
+                <a href="{% url opts|admin_urlname:'delete' original.pk|admin_urlquote %}" class="deletelink">🗑 Delete</a>
+            {% endif %}
+            <input type="submit" value="Save and continue" name="_continue">
+            <input type="submit" value="SAVE" name="_save">
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Hidden inputs mapped from django form
+    const instructionsField = document.getElementById("id_instructions");
+    const medicinesField = document.getElementById("id_medicines");
+    
+    // Custom UI inputs
+    const customInstructions = document.getElementById("custom-instructions");
+    const medTableBody = document.getElementById("med-table-body");
+    const addMedBtn = document.getElementById("add-med-btn");
+
+    // Load existing data
+    if (instructionsField && instructionsField.value) {
+        customInstructions.value = instructionsField.value;
+    }
+    
+    function addRow(nameVal='', dosageVal='', durationVal='') {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td><input type="text" class="med-input dt-name" placeholder="Medicine Name" value="${nameVal}"></td>
+            <td><input type="text" class="med-input dt-dosage" placeholder="Dosage (e.g. 1-0-1)" value="${dosageVal}"></td>
+            <td><input type="text" class="med-input dt-duration" placeholder="Duration (e.g. 5 days)" value="${durationVal}"></td>
+            <td style="width: 40px; text-align: center;"><button type="button" class="remove-btn">𐄂</button></td>
+        `;
+        tr.querySelector('.remove-btn').addEventListener('click', function() {
+            tr.remove();
+            syncToDjango();
+        });
+        tr.querySelectorAll('.med-input').forEach(inp => {
+            inp.addEventListener('input', syncToDjango);
+        });
+        medTableBody.appendChild(tr);
+    }
+
+    if (medicinesField && medicinesField.value) {
+        let lines = medicinesField.value.split('\n');
+        lines.forEach(line => {
+            if (line.trim()) {
+                let parts = line.split('-');
+                let name = parts[0] ? parts[0].trim() : '';
+                let dosage = parts[1] ? parts[1].trim() : '';
+                let dur = parts[2] ? parts[2].trim() : '';
+                addRow(name, dosage, dur);
+            }
+        });
+    } else {
+        addRow(); // Start with one empty row
+    }
+
+    addMedBtn.addEventListener('click', () => addRow());
+
+    customInstructions.addEventListener('input', function() {
+        if(instructionsField) instructionsField.value = this.value;
+    });
+
+    function syncToDjango() {
+        if(!medicinesField) return;
+        let medLines = [];
+        document.querySelectorAll('#med-table-body tr').forEach(tr => {
+            const name = tr.querySelector('.dt-name').value.trim();
+            const dosage = tr.querySelector('.dt-dosage').value.trim();
+            const duration = tr.querySelector('.dt-duration').value.trim();
+            if (name) {
+                medLines.push(`${name} - ${dosage || "As directed"} - ${duration || "As directed"}`);
+            }
+        });
+        medicinesField.value = medLines.join('\n');
+    }
+
+    // Attempt to parse appointment date to set Status dynamically
+    const apptSelect = document.getElementById("id_appointment");
+    if(apptSelect) {
+        const selectedText = apptSelect.options[apptSelect.selectedIndex]?.text || "";
+        // Usually contains date like "YYYY-MM-DD" inside it based on __str__
+        // Fallback: active state
+        document.getElementById("dynamic-status").innerText = "ACTIVE";
+    }
+});
+</script>
+{% endblock %}

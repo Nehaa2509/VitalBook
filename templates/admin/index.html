@@ -1,256 +1,627 @@
 {% extends "admin/base_site.html" %}
 {% load i18n static %}
 
-{% block coltype %}colMS{% endblock %}
-{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
-{% block nav-breadcrumbs %}{% endblock %}
+{% block content_title %}{% endblock %}
+{% block breadcrumbs %}{% endblock %}
 
 {% block content %}
-<div id="content-main">
+<style>
+    /* ── Dashboard Reset ── */
+    #content { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 
-    <!-- ════════════════════════════════════
-         PENDING APPOINTMENTS DASHBOARD WIDGET
-    ════════════════════════════════════ -->
-    <div id="pending-dashboard-widget" style="margin-bottom: 30px;">
-        <div style="background: linear-gradient(135deg, #0B2B46, #1A4A70);
-                    border-radius: 12px; overflow: hidden;
-                    box-shadow: 0 4px 20px rgba(11,43,70,0.3);">
+    /* ── Header Area ── */
+    .vital-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .vital-date {
+        color: #94A3B8;
+        font-size: 13px;
+        margin-bottom: 4px;
+        font-weight: 500;
+    }
+    .vital-title {
+        font-size: 24px;
+        font-weight: 800;
+        margin: 0;
+        color: #ffffff;
+        letter-spacing: -0.5px;
+    }
+    .vital-btn {
+        border: 1.5px solid #F97316 !important;
+        color: #F97316 !important;
+        background: transparent !important;
+        padding: 9px 18px !important;
+        border-radius: 8px !important;
+        text-decoration: none !important;
+        font-size: 13.5px !important;
+        font-weight: 600 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        transition: all 0.2s ease !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+    .vital-btn:hover {
+        background: #F97316 !important;
+        color: #ffffff !important;
+    }
 
-            <!-- Widget Header -->
-            <div style="display:flex; justify-content:space-between; align-items:center;
-                        padding: 18px 24px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <div style="display:flex; align-items:center; gap: 12px;">
-                    <span style="font-size:28px;">🔔</span>
-                    <div>
-                        <h2 style="color:#fff; margin:0; font-size:20px; font-weight:700;">
-                            Pending Appointments
-                        </h2>
-                        <p style="color:rgba(255,255,255,0.6); margin:0; font-size:13px;">
-                            Appointments waiting for your confirmation
-                        </p>
-                    </div>
-                </div>
-                <div style="text-align:right;">
-                    <div id="pending-count-badge" style="background:#FF8C00; color:#fff;
-                        font-size: 36px; font-weight:800; padding: 8px 20px;
-                        border-radius: 50px; min-width: 60px; text-align:center;
-                        line-height:1;">–</div>
-                    <div style="color:rgba(255,255,255,0.5); font-size:11px; margin-top:4px;">
-                        Total Pending
-                    </div>
-                </div>
+    /* ── Main Dark Panel ── */
+    .vital-main-panel {
+        background-color: #101929;
+        border-radius: 14px;
+        padding: 32px 36px;
+        margin-bottom: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    .vital-greeting {
+        font-size: 15px;
+        color: #CBD5E1;
+        margin-bottom: 4px;
+        font-weight: 500;
+    }
+    .vital-admin-name {
+        font-size: 30px;
+        font-weight: 800;
+        color: #ffffff;
+        margin: 0 0 6px 0;
+        letter-spacing: -0.5px;
+    }
+    .vital-subtitle {
+        font-size: 13.5px;
+        color: #94A3B8;
+        margin-bottom: 28px;
+    }
+
+    /* ── Inner Stat Boxes ── */
+    .vital-internal-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+    }
+    .vital-stat-box {
+        background-color: rgba(0, 0, 0, 0.28);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 10px;
+        padding: 20px 16px;
+        text-align: center;
+        transition: border-color 0.2s;
+    }
+    .vital-stat-box:hover {
+        border-color: rgba(249, 115, 22, 0.3);
+    }
+    .vital-stat-num {
+        font-size: 28px;
+        font-weight: 800;
+        margin: 0 0 6px 0;
+        color: #ffffff;
+        line-height: 1;
+    }
+    .vital-stat-label {
+        font-size: 11px;
+        color: #94A3B8;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+    }
+    .text-orange { color: #F97316 !important; }
+
+    /* ── Bottom Summary Cards ── */
+    .vital-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+    .v-card {
+        border-radius: 14px;
+        padding: 22px 22px 20px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 168px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        text-decoration: none !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .v-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: repeating-linear-gradient(
+            45deg,
+            rgba(255,255,255,.04), rgba(255,255,255,.04) 1px,
+            transparent 1px, transparent 12px
+        );
+        pointer-events: none;
+        z-index: 0;
+    }
+    .v-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
+    }
+    .v-card-green  { background: linear-gradient(135deg, #10B981, #059669); }
+    .v-card-orange { background: linear-gradient(135deg, #F97316, #EA580C); }
+    .v-card-blue   { background: linear-gradient(135deg, #3B82F6, #2563EB); }
+    .v-card-purple { background: linear-gradient(135deg, #8B5CF6, #7C3AED); }
+
+    .v-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 14px;
+        position: relative;
+        z-index: 1;
+    }
+    .v-badge {
+        background: rgba(0, 0, 0, 0.18);
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        color: #fff;
+    }
+    .v-card-body { position: relative; z-index: 1; }
+    .v-card-num {
+        font-size: 36px;
+        font-weight: 800;
+        margin: 0 0 4px 0;
+        line-height: 1;
+        color: #fff;
+    }
+    .v-card-text {
+        font-size: 14px;
+        opacity: 0.95;
+        margin: 0 0 14px 0;
+        font-weight: 600;
+        color: #fff;
+    }
+    .v-card-sub {
+        font-size: 11px;
+        opacity: 0.7;
+        font-weight: 400;
+    }
+    .v-card-link {
+        color: white !important;
+        font-size: 12.5px;
+        font-weight: 700;
+        text-decoration: underline !important;
+        text-underline-offset: 3px;
+        opacity: 0.9;
+    }
+    .v-card-link:hover { opacity: 1; }
+
+    /* ── Pending Approvals Widget ── */
+    .approval-panel {
+        background: #101929;
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 14px;
+        margin-top: 24px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .approval-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 24px;
+        background: #1a1f26;
+        border-bottom: 2px solid rgba(255,255,255,0.08);
+    }
+    .approval-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .approval-dot {
+        width: 9px; height: 9px;
+        background: #F97316;
+        border-radius: 50%;
+        box-shadow: 0 0 0 3px rgba(249,115,22,0.25);
+        animation: pulse-dot 1.8s ease infinite;
+        flex-shrink: 0;
+    }
+    @keyframes pulse-dot {
+        0%,100% { box-shadow: 0 0 0 3px rgba(249,115,22,0.25); }
+        50%      { box-shadow: 0 0 0 6px rgba(249,115,22,0.08); }
+    }
+    .approval-title h3 {
+        font-size: 16px;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+    }
+    .approval-count {
+        background: #F97316;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 800;
+        padding: 2px 8px;
+        border-radius: 20px;
+        letter-spacing: 0.3px;
+    }
+    .approval-view-all {
+        font-size: 13px;
+        font-weight: 600;
+        color: #F97316 !important;
+        text-decoration: none !important;
+        transition: opacity 0.2s;
+    }
+    .approval-view-all:hover { opacity: 0.75; }
+
+    /* Table */
+    .approval-table-wrap { overflow-x: auto; }
+    .approval-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .approval-table thead th {
+        background: #1a1f26;
+        color: #94A3B8;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        padding: 11px 16px;
+        text-align: left;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        white-space: nowrap;
+    }
+    .approval-table tbody tr {
+        background: #1a1f26;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .approval-table tbody tr:last-child { border-bottom: none; }
+    .approval-table tbody tr:hover { background: #1a1f26; }
+    .approval-table tbody td {
+        padding: 13px 16px;
+        color: #CBD5E1;
+        font-size: 13.5px;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+    .appt-id { color: #64748B; font-size: 12px; font-weight: 600; }
+    .appt-name { color: #fff; font-weight: 600; font-size: 13.5px; }
+    .appt-spec {
+        background: rgba(59,130,246,0.15);
+        color: #93C5FD;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .appt-actions { display: flex; gap: 8px; }
+    .btn-approve, .btn-reject {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 14px;
+        border-radius: 7px;
+        font-size: 12.5px;
+        font-weight: 700;
+        text-decoration: none !important;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    .btn-approve {
+        background: rgba(16,185,129,0.15);
+        color: #10B981 !important;
+        border: 1px solid rgba(16,185,129,0.3);
+    }
+    .btn-approve:hover {
+        background: #10B981;
+        color: #fff !important;
+        border-color: #10B981;
+    }
+    .btn-reject {
+        background: rgba(239,68,68,0.12);
+        color: #F87171 !important;
+        border: 1px solid rgba(239,68,68,0.25);
+    }
+    .btn-reject:hover {
+        background: #EF4444;
+        color: #fff !important;
+        border-color: #EF4444;
+    }
+
+    /* Empty state */
+    .approval-empty {
+        margin-top: 24px;
+        background: #101929;
+        border: 1px solid rgba(16,185,129,0.2);
+        border-radius: 14px;
+        padding: 28px;
+        text-align: center;
+    }
+
+</style>
+
+<div id="vital-dashboard">
+
+    <!-- Header -->
+    <div class="vital-header">
+        <div>
+            <div class="vital-date" id="dash-date">{{ today|date:"l, d F Y" }}</div>
+            <h1 class="vital-title">Hospital Dashboard</h1>
+        </div>
+        <a href="/admin/appointment/appointment/" class="vital-btn">
+            <i class="fas fa-calendar-alt"></i> View Appointments
+        </a>
+    </div>
+
+    <!-- Hero Stats Panel -->
+    <div class="vital-main-panel">
+        <div class="vital-greeting">{{ greeting }},</div>
+        <h2 class="vital-admin-name">{{ user.username|default:"Admin"|capfirst }}</h2>
+        <div class="vital-subtitle">Here's what's happening with VitalBook today</div>
+
+        <div class="vital-internal-stats">
+            <div class="vital-stat-box">
+                <div class="vital-stat-num">{{ todays_appts }}</div>
+                <div class="vital-stat-label">Today's Appts</div>
             </div>
-
-            <!-- Appointment Rows -->
-            <div id="pending-appointments-list" style="padding: 10px 0; min-height: 80px;">
-                <div style="color:rgba(255,255,255,0.5); text-align:center; padding:30px; font-size:14px;">
-                    Loading pending appointments...
-                </div>
+            <div class="vital-stat-box">
+                <div class="vital-stat-num">{{ pending_appts }}</div>
+                <div class="vital-stat-label">Pending</div>
             </div>
-
-            <!-- Widget Footer -->
-            <div style="padding: 14px 24px; border-top: 1px solid rgba(255,255,255,0.1);
-                        display:flex; justify-content:space-between; align-items:center;">
-                <a href="/admin/appointment/appointment/?status__exact=Pending"
-                   style="color:#FF8C00; font-weight:600; font-size:13px; text-decoration:none;">
-                    View All Pending →
-                </a>
-                <span id="last-refreshed" style="color:rgba(255,255,255,0.3); font-size:11px;"></span>
+            <div class="vital-stat-box">
+                <div class="vital-stat-num">{{ confirmed_appts }}</div>
+                <div class="vital-stat-label">Confirmed</div>
+            </div>
+            <div class="vital-stat-box">
+                <div class="vital-stat-num text-orange">₹{{ todays_revenue }}</div>
+                <div class="vital-stat-label">Today's Revenue</div>
             </div>
         </div>
     </div>
 
-    <!-- Normal Django Admin App List -->
-    {% if app_list %}
-        {% for app in app_list %}
-        <div class="app-{{ app.app_label }} module{% if app.app_url in request.path|urlencode %} current-app{% endif %}">
-            <table>
-                <caption>
-                    <a href="{{ app.app_url }}" class="section">{{ app.name }}</a>
-                </caption>
-                {% for model in app.models %}
-                <tr class="model-{{ model.object_name|lower }}">
-                    {% if model.admin_url %}
-                    <th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
-                    {% else %}
-                    <th scope="row">{{ model.name }}</th>
-                    {% endif %}
-                    <td>
-                        {% if model.add_url %}
-                        <a href="{{ model.add_url }}" class="addlink">{% trans "Add" %}</a>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if model.admin_url %}
-                        <a href="{{ model.admin_url }}" class="changelink">{% trans "Change" %}</a>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
+    <!-- Summary Cards -->
+    <div class="vital-cards-grid">
+
+        <!-- Patients -->
+        <a href="/admin/appointment/patient/" class="v-card v-card-green">
+            <div class="v-card-header">
+                <i class="fas fa-user-friends fa-lg" style="opacity: 1; color: #ffffff;"></i>
+                <span class="v-badge">+0%</span>
+            </div>
+            <div class="v-card-body">
+                <div class="v-card-num">{{ total_patients }}</div>
+                <div class="v-card-text">Total Patients</div>
+                <span class="v-card-link">View All &rarr;</span>
+            </div>
+        </a>
+
+        <!-- Appointments -->
+        <a href="/admin/appointment/appointment/" class="v-card v-card-orange">
+            <div class="v-card-header">
+                <i class="fas fa-calendar-check fa-lg" style="opacity: 1; color: #ffffff;"></i>
+                <span class="v-badge">ALL TIME</span>
+            </div>
+            <div class="v-card-body">
+                <div class="v-card-num">{{ total_appointments }}</div>
+                <div class="v-card-text">Total Appointments</div>
+                <span class="v-card-link">View All &rarr;</span>
+            </div>
+        </a>
+
+        <!-- Doctors -->
+        <a href="/admin/appointment/doctor/" class="v-card v-card-blue">
+            <div class="v-card-header">
+                <i class="fas fa-user-md fa-lg" style="opacity: 1; color: #ffffff;"></i>
+                <span class="v-badge">ACTIVE</span>
+            </div>
+            <div class="v-card-body">
+                <div class="v-card-num">{{ total_doctors }}</div>
+                <div class="v-card-text">Total Doctors</div>
+                <span class="v-card-link">View All &rarr;</span>
+            </div>
+        </a>
+
+        <!-- Revenue -->
+        <a href="/admin/appointment/billing/" class="v-card v-card-purple">
+            <div class="v-card-header">
+                <i class="fas fa-rupee-sign fa-lg" style="opacity: 1; color: #ffffff;"></i>
+                <span class="v-badge">+20%</span>
+            </div>
+            <div class="v-card-body">
+                {% if total_revenue >= 1000 %}
+                    <div class="v-card-num">₹{{ total_revenue|floatformat:0 }}</div>
+                {% else %}
+                    <div class="v-card-num">₹{{ total_revenue }}</div>
+                {% endif %}
+                <div class="v-card-text">
+                    Total Revenue
+                    <span class="v-card-sub"><br>Completed payments</span>
+                </div>
+            </div>
+        </a>
+
+    </div>
+
+    <!-- ── Pending Approvals Widget ─────────────────────────── -->
+    {% if pending_approvals %}
+    <div class="approval-panel">
+        <div class="approval-header">
+            <div class="approval-title">
+                <span class="approval-dot"></span>
+                <h3>Pending Approvals</h3>
+                <span class="approval-count">{{ pending_approvals|length }}</span>
+            </div>
+            <a href="/admin/appointment/appointment/?status__exact=Pending" class="approval-view-all">
+                View All &rarr;
+            </a>
+        </div>
+
+        <div class="approval-table-wrap">
+            <table class="approval-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Patient</th>
+                        <th>Doctor</th>
+                        <th>Specialization</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appt in pending_approvals %}
+                    <tr>
+                        <td class="appt-id">#{{ appt.id }}</td>
+                        <td>
+                            <div class="appt-name">{{ appt.patient.name }}</div>
+                        </td>
+                        <td>
+                            <div class="appt-name">Dr. {{ appt.doctor.name }}</div>
+                        </td>
+                        <td>
+                            <span class="appt-spec">
+                                {% if appt.doctor.specialization %}{{ appt.doctor.specialization.name }}{% else %}—{% endif %}
+                            </span>
+                        </td>
+                        <td>{{ appt.date|date:"d M Y" }}</td>
+                        <td>{{ appt.time|time:"h:i A" }}</td>
+                        <td class="appt-actions">
+                            <button type="button" class="btn-approve"
+                                data-action="approve"
+                                data-url="/admin/dashboard-approve/{{ appt.id }}/"
+                                data-patient="{{ appt.patient.name }}"
+                                data-id="{{ appt.id }}">
+                                <i class="fas fa-check"></i> Approve
+                            </button>
+                            <button type="button" class="btn-reject"
+                                data-action="cancel"
+                                data-url="/admin/dashboard-cancel/{{ appt.id }}/"
+                                data-patient="{{ appt.patient.name }}"
+                                data-id="{{ appt.id }}">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
-        {% endfor %}
+    </div>
     {% else %}
-    <p>{% trans "You don't have permission to view or edit anything." %}</p>
+    <div class="approval-empty">
+        <i class="fas fa-check-circle" style="font-size:28px; color:#10B981; margin-bottom:8px;"></i>
+        <div style="font-size:15px; font-weight:600; color:#fff; margin-bottom:4px;">All Clear!</div>
+        <div style="font-size:13px; color:#94A3B8;">No appointments are pending approval right now.</div>
+    </div>
     {% endif %}
+
 </div>
 
-<!-- ── Pending Appointments JS ── -->
+<!-- ── Confirmation Modal ── -->
+<div id="confirm-modal" style="display:none;position:fixed;inset:0;z-index:99999;
+     background:rgba(6,15,30,0.75);backdrop-filter:blur(6px);
+     align-items:center;justify-content:center;">
+    <div style="background:#112B46;border:1px solid rgba(255,255,255,0.1);
+                border-radius:16px;padding:32px 28px;width:360px;max-width:90vw;
+                box-shadow:0 24px 60px rgba(0,0,0,0.5);
+                animation:modalIn .18s ease;font-family:'Inter',sans-serif;">
+        <div style="font-size:22px;margin-bottom:8px;text-align:center;" id="modal-icon">✅</div>
+        <h3 id="modal-title" style="font-size:17px;font-weight:700;color:#fff;
+            text-align:center;margin:0 0 8px 0;"></h3>
+        <p id="modal-body" style="font-size:13.5px;color:#94A3B8;
+            text-align:center;margin:0 0 24px 0;line-height:1.5;"></p>
+        <div style="display:flex;gap:10px;justify-content:center;">
+            <button id="modal-cancel-btn"
+                style="flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);
+                       background:transparent;color:#CBD5E1;cursor:pointer;
+                       font-size:14px;font-weight:600;font-family:'Inter',sans-serif;
+                       transition:background .15s;">
+                No, go back
+            </button>
+            <form id="modal-form" method="POST" style="flex:1;margin:0;">
+                {% csrf_token %}
+                <button type="submit" id="modal-confirm-btn"
+                    style="width:100%;padding:10px;border-radius:8px;border:none;
+                           cursor:pointer;font-size:14px;font-weight:700;
+                           font-family:'Inter',sans-serif;transition:all .15s;">
+                    Yes, confirm
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <style>
-.appt-row {
-    display: flex;
-    align-items: center;
-    padding: 12px 24px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    gap: 12px;
-    transition: background 0.2s;
+@keyframes modalIn {
+    from { opacity:0; transform:translateY(10px) scale(.97); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
 }
-.appt-row:hover { background: rgba(255,255,255,0.05); }
-.appt-row:last-child { border-bottom: none; }
-.appt-badge {
-    background: rgba(255,140,0,0.15);
-    color: #FF8C00;
-    border: 1px solid rgba(255,140,0,0.3);
-    border-radius: 6px;
-    padding: 3px 10px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    white-space: nowrap;
-}
-.confirm-btn {
-    background: #FF8C00 !important;
-    color: #fff !important;
-    border: none !important;
-    border-radius: 6px !important;
-    padding: 7px 16px !important;
-    font-size: 12px !important;
-    font-weight: 700 !important;
-    cursor: pointer !important;
-    white-space: nowrap;
-    transition: background 0.2s !important;
-}
-.confirm-btn:hover { background: #e07000 !important; }
-.confirm-btn:disabled { background: #28a745 !important; cursor: default !important; }
-.view-btn {
-    color: rgba(255,255,255,0.5) !important;
-    font-size: 12px;
-    text-decoration: none;
-    white-space: nowrap;
-}
-.view-btn:hover { color: #fff !important; }
+.btn-approve, .btn-reject { cursor: pointer; border: none; }
 </style>
 
 <script>
-function loadPendingDashboard() {
-    fetch('/admin/appointment/appointment/pending-count/', {
-        credentials: 'same-origin',
-        headers: {'X-Requested-With': 'XMLHttpRequest'}
-    })
-    .then(r => r.json())
-    .then(data => {
-        // Update badge
-        document.getElementById('pending-count-badge').textContent = data.count;
+(function () {
+    // Dynamic date
+    var el = document.getElementById('dash-date');
+    if (el && !el.textContent.trim()) {
+        el.textContent = new Date().toLocaleDateString('en-GB', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+        });
+    }
 
-        // Update timestamp
-        const now = new Date();
-        document.getElementById('last-refreshed').textContent =
-            'Refreshed at ' + now.toLocaleTimeString();
+    // Modal elements
+    var overlay     = document.getElementById('confirm-modal');
+    var modalForm   = document.getElementById('modal-form');
+    var modalTitle  = document.getElementById('modal-title');
+    var modalBody   = document.getElementById('modal-body');
+    var modalIcon   = document.getElementById('modal-icon');
+    var confirmBtn  = document.getElementById('modal-confirm-btn');
+    var cancelBtn   = document.getElementById('modal-cancel-btn');
 
-        // Render rows
-        const list = document.getElementById('pending-appointments-list');
-        if (data.count === 0) {
-            list.innerHTML = `
-                <div style="text-align:center; padding:30px; color:rgba(255,255,255,0.4);">
-                    <div style="font-size:36px; margin-bottom:10px;">✅</div>
-                    <div style="font-size:14px; font-weight:600;">All caught up! No pending appointments.</div>
-                </div>`;
-            return;
-        }
+    function openModal(action, url, patientName, apptId) {
+        var isApprove = action === 'approve';
+        modalIcon.textContent       = isApprove ? '✅' : '❌';
+        modalTitle.textContent      = isApprove ? 'Confirm Appointment' : 'Cancel Appointment';
+        modalBody.textContent       = isApprove
+            ? 'Approve appointment #' + apptId + ' for ' + patientName + '? The patient will be notified by email.'
+            : 'Cancel appointment #' + apptId + ' for ' + patientName + '? This action cannot be undone.';
+        confirmBtn.textContent      = isApprove ? 'Yes, Approve' : 'Yes, Cancel';
+        confirmBtn.style.background = isApprove ? '#10B981' : '#EF4444';
+        confirmBtn.style.color      = '#fff';
+        modalForm.action            = url;
+        overlay.style.display       = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
 
-        list.innerHTML = data.appointments.map(a => `
-            <div class="appt-row" id="appt-row-${a.id}">
-                <span class="appt-badge">Pending</span>
-                <div style="flex:1; min-width:0;">
-                    <div style="color:#fff; font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                        ${a.patient}
-                    </div>
-                    <div style="color:rgba(255,255,255,0.5); font-size:12px;">
-                        ${a.doctor} &bull; ${a.specialization}
-                    </div>
-                </div>
-                <div style="text-align:right; color:rgba(255,255,255,0.6); font-size:13px; white-space:nowrap;">
-                    <div style="font-weight:600; color:#fff;">${a.date}</div>
-                    <div style="font-size:12px;">${a.time}</div>
-                </div>
-                <button class="confirm-btn"
-                        data-id="${a.id}"
-                        data-url="${a.confirm_url}"
-                        onclick="confirmAppointment(this, ${a.id}, '${a.confirm_url}')">
-                    ✅ Confirm
-                </button>
-                <a href="${a.detail_url}" class="view-btn">View</a>
-            </div>
-        `).join('');
-    })
-    .catch(() => {
-        document.getElementById('pending-appointments-list').innerHTML =
-            '<div style="color:rgba(255,80,80,0.7); text-align:center; padding:20px; font-size:13px;">⚠ Could not load appointments.</div>';
+    function closeModal() {
+        overlay.style.display        = 'none';
+        document.body.style.overflow = '';
+    }
+
+    // Wire up all action buttons
+    document.querySelectorAll('[data-action]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            openModal(
+                btn.dataset.action,
+                btn.dataset.url,
+                btn.dataset.patient,
+                btn.dataset.id
+            );
+        });
     });
-}
 
-function confirmAppointment(btn, id, url) {
-    btn.disabled = true;
-    btn.textContent = 'Confirming...';
-
-    fetch(url, {
-        credentials: 'same-origin',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRFToken': getCookie('csrftoken')
-        }
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            btn.textContent = '✅ Confirmed!';
-            // Fade out the row
-            const row = document.getElementById('appt-row-' + id);
-            row.style.transition = 'opacity 0.5s, max-height 0.5s';
-            row.style.opacity = '0';
-            row.style.overflow = 'hidden';
-            setTimeout(() => {
-                row.style.maxHeight = '0';
-                row.style.padding = '0';
-                setTimeout(() => {
-                    row.remove();
-                    // Update count badge
-                    document.getElementById('pending-count-badge').textContent = data.remaining;
-                    document.getElementById('pending-bar-count').textContent = data.remaining;
-                    if (data.remaining === 0) {
-                        document.getElementById('pending-notification-bar').style.display = 'none';
-                    }
-                }, 500);
-            }, 400);
-        } else {
-            btn.textContent = '⚠ Error';
-            btn.style.background = '#dc3545';
-        }
-    })
-    .catch(() => {
-        btn.textContent = '⚠ Failed';
-        btn.disabled = false;
+    cancelBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) closeModal();
     });
-}
-
-function getCookie(name) {
-    let value = `; ${document.cookie}`;
-    let parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-}
-
-// Load on page ready + auto-refresh every 60 seconds
-document.addEventListener('DOMContentLoaded', loadPendingDashboard);
-setInterval(loadPendingDashboard, 60000);
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeModal();
+    });
+})();
 </script>
 {% endblock %}

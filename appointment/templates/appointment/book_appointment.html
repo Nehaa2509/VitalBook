@@ -1,168 +1,539 @@
-﻿{% extends 'appointment/base.html' %}
+{% extends 'appointment/base.html' %}
 
-{% block title %}Book Appointment - VITALBOOK{% endblock %}
+{% block title %}Book Appointment - VitalBook{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Page Background ── */
+.booking-page-bg {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0B2B46 0%, #1a4a70 45%, #5c2d91 100%);
+    padding: 30px 0 60px;
+    position: relative;
+    overflow: hidden;
+}
+.booking-page-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+}
+
+/* ── Page title bar ── */
+.booking-page-header {
+    text-align: center;
+    padding: 20px 20px 36px;
+    position: relative;
+    z-index: 1;
+}
+.booking-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(8px);
+    padding: 6px 18px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #93c5fd;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+}
+.booking-page-title {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+}
+.booking-page-title .highlight { color: #f97316; }
+.booking-page-subtitle { color: rgba(255,255,255,0.7); font-size: 1rem; }
+
+/* ── Wrapper ── */
+.booking-wrapper-premium {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 28px;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Doctor Summary Card ── */
+.doctor-summary-premium {
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+    overflow: hidden;
+    height: fit-content;
+    position: sticky;
+    top: 100px;
+}
+.doc-card-top {
+    background: linear-gradient(135deg, #0B2B46, #1a4a70);
+    padding: 28px 24px;
+    text-align: center;
+    position: relative;
+}
+.doc-card-top::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 0; right: 0;
+    height: 30px;
+    background: #ffffff;
+    clip-path: ellipse(55% 100% at 50% 100%);
+}
+.doc-avatar {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    border: 4px solid rgba(255,255,255,0.3);
+    margin: 0 auto 14px;
+    display: block;
+    object-fit: cover;
+}
+.doc-name {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 4px;
+}
+.doc-spec {
+    font-size: 0.88rem;
+    color: #93c5fd;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.doc-qual {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.65);
+}
+.doc-meta-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 10px;
+}
+.doc-meta-badge {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.doc-meta-badge i { color: #fbbf24; }
+
+.doc-card-body {
+    padding: 28px 24px 24px;
+}
+.doc-info-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #94a3b8;
+    margin-bottom: 14px;
+}
+.doc-info-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+.doc-info-item:last-child { border-bottom: none; }
+.doc-info-icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    display: flex; align-items: center; justify-content: center;
+    color: #0B2B46;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+.doc-info-icon.orange { background: linear-gradient(135deg, #fff7ed, #ffedd5); color: #c2410c; }
+.doc-info-label {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.doc-info-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0B2B46;
+}
+
+/* ── Booking Form Card ── */
+.booking-form-premium {
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+    overflow: hidden;
+}
+.booking-form-head {
+    background: linear-gradient(135deg, #f97316, #fb923c);
+    padding: 28px 36px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.booking-form-head-icon {
+    width: 54px; height: 54px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    color: white;
+    flex-shrink: 0;
+}
+.booking-form-head h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 4px;
+}
+.booking-form-head p { color: rgba(255,255,255,0.8); font-size: 0.9rem; }
+
+.booking-form-body { padding: 36px; }
+
+/* ── Form Group ── */
+.bfg { margin-bottom: 24px; }
+.bfg label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #0B2B46;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.bfg label i { color: #5c2d91; }
+.bfg input,
+.bfg select,
+.bfg textarea {
+    width: 100%;
+    padding: 13px 18px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    color: #0B2B46;
+    background: #f8faff;
+    transition: all 0.25s ease;
+    box-sizing: border-box;
+}
+.bfg input:focus,
+.bfg select:focus,
+.bfg textarea:focus {
+    outline: none;
+    border-color: #5c2d91;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(92,45,145,0.08);
+}
+.bfg small { display: block; margin-top: 6px; font-size: 12px; color: #94a3b8; }
+
+/* ── Booking Summary ── */
+.booking-summary-premium {
+    background: linear-gradient(135deg, #f8faff, #eff6ff);
+    border: 1px solid #e8efff;
+    border-radius: 16px;
+    padding: 24px;
+    margin: 28px 0;
+}
+.booking-summary-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #94a3b8;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.booking-summary-title i { color: #3b82f6; }
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.9rem;
+}
+.summary-row:last-child { border-bottom: none; }
+.summary-row span:first-child { color: #64748b; font-weight: 500; }
+.summary-row span:last-child { color: #0B2B46; font-weight: 700; }
+.summary-row .fee-large { font-size: 1.3rem; color: #f97316; font-weight: 800; }
+
+/* ── Form Actions ── */
+.booking-form-actions {
+    display: flex;
+    gap: 14px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+.btn-booking-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 28px;
+    background: transparent;
+    color: #0B2B46 !important;
+    border: 2px solid #e2e8f0;
+    border-radius: 50px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.25s ease;
+}
+.btn-booking-outline:hover {
+    border-color: #0B2B46;
+    background: #f8faff;
+}
+.btn-booking-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 36px;
+    background: linear-gradient(135deg, #f97316, #fb923c);
+    color: white !important;
+    border: none;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 8px 24px rgba(249,115,22,0.4);
+    transition: all 0.3s ease;
+}
+.btn-booking-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 32px rgba(249,115,22,0.5);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+    .booking-wrapper-premium { grid-template-columns: 1fr; }
+    .doctor-summary-premium { position: relative; top: auto; }
+}
+@media (max-width: 576px) {
+    .booking-form-head { padding: 22px 24px; }
+    .booking-form-body { padding: 24px; }
+    .booking-form-actions { justify-content: stretch; flex-direction: column; }
+    .btn-booking-outline, .btn-booking-primary { width: 100%; justify-content: center; }
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<section class="booking-section">
-    <div class="container">
-        <div class="booking-wrapper">
-            <div class="doctor-summary-card">
-                <h3>Appointment With</h3>
-                <div class="doctor-summary">
-                    <img src="https://ui-avatars.com/api/?name={{ doctor.name }}&size=100&background=4A90E2&color=fff" alt="{{ doctor.name }}">
+<div class="booking-page-bg">
+    <!-- Page Header -->
+    <div class="booking-page-header">
+        <div class="booking-eyebrow">
+            <i class="fas fa-calendar-plus"></i> Book an Appointment
+        </div>
+        <h1 class="booking-page-title">
+            Book with <span class="highlight">{{ doctor.name }}</span>
+        </h1>
+        <p class="booking-page-subtitle">Select your preferred date and time slot below</p>
+    </div>
+
+    <!-- Content -->
+    <div class="booking-wrapper-premium">
+        <!-- Doctor Summary -->
+        <div class="doctor-summary-premium">
+            <div class="doc-card-top">
+                <img class="doc-avatar"
+                     src="https://ui-avatars.com/api/?name={{ doctor.name }}&size=200&background=1a4a70&color=fff&bold=true"
+                     alt="{{ doctor.name }}">
+                <div class="doc-name">{{ doctor.name }}</div>
+                <div class="doc-spec">{{ doctor.specialization.name }}</div>
+                <div class="doc-qual">{{ doctor.qualification }}</div>
+                <div class="doc-meta-row">
+                    <div class="doc-meta-badge"><i class="fas fa-star"></i> {{ doctor.rating }}</div>
+                    <div class="doc-meta-badge"><i class="fas fa-briefcase"></i> {{ doctor.experience_years }}y exp</div>
+                </div>
+            </div>
+            <div class="doc-card-body">
+                <div class="doc-info-title">Consultation Details</div>
+                <div class="doc-info-item">
+                    <div class="doc-info-icon orange"><i class="fas fa-rupee-sign"></i></div>
                     <div>
-                        <h2>Dr. {{ doctor.name }}</h2>
-                        <p class="specialization">{{ doctor.specialization.name }}</p>
-                        <p class="qualification">{{ doctor.qualification }}</p>
-                        <div class="doctor-meta-small">
-                            <span><i class="fas fa-star"></i> {{ doctor.rating }}</span>
-                            <span><i class="fas fa-briefcase"></i> {{ doctor.experience_years }} years</span>
-                        </div>
+                        <span class="doc-info-label">Consultation Fee</span>
+                        <span class="doc-info-value">₹{{ doctor.consultation_fee }}</span>
                     </div>
                 </div>
-                
-                <div class="appointment-info">
-                    <h4>Consultation Details</h4>
-                    <div class="info-item">
-                        <i class="fas fa-rupee-sign"></i>
-                        <div>
-                            <span class="label">Consultation Fee</span>
-                            <span class="value">₹{{ doctor.consultation_fee }}</span>
-                        </div>
+                <div class="doc-info-item">
+                    <div class="doc-info-icon"><i class="fas fa-calendar-week"></i></div>
+                    <div>
+                        <span class="doc-info-label">Available Days</span>
+                        <span class="doc-info-value">{{ doctor.dynamic_available_days }}</span>
                     </div>
-                    <div class="info-item">
-                        <i class="fas fa-calendar"></i>
-                        <div>
-                            <span class="label">Available Days</span>
-                            <span class="value">{{ doctor.available_days }}</span>
-                        </div>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-clock"></i>
-                        <div>
-                            <span class="label">Available Time</span>
-                            <span class="value">{{ doctor.available_time }}</span>
-                        </div>
+                </div>
+                <div class="doc-info-item">
+                    <div class="doc-info-icon"><i class="fas fa-clock"></i></div>
+                    <div>
+                        <span class="doc-info-label">Available Time</span>
+                        <span class="doc-info-value">{{ doctor.dynamic_available_time }}</span>
                     </div>
                 </div>
             </div>
-            
-            <div class="booking-form-card">
-                <h2>Book Your Appointment</h2>
-                <p class="form-subtitle">Select your preferred date and time</p>
-                
+        </div>
+
+        <!-- Booking Form -->
+        <div class="booking-form-premium">
+            <div class="booking-form-head">
+                <div class="booking-form-head-icon"><i class="fas fa-calendar-plus"></i></div>
+                <div>
+                    <h2>Book Your Appointment</h2>
+                    <p>Fill in the details to confirm your slot</p>
+                </div>
+            </div>
+            <div class="booking-form-body">
+                {% if messages %}
+                <div style="margin-bottom: 20px;">
+                    {% for message in messages %}
+                    <div style="padding: 12px 16px; border-radius: 10px; margin-bottom: 8px;
+                                background: {% if message.tags == 'error' %}#fef2f2{% else %}#f0fdf4{% endif %};
+                                border-left: 4px solid {% if message.tags == 'error' %}#ef4444{% else %}#22c55e{% endif %};
+                                color: {% if message.tags == 'error' %}#dc2626{% else %}#16a34a{% endif %};
+                                font-weight: 600; font-size: 0.9rem;">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
                 <form method="POST" id="bookingForm">
                     {% csrf_token %}
-                    
-                    <div class="form-group">
-                        <label><i class="fas fa-calendar-alt"></i> Appointment Date *</label>
+
+                    <div class="bfg">
+                        <label for="appointmentDate"><i class="fas fa-calendar-alt"></i> Appointment Date *</label>
                         <input type="date" name="date" id="appointmentDate" required min="{{ today }}">
-                        <small>Select a date for your appointment</small>
+                        <small>Select a date from today onwards</small>
                     </div>
-                    
-                    <div class="form-group">
-                        <label><i class="fas fa-clock"></i> Appointment Time *</label>
+
+                    <div class="bfg">
+                        <label for="appointmentTime"><i class="fas fa-clock"></i> Appointment Time *</label>
                         <select name="time" id="appointmentTime" required>
-                            <option value="">Select Time</option>
-                            <option value="09:00:00">09:00 AM</option>
-                            <option value="09:30:00">09:30 AM</option>
-                            <option value="10:00:00">10:00 AM</option>
-                            <option value="10:30:00">10:30 AM</option>
-                            <option value="11:00:00">11:00 AM</option>
-                            <option value="11:30:00">11:30 AM</option>
-                            <option value="12:00:00">12:00 PM</option>
-                            <option value="14:00:00">02:00 PM</option>
-                            <option value="14:30:00">02:30 PM</option>
-                            <option value="15:00:00">03:00 PM</option>
-                            <option value="15:30:00">03:30 PM</option>
-                            <option value="16:00:00">04:00 PM</option>
-                            <option value="16:30:00">04:30 PM</option>
-                            <option value="17:00:00">05:00 PM</option>
+                            <option value="">Choose a date first</option>
                         </select>
-                        <small>Choose an available time slot</small>
+                        <small>Available slots will load dynamically</small>
                     </div>
-                    
-                    <div class="form-group">
-                        <label><i class="fas fa-notes-medical"></i> Reason for Visit *</label>
-                        <textarea name="reason" rows="3" required placeholder="Brief description of your health concern"></textarea>
+
+                    <div class="bfg">
+                        <label for="apptReason"><i class="fas fa-notes-medical"></i> Reason for Visit *</label>
+                        <textarea name="reason" id="apptReason" rows="3" required
+                                  placeholder="Brief description of your health concern"></textarea>
                     </div>
-                    
-                    <div class="form-group">
-                        <label><i class="fas fa-heartbeat"></i> Symptoms</label>
-                        <textarea name="symptoms" rows="3" placeholder="Describe your symptoms (optional)"></textarea>
+
+                    <div class="bfg">
+                        <label for="apptSymptoms"><i class="fas fa-heartbeat"></i> Symptoms (Optional)</label>
+                        <textarea name="symptoms" id="apptSymptoms" rows="3"
+                                  placeholder="Describe your symptoms in detail"></textarea>
                     </div>
-                    
-                    <div class="booking-summary">
-                        <h4>Booking Summary</h4>
-                        <div class="summary-item">
-                            <span>Doctor:</span>
-                            <span>Dr. {{ doctor.name }}</span>
+
+                    <!-- Booking Summary -->
+                    <div class="booking-summary-premium">
+                        <div class="booking-summary-title"><i class="fas fa-receipt"></i> Booking Summary</div>
+                        <div class="summary-row">
+                            <span>Doctor</span>
+                            <span>{{ doctor.name }}</span>
                         </div>
-                        <div class="summary-item">
-                            <span>Specialization:</span>
+                        <div class="summary-row">
+                            <span>Specialization</span>
                             <span>{{ doctor.specialization.name }}</span>
                         </div>
-                        <div class="summary-item">
-                            <span>Consultation Fee:</span>
-                            <span class="fee">₹{{ doctor.consultation_fee }}</span>
+                        <div class="summary-row">
+                            <span>Consultation Fee</span>
+                            <span class="fee-large">₹{{ doctor.consultation_fee }}</span>
                         </div>
                     </div>
-                    
-                    <div class="form-actions">
-                        <a href="{% url 'doctor_list' %}" class="btn btn-outline">
-                            <i class="fas fa-arrow-left"></i> Back
+
+                    <div class="booking-form-actions">
+                        <a href="{% url 'doctor_list' %}" class="btn-booking-outline">
+                            <i class="fas fa-arrow-left"></i> Back to Doctors
                         </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-check"></i> Confirm Booking
+                        <button type="submit" class="btn-booking-primary">
+                            <i class="fas fa-check-circle"></i> Confirm Booking
                         </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-</section>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-const bookedSlots = {{ booked_slots|safe }};
-
 document.getElementById('bookingForm').addEventListener('submit', function(e) {
-    const date = document.getElementById('appointmentDate').value;
-    const time = document.getElementById('appointmentTime').value;
-    
-    // Check if slot is booked
-    const isBooked = bookedSlots.some(slot => slot[0] === date && slot[1] === time);
-    
-    if (isBooked) {
-        e.preventDefault();
-        alert('This time slot is already booked. Please select another time.');
-        return false;
-    }
-    
-    if (!confirm('Are you sure you want to book this appointment?')) {
-        e.preventDefault();
-        return false;
-    }
+    const btn = this.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Booking...';
 });
 
-// Disable booked time slots when date changes
 document.getElementById('appointmentDate').addEventListener('change', function() {
-    const selectedDate = this.value;
+    const date = this.value;
+    const doctorId = "{{ doctor.id }}";
     const timeSelect = document.getElementById('appointmentTime');
-    const options = timeSelect.querySelectorAll('option');
     
-    options.forEach(option => {
-        if (option.value) {
-            const isBooked = bookedSlots.some(slot => 
-                slot[0] === selectedDate && slot[1] === option.value
-            );
-            option.disabled = isBooked;
-            if (isBooked) {
-                option.textContent = option.textContent.replace(' (Booked)', '') + ' (Booked)';
+    if (!date) {
+        timeSelect.innerHTML = '<option value="">Choose a date first</option>';
+        return;
+    }
+
+    timeSelect.innerHTML = '<option value="">Loading slots...</option>';
+
+    fetch(`/ajax/load-slots/?doctor_id=${doctorId}&date=${date}`)
+        .then(response => response.json())
+        .then(data => {
+            timeSelect.innerHTML = '<option value="">Choose a time slot</option>';
+            
+            if (data.error) {
+                timeSelect.innerHTML = '<option value="">Error loading slots</option>';
+                console.error(data.error);
+                return;
             }
-        }
-    });
+
+            if(data.slots.length === 0) {
+                timeSelect.innerHTML = '<option value="">No slots available for this day</option>';
+                return;
+            }
+
+            data.slots.forEach(slot => {
+                const option = document.createElement('option');
+                // The backend strftime('%I:%M %p') handles formatting, but we might need 
+                // to parse it back or simply send it to the form as string.
+                // HTML5 time inputs technically prefer HH:mm:ss, but Django form 
+                // TimeField handles '%I:%M %p' perfectly fine if configured.
+                // Our AppointmentForm fields=['time'] parses time dynamically.
+                option.value = slot;
+                option.text = slot;
+                timeSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            timeSelect.innerHTML = '<option value="">Error loading slots</option>';
+            console.error('Error fetching slots:', error);
+        });
 });
 </script>
 {% endblock %}

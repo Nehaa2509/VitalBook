@@ -1,0 +1,166 @@
+{% extends 'appointment/base.html' %}
+
+{% block title %}Payment Receipt — VitalBook{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0B2B46, #2d1b69); min-height: 100vh; }
+
+.receipt-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.receipt-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 48px 40px;
+    max-width: 520px;
+    width: 100%;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+    text-align: center;
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    box-shadow: 0 8px 24px rgba(34,197,94,0.35);
+}
+.success-icon i { font-size: 38px; color: #fff; }
+
+.receipt-title { font-size: 26px; font-weight: 800; color: #16a34a; margin-bottom: 6px; }
+.receipt-subtitle { font-size: 14px; color: #94a3b8; margin-bottom: 32px; }
+
+.receipt-table {
+    background: #f8faff;
+    border-radius: 14px;
+    padding: 8px 0;
+    text-align: left;
+    margin-bottom: 28px;
+}
+
+.receipt-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 13px 20px;
+    border-bottom: 1px solid #f1f5f9;
+}
+.receipt-row:last-child { border-bottom: none; }
+.r-label { font-size: 13px; color: #94a3b8; font-weight: 500; }
+.r-value { font-size: 14px; color: #0B2B46; font-weight: 700; max-width: 60%; text-align: right; word-break: break-all; }
+.r-value.green { color: #16a34a; font-size: 20px; }
+
+.btn-row {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-primary {
+    flex: 1; padding: 14px;
+    background: linear-gradient(135deg, #FF8C00, #e07000);
+    color: #fff; border: none; border-radius: 50px;
+    font-size: 14px; font-weight: 700; font-family: 'Inter', sans-serif;
+    cursor: pointer; text-decoration: none;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(255,140,0,0.35);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(255,140,0,0.45); color: #fff; }
+
+.btn-outline {
+    flex: 1; padding: 14px;
+    background: transparent;
+    color: #0B2B46; border: 2px solid #e2e8f0; border-radius: 50px;
+    font-size: 14px; font-weight: 700; font-family: 'Inter', sans-serif;
+    cursor: pointer; text-decoration: none;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all 0.2s;
+}
+.btn-outline:hover { border-color: #0B2B46; background: #f0f4ff; color: #0B2B46; }
+
+.razorpay-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 20px;
+    font-size: 12px;
+    color: #94a3b8;
+}
+.razorpay-badge i { color: #0080ff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="receipt-wrapper">
+    <div class="receipt-card">
+
+        <div class="success-icon">
+            <i class="fas fa-check"></i>
+        </div>
+
+        <div class="receipt-title">Payment Successful!</div>
+        <div class="receipt-subtitle">Your appointment has been booked and payment confirmed.</div>
+
+        <div class="receipt-table">
+            <div class="receipt-row">
+                <span class="r-label">Booking ID</span>
+                <span class="r-value">VB-{{ appointment.id }}</span>
+            </div>
+            <div class="receipt-row">
+                <span class="r-label">Payment ID</span>
+                <span class="r-value">{{ payment.transaction_id }}</span>
+            </div>
+            <div class="receipt-row">
+                <span class="r-label">Doctor</span>
+                <span class="r-value">{{ appointment.doctor.name }}</span>
+            </div>
+            <div class="receipt-row">
+                <span class="r-label">Specialization</span>
+                <span class="r-value">{{ appointment.doctor.specialization.name }}</span>
+            </div>
+            <div class="receipt-row">
+                <span class="r-label">Date</span>
+                <span class="r-value">{{ appointment.date|date:"d M Y" }}</span>
+            </div>
+            <div class="receipt-row">
+                <span class="r-label">Time</span>
+                <span class="r-value">{{ appointment.time|time:"g:i A" }}</span>
+            </div>
+            <div class="receipt-row">
+                <span class="r-label">Status</span>
+                <span class="r-value" style="color:#FF8C00;">Pending Admin Confirmation</span>
+            </div>
+            <div class="receipt-row">
+                <span class="r-label">Amount Paid</span>
+                <span class="r-value green">₹{{ payment.amount }}</span>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <a href="{% url 'patient_dashboard' %}#upcoming-appointments" class="btn-primary">
+                <i class="fas fa-calendar-check"></i> My Appointments
+            </a>
+            <a href="{% url 'home' %}" class="btn-outline">
+                <i class="fas fa-home"></i> Home
+            </a>
+        </div>
+
+        <div class="razorpay-badge">
+            <i class="fas fa-shield-alt"></i>
+            <span>Payment processed securely by Razorpay</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

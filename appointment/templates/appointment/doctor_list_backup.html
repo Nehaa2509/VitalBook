@@ -1,4 +1,4 @@
-﻿{% extends 'appointment/base.html' %}
+{% extends 'appointment/base.html' %}
 
 {% block title %}Find Doctors - VITALBOOK{% endblock %}
 
@@ -57,7 +57,7 @@
                     <div class="doctor-list-info">
                         <div class="doctor-header">
                             <div>
-                                <h3>Dr. {{ doctor.name }}</h3>
+                                <h3>{{ doctor.name }}</h3>
                                 <p class="specialization">
                                     <i class="fas fa-stethoscope"></i> {{ doctor.specialization.name }}
                                 </p>

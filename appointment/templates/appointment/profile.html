@@ -3,21 +3,131 @@
 {% block title %}My Profile - VITALBOOK{% endblock %}
 
 {% block extra_css %}
+<!-- Flatpickr CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
-.flatpickr-input { width:100%; padding:0.75rem 1rem; border:2px solid #CBD5E1; border-radius:8px; font-size:1rem; font-family:inherit; cursor:pointer; background:#fff; color:#0B2B46; box-sizing:border-box; transition:border-color 0.2s; }
-.flatpickr-input:hover { border-color:#FF8C00; }
-.flatpickr-input:focus { outline:none; border-color:#FF8C00; box-shadow:0 0 0 3px rgba(255,140,0,0.15); }
-.flatpickr-calendar { border-radius:12px; box-shadow:0 8px 32px rgba(11,43,70,0.18); border:none; font-family:inherit; }
-.flatpickr-months { background:#0B2B46; border-radius:12px 12px 0 0; padding:6px 0; }
-.flatpickr-month { color:#fff; }
-.flatpickr-current-month .flatpickr-monthDropdown-months { color:#fff; background:#0B2B46; }
-.flatpickr-current-month input.cur-year { color:#fff; }
-.flatpickr-prev-month svg, .flatpickr-next-month svg { fill:#FF8C00; }
-.flatpickr-weekday { color:#0B2B46; font-weight:600; }
-.flatpickr-day:hover { background:#fff3e0; border-color:#FF8C00; }
-.flatpickr-day.selected, .flatpickr-day.selected:hover { background:#FF8C00 !important; border-color:#FF8C00 !important; color:#fff !important; }
-.flatpickr-day.today { border-color:#0B2B46; }
+/* Flatpickr Custom Theme to match VitalBook */
+.flatpickr-calendar {
+    border: none;
+    box-shadow: 0 8px 32px rgba(11, 43, 70, 0.2), 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    font-family: inherit;
+    overflow: hidden;
+    padding: 0;
+}
+.flatpickr-months {
+    background: linear-gradient(135deg, #0B2B46 0%, #1a3a5c 100%);
+    padding: 12px 0;
+    border-radius: 12px 12px 0 0;
+    position: relative;
+}
+.flatpickr-month {
+    color: #fff;
+    height: 40px;
+}
+.flatpickr-current-month {
+    height: 40px;
+    padding: 0;
+}
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-current-month input.cur-year {
+    color: #fff !important;
+    background: transparent !important;
+    border: none;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.flatpickr-current-month .flatpickr-monthDropdown-months:hover,
+.flatpickr-current-month input.cur-year:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+.flatpickr-current-month .flatpickr-monthDropdown-months option,
+.flatpickr-current-month .flatpickr-monthDropdown-years option {
+    color: #0B2B46 !important;
+    background: #fff !important;
+}
+.flatpickr-prev-month,
+.flatpickr-next-month {
+    padding: 10px;
+    cursor: pointer;
+}
+.flatpickr-prev-month svg,
+.flatpickr-next-month svg {
+    fill: #FF8C00;
+    width: 14px;
+    height: 14px;
+}
+.flatpickr-prev-month:hover svg,
+.flatpickr-next-month:hover svg {
+    fill: #FFA533;
+}
+.flatpickr-weekdays {
+    background: #f8fafc;
+    height: 36px;
+    padding: 8px 0;
+}
+.flatpickr-weekday {
+    color: #0B2B46;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.flatpickr-days {
+    border: none;
+}
+.dayContainer {
+    padding: 8px;
+}
+.flatpickr-day {
+    border-radius: 8px;
+    color: #0B2B46;
+    font-size: 14px;
+    line-height: 36px;
+    max-width: 36px;
+    height: 36px;
+    border: none;
+    margin: 2px;
+}
+.flatpickr-day:hover {
+    background: #fff3e0;
+    border-color: transparent;
+}
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover {
+    background: #FF8C00 !important;
+    border-color: transparent !important;
+    color: #fff !important;
+    font-weight: 600;
+}
+.flatpickr-day.today {
+    border: 2px solid #0B2B46;
+    font-weight: 600;
+}
+.flatpickr-day.today:hover {
+    background: #e8f0f8;
+}
+.flatpickr-day.prevMonthDay,
+.flatpickr-day.nextMonthDay {
+    color: #cbd5e1;
+}
+.flatpickr-day.disabled {
+    color: #e2e8f0;
+    cursor: not-allowed;
+}
+
+/* Input styling */
+#dob-display {
+    width: 100%; padding: 0.75rem 1rem; border: 2px solid #CBD5E1; border-radius: 8px;
+    font-size: 1rem; font-family: inherit; cursor: pointer; background: #fff; color: #0B2B46;
+    box-sizing: border-box; transition: all 0.2s;
+}
+#dob-display:hover { border-color: #FF8C00; }
+#dob-display:focus { outline: none; border-color: #FF8C00; box-shadow: 0 0 0 3px rgba(255,140,0,0.15); }
+#dob-display::placeholder { color: #94a3b8; }
 </style>
 {% endblock %}
 
@@ -66,12 +176,13 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label><i class="fas fa-calendar-alt"></i> Date of Birth</label>
-                            <!-- Flatpickr visible input -->
-                            <input type="text"
-                                   id="dob_display"
-                                   placeholder="Click to select date"
+                            <!-- Display Input (User sees this) -->
+                            <input type="text" 
+                                   id="dob-display" 
+                                   placeholder="Select Date of Birth" 
+                                   readonly
                                    value="{{ patient.date_of_birth|date:'d M Y' }}">
-                            <!-- Hidden input Django reads on POST -->
+                            <!-- Hidden Input (Django processes this) -->
                             <input type="hidden"
                                    name="date_of_birth"
                                    id="dob-input"
@@ -97,9 +208,14 @@
                             <label><i class="fas fa-tint"></i> Blood Group</label>
                             <select name="blood_group">
                                 <option value="">Select Blood Group</option>
-                                {% for bg in 'A+,A-,B+,B-,AB+,AB-,O+,O-'|split:',' %}
-                                    <option value="{{ bg }}" {% if patient.blood_group == bg %}selected{% endif %}>{{ bg }}</option>
-                                {% endfor %}
+                                <option value="A+"  {% if patient.blood_group == 'A+'  %}selected{% endif %}>A+</option>
+                                <option value="A-"  {% if patient.blood_group == 'A-'  %}selected{% endif %}>A-</option>
+                                <option value="B+"  {% if patient.blood_group == 'B+'  %}selected{% endif %}>B+</option>
+                                <option value="B-"  {% if patient.blood_group == 'B-'  %}selected{% endif %}>B-</option>
+                                <option value="AB+" {% if patient.blood_group == 'AB+' %}selected{% endif %}>AB+</option>
+                                <option value="AB-" {% if patient.blood_group == 'AB-' %}selected{% endif %}>AB-</option>
+                                <option value="O+"  {% if patient.blood_group == 'O+'  %}selected{% endif %}>O+</option>
+                                <option value="O-"  {% if patient.blood_group == 'O-'  %}selected{% endif %}>O-</option>
                             </select>
                         </div>
                         
@@ -130,55 +246,59 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Flatpickr JS -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-function calcAge(dateStr) {
-    var p = dateStr.split('-');
-    if (p.length !== 3) return -1;
-    var dob   = new Date(+p[0], +p[1] - 1, +p[2]);
-    var today = new Date();
-    var age   = today.getFullYear() - dob.getFullYear();
-    var m     = today.getMonth() - dob.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
-    return age;
-}
+// Calculate the min date (100 years ago) dynamically
+var today = new Date();
+var hundredYearsAgo = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate());
 
-function showAge(isoStr) {
-    var el = document.getElementById('age-display');
-    if (!el) return;
-    if (!isoStr) { el.textContent = ''; return; }
-    var age = calcAge(isoStr);
-    el.textContent = (age >= 0 && age <= 120) ? 'Age: ' + age + ' years' : '';
-}
-
-// Read existing DOB from hidden input to pre-populate Flatpickr
-var existingIso = document.getElementById('dob-input').value;
-
-flatpickr('#dob_display', {
-    dateFormat:      'd M Y',
-    maxDate:         'today',
-    minDate:         '1900-01-01',
-    disableMobile:   false,
-    allowInput:      true,
-    yearSelectorType: 'select',
-    defaultDate:     existingIso || null,
-    onChange: function(selectedDates) {
+// Initialize Flatpickr with proper logic
+flatpickr('#dob-display', {
+    dateFormat: 'd M Y',
+    maxDate: 'today',
+    minDate: hundredYearsAgo,
+    yearSelectorType: 'dropdown',
+    disableMobile: false,
+    defaultDate: document.getElementById('dob-input').value || null,
+    animate: true,
+    showMonths: 1,
+    onChange: function(selectedDates, dateStr, instance) {
         if (selectedDates.length) {
-            var d    = selectedDates[0];
+            // Update hidden input with YYYY-MM-DD for Django
+            var d = selectedDates[0];
             var yyyy = d.getFullYear();
-            var mm   = String(d.getMonth() + 1).padStart(2, '0');
-            var dd   = String(d.getDate()).padStart(2, '0');
-            var iso  = yyyy + '-' + mm + '-' + dd;
-            document.getElementById('dob-input').value = iso;
-            showAge(iso);
-        } else {
-            document.getElementById('dob-input').value = '';
-            showAge('');
+            var mm = String(d.getMonth() + 1).padStart(2, '0');
+            var dd = String(d.getDate()).padStart(2, '0');
+            document.getElementById('dob-input').value = yyyy + '-' + mm + '-' + dd;
+
+            // Show Age
+            var age = calcAge(yyyy + '-' + mm + '-' + dd);
+            document.getElementById('age-display').textContent = (age >= 0 && age <= 120) ? 'Age: ' + age + ' years' : '';
         }
     }
 });
 
+// Helper function to calculate age
+function calcAge(dateStr) {
+    if (!dateStr) return -1;
+    var p = dateStr.split('-');
+    if (p.length !== 3) return -1;
+    var dob = new Date(+p[0], +p[1] - 1, +p[2]);
+    var today = new Date();
+    var age = today.getFullYear() - dob.getFullYear();
+    var m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+    return age;
+}
+
 // Show age immediately on page load
-showAge(existingIso);
+var existingIso = document.getElementById('dob-input').value;
+if (existingIso) {
+    var age = calcAge(existingIso);
+    if (age >= 0 && age <= 120) {
+        document.getElementById('age-display').textContent = 'Age: ' + age + ' years';
+    }
+}
 </script>
 {% endblock %}

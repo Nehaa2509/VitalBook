@@ -1,0 +1,269 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}VitalBook Admin — Sign In{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+/* 1. Reset the browser defaults and lock height */
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 100vh !important;
+    width: 100vw !important;
+    overflow-x: hidden !important; /* Prevents horizontal scroll */
+    font-family: 'Inter', sans-serif !important;
+    background: #ffffff !important;
+}
+
+/* Hide default Django admin chrome */
+#header          { display: none !important; }
+#nav-sidebar     { display: none !important; }
+div.breadcrumbs  { display: none !important; }
+
+/* Overriding Django `#container` and `#content` */
+#container {
+    padding: 0 !important;
+    min-height: 100vh !important;
+    display: block !important;
+    background: #ffffff !important;
+    width: 100vw !important;
+}
+
+#content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+#content-main {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    float: none !important;
+    padding: 0 !important;
+}
+
+/* 2. Main Wrapper - This creates the split screen */
+.main-wrapper {
+    display: flex;
+    min-height: 100vh;
+    width: 100vw;
+}
+
+/* 3. Left Sidebar (Blue Section) */
+.left-sidebar {
+    width: 40%;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f1c2e, #1a3a5f); /* Your blue gradient */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Logo at top, Stats at bottom */
+    padding: 50px;
+    box-sizing: border-box; /* Ensures padding doesn't add to width */
+    position: relative;
+    overflow: hidden;
+}
+
+.left-sidebar::before {
+    content: ''; position: absolute; top: -80px; right: -80px;
+    width: 260px; height: 260px; background: rgba(249,115,22,0.15); border-radius: 50%;
+}
+.left-sidebar::after {
+    content: ''; position: absolute; bottom: -60px; left: -60px;
+    width: 200px; height: 200px; background: rgba(255,255,255,0.05); border-radius: 50%;
+}
+
+/* Left Sidebar Inner Contents */
+.top-content {
+    display: flex; align-items: center; gap: 12px; position: relative; z-index: 1;
+}
+.login-logo-icon {
+    width: 44px; height: 44px; background: #f97316; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 900; color: white;
+}
+.login-logo-text { font-size: 22px; font-weight: 700; color: white; }
+.login-logo-badge {
+    font-size: 11px; background: rgba(249,115,22,0.3); color: #fdba74;
+    padding: 3px 8px; border-radius: 6px; font-weight: 600; letter-spacing: 0.5px;
+}
+
+.middle-content { position: relative; z-index: 1; }
+.middle-content h2 {
+    font-size: 30px; font-weight: 700; color: white; line-height: 1.3; margin-bottom: 12px;
+}
+.middle-content h2 span { color: #f97316; }
+.middle-content p {
+    color: rgba(255,255,255,0.65); font-size: 14px; line-height: 1.7; margin-bottom: 28px;
+}
+
+.login-features { display: flex; flex-direction: column; gap: 12px; }
+.login-feature {
+    display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.8);
+    font-size: 13px; font-weight: 500;
+}
+.login-feature-icon {
+    width: 32px; height: 32px; background: rgba(255,255,255,0.1); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;
+}
+
+.bottom-stats { position: relative; z-index: 1; }
+.login-stats { display: flex; gap: 20px; flex-wrap: wrap; }
+.login-stat .num { font-size: 20px; font-weight: 700; color: white; display: block; }
+.login-stat .lbl { font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-top: 2px; }
+
+/* 4. Right Section (White Section) */
+.right-section {
+    width: 60%;
+    min-height: 100vh;
+    background-color: #ffffff;
+    
+    /* THE CENTERING FIX */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Pulls content to the vertical middle */
+    align-items: center;     /* Pulls content to the horizontal middle */
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+/* 5. The Login Card Container - Fixed width so it doesn't stretch */
+.login-card-container {
+    width: 100%;
+    max-width: 420px;
+}
+
+/* Utility / inline replacements for Right Section */
+.text-center { text-align: center; }
+.mb-4 { margin-bottom: 1.5rem; }
+.mt-5 { margin-top: 3rem; }
+.text-muted { color: #64748b; }
+.w-100 { width: 100%; }
+.small { font-size: 13px; }
+
+/* Login input styling */
+.login-form-input, html body .login-form-input {
+    width: 100% !important;
+    padding: 14px 16px !important;
+    border-radius: 10px !important;
+    border: none !important;
+    font-size: 15px !important;
+    background: rgba(255,255,255,0.1) !important;
+    color: white !important;
+    transition: all 0.2s !important; outline: none !important;
+    box-sizing: border-box !important;
+}
+.login-form-input:focus, html body .login-form-input:focus {
+    background: rgba(255,255,255,0.2) !important;
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.2) !important;
+}
+.login-form-input::placeholder { color: rgba(255,255,255,0.5); }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .left-sidebar { display: none; }
+    .right-section { width: 100%; }
+}
+</style>
+{% endblock %}
+
+{# Suppress all default admin chrome blocks #}
+{% block nav-global %}{% endblock %}
+{% block nav-sidebar %}{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block header %}{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="main-wrapper">
+        
+        <div class="left-sidebar">
+            <div class="top-content">
+                <div class="login-logo-icon">+</div>
+                <span class="login-logo-text">VitalBook</span>
+                <span class="login-logo-badge">ADMIN</span>
+            </div>
+            
+            <div class="middle-content">
+                <h2>Manage Your<br><span>Healthcare</span><br>Platform</h2>
+                <p>
+                    Access the complete VitalBook admin panel to manage doctors,
+                    patients, appointments, payments and more.
+                </p>
+                <div class="login-features">
+                    <div class="login-feature"><div class="login-feature-icon">📅</div> Manage appointments in real-time</div>
+                    <div class="login-feature"><div class="login-feature-icon">👨‍⚕️</div> Doctor & patient management</div>
+                    <div class="login-feature"><div class="login-feature-icon">💰</div> Revenue & payment tracking</div>
+                    <div class="login-feature"><div class="login-feature-icon">📊</div> Analytics and reports</div>
+                </div>
+            </div>
+
+            <div class="bottom-stats">
+                <div class="login-stats">
+                    <div class="login-stat"><span class="num">12+</span><span class="lbl">Doctors</span></div>
+                    <div class="login-stat"><span class="num">25+</span><span class="lbl">Patients</span></div>
+                    <div class="login-stat"><span class="num">100+</span><span class="lbl">Appts</span></div>
+                    <div class="login-stat"><span class="num">24/7</span><span class="lbl">Support</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-section">
+            
+            <div class="text-center mb-4">
+                <h1 style="font-size: 2rem; color: #0f172a; margin-bottom: 8px;">Welcome Back 👋</h1>
+                <p class="text-muted">Sign in to your admin account to continue</p>
+            </div>
+
+            {% if form.errors %}
+            <div class="alert alert-danger w-100" style="max-width: 420px; background: #fee2e2; border: 1px solid #fecaca; padding: 12px 16px; border-radius: 10px; color: #991b1b; margin-bottom: 24px;">
+                ❌ Invalid username or password.
+            </div>
+            {% endif %}
+            
+            {% if next %}
+            <div class="alert alert-danger w-100" style="max-width: 420px; background: #fee2e2; border: 1px solid #fecaca; padding: 12px 16px; border-radius: 10px; color: #991b1b; margin-bottom: 24px;">
+                ⚠️ Please login to access this page.
+            </div>
+            {% endif %}
+
+            <div class="login-card-container">
+                <div class="card p-4 shadow-lg" style="background: #0f1c2e; border-radius: 15px; padding: 32px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);">
+                    <form method="post" action="{{ app_path }}" id="login-form" autocomplete="off">
+                        {% csrf_token %}
+                        {% if next %}
+                        <input type="hidden" name="next" value="{{ next }}">
+                        {% endif %}
+
+                        <div style="margin-bottom: 20px;">
+                            <label for="id_username" style="display: block; color: white; margin-bottom: 8px; font-size: 14px; font-weight: 600;">👤 Username</label>
+                            <input type="text" id="id_username" name="username" class="login-form-input" placeholder="Enter your username" autofocus required>
+                        </div>
+
+                        <div style="margin-bottom: 24px;">
+                            <label for="id_password" style="display: block; color: white; margin-bottom: 8px; font-size: 14px; font-weight: 600;">🔒 Password</label>
+                            <input type="password" id="id_password" name="password" class="login-form-input" placeholder="Enter your password" required>
+                        </div>
+
+                        <button type="submit" style="width: 100%; padding: 16px; background: #f97316; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#ea580c'" onmouseout="this.style.background='#f97316'">
+                            🚀 Sign In to Admin Panel
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="mt-5 text-muted small">
+                Secure Admin Portal • VitalBook 2026
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

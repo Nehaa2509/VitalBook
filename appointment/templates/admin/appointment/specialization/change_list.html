@@ -1,0 +1,298 @@
+{% extends "admin/base_site.html" %}
+{% load static admin_urls %}
+
+{% block title %}Specializations - {{ site_title|default:"VitalBook Admin" }}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+/* Override all default admin styles */
+#content {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+.breadcrumbs, #content-main {
+    display: none !important;
+}
+#container {
+    padding: 0;
+}
+
+/* Page Canvas */
+.spec-admin-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0B2B46 0%, #1a4a70 45%, #5c2d91 100%);
+    position: relative;
+    padding-bottom: 80px;
+}
+.spec-admin-page::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+}
+
+/* Hero */
+.spec-hero {
+    text-align: center;
+    padding: 40px 20px 32px;
+    position: relative;
+    z-index: 1;
+}
+.spec-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(8px);
+    padding: 6px 20px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #93c5fd;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+}
+.spec-title {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+}
+.spec-title span { color: #f97316; }
+.spec-subtitle {
+    color: rgba(255,255,255,0.7);
+    font-size: 1rem;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Container */
+.spec-container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Label Row */
+.spec-label-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+}
+.spec-label-text {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.5);
+}
+.spec-label-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.12);
+}
+
+/* Add New Button */
+.spec-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white !important;
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 6px 18px rgba(34,197,94,0.4);
+    transition: all 0.3s ease;
+    margin-bottom: 28px;
+}
+.spec-add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(34,197,94,0.5);
+}
+
+/* Grid */
+.spec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 22px;
+}
+
+.spec-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 32px 28px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    transition: all 0.35s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    animation: cardUp 0.4s ease both;
+}
+@keyframes cardUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.spec-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #0B2B46, #5c2d91);
+    border-radius: 20px 20px 0 0;
+}
+.spec-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+}
+
+/* Per-specialization icon color themes */
+.spec-card-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    color: white;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+.spec-card:hover .spec-card-icon { transform: scale(1.1) rotate(-5deg); }
+
+/* Color map by specialization index — cycles through */
+.spec-card:nth-child(1) .spec-card-icon { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 8px 20px rgba(239,68,68,0.4); }
+.spec-card:nth-child(2) .spec-card-icon { background: linear-gradient(135deg, #8b5cf6, #7c3aed); box-shadow: 0 8px 20px rgba(139,92,246,0.4); }
+.spec-card:nth-child(3) .spec-card-icon { background: linear-gradient(135deg, #3b82f6, #2563eb); box-shadow: 0 8px 20px rgba(59,130,246,0.4); }
+.spec-card:nth-child(4) .spec-card-icon { background: linear-gradient(135deg, #f97316, #ea580c); box-shadow: 0 8px 20px rgba(249,115,22,0.4); }
+.spec-card:nth-child(5) .spec-card-icon { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 8px 20px rgba(16,185,129,0.4); }
+.spec-card:nth-child(6) .spec-card-icon { background: linear-gradient(135deg, #ec4899, #db2777); box-shadow: 0 8px 20px rgba(236,72,153,0.4); }
+.spec-card:nth-child(7) .spec-card-icon { background: linear-gradient(135deg, #06b6d4, #0891b2); box-shadow: 0 8px 20px rgba(6,182,212,0.4); }
+.spec-card:nth-child(8) .spec-card-icon { background: linear-gradient(135deg, #84cc16, #65a30d); box-shadow: 0 8px 20px rgba(132,204,22,0.4); }
+
+/* Matching top-border accent per card */
+.spec-card:nth-child(1)::before { background: linear-gradient(90deg, #ef4444, #dc2626); }
+.spec-card:nth-child(2)::before { background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
+.spec-card:nth-child(3)::before { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+.spec-card:nth-child(4)::before { background: linear-gradient(90deg, #f97316, #ea580c); }
+.spec-card:nth-child(5)::before { background: linear-gradient(90deg, #10b981, #059669); }
+.spec-card:nth-child(6)::before { background: linear-gradient(90deg, #ec4899, #db2777); }
+.spec-card:nth-child(7)::before { background: linear-gradient(90deg, #06b6d4, #0891b2); }
+.spec-card:nth-child(8)::before { background: linear-gradient(90deg, #84cc16, #65a30d); }
+
+.spec-card h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0B2B46;
+    margin-bottom: 10px;
+}
+
+.spec-card p {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 24px;
+    flex: 1;
+}
+
+.btn-admin-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 24px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white !important;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 6px 18px rgba(37,99,235,0.35);
+    transition: all 0.3s ease;
+    flex: 1;
+    justify-content: center;
+}
+.btn-admin-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(37,99,235,0.5);
+}
+.btn-admin-action.delete {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    box-shadow: 0 6px 18px rgba(239,68,68,0.35);
+    flex: 0 0 auto;
+    padding: 11px 18px;
+}
+.btn-admin-action.delete:hover {
+    box-shadow: 0 10px 28px rgba(239,68,68,0.5);
+}
+
+@media (max-width: 768px) {
+    .spec-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+    .spec-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="spec-admin-page">
+    <div class="spec-hero">
+        <div class="spec-eyebrow"><i class="fas fa-heartbeat"></i> Manage Specializations</div>
+        <h1 class="spec-title">Special<span>izations</span></h1>
+        <p class="spec-subtitle">Manage medical specializations and their details</p>
+    </div>
+
+    <div class="spec-container">
+        <a href="/admin/appointment/specialization/add/" class="spec-add-btn">
+            <i class="fas fa-plus-circle"></i> Add Specialization
+        </a>
+
+        <div class="spec-label-row">
+            <div class="spec-label-text"><i class="fas fa-list"></i> All Specializations ({{ cl.result_count }})</div>
+            <div class="spec-label-line"></div>
+        </div>
+
+        <div class="spec-grid">
+            {% for obj in cl.result_list %}
+            <div class="spec-card" style="animation-delay: {{ forloop.counter0 }}00ms">
+                <div class="spec-card-icon"><i class="fas {{ obj.icon|default:'fa-stethoscope' }}"></i></div>
+                <h3>{{ obj.name }}</h3>
+                {% if obj.description %}
+                <p>{{ obj.description|truncatechars:120 }}</p>
+                {% else %}
+                <p style="font-style:italic; color:#cbd5e1;">No description provided.</p>
+                {% endif %}
+                
+                <div style="font-size:13px; color:#64748b; font-weight:600; margin-bottom: 20px;">
+                    <strong style="color:#0B2B46; font-weight:800; font-size:15px;">{{ obj.doctor_set.count }}</strong> doctor{{ obj.doctor_set.count|pluralize }} assigned
+                </div>
+
+                <div style="margin-top:auto; display:flex; gap:10px;">
+                    <a href="{{ obj.pk }}/change/" class="btn-admin-action" title="Edit"><i class="fas fa-edit"></i> Edit</a>
+                    <a href="{{ obj.pk }}/delete/" class="btn-admin-action delete" title="Delete" onclick="return confirm('Delete this specialization?')"><i class="fas fa-trash"></i></a>
+                </div>
+            </div>
+            {% empty %}
+            <div style="text-align:center; padding:60px 20px; color:rgba(255,255,255,0.6); grid-column:1/-1;">
+                <i class="fas fa-inbox" style="font-size:48px; margin-bottom:16px; opacity:0.3;"></i>
+                <h3 style="color:white; margin-bottom:8px;">No Specializations Yet</h3>
+                <p>Click "Add Specialization" to create the first one.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

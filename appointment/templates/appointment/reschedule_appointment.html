@@ -1,4 +1,4 @@
-﻿{% extends 'appointment/base.html' %}
+{% extends 'appointment/base.html' %}
 
 {% block title %}Reschedule Appointment - VITALBOOK{% endblock %}
 
@@ -9,7 +9,7 @@
         
         <div class="reschedule-info">
             <h3>Current Appointment</h3>
-            <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.name }}</p>
+            <p><strong>Doctor:</strong> {{ appointment.doctor.name }}</p>
             <p><strong>Current Date:</strong> {{ appointment.date|date:"F d, Y" }}</p>
             <p><strong>Current Time:</strong> {{ appointment.time|time:"h:i A" }}</p>
         </div>
@@ -38,7 +38,7 @@
                 </div>
                 
                 <div class="form-actions">
-                    <a href="{% url 'my_appointments' %}" class="btn btn-outline">Cancel</a>
+                    <a href="{% url 'patient_dashboard' %}#upcoming-appointments" class="btn btn-outline">Cancel</a>
                     <button type="submit" class="btn btn-primary">Confirm Reschedule</button>
                 </div>
             </form>

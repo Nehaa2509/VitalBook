@@ -5,12 +5,12 @@
 
 <p>Dear {{ review.patient.name }},</p>
 
-<p>Thank you for taking the time to review Dr. {{ review.doctor.name }}. Your feedback helps us improve our services and helps other patients make informed decisions.</p>
+<p>Thank you for taking the time to review {{ review.doctor.name }}. Your feedback helps us improve our services and helps other patients make informed decisions.</p>
 
 <div class="info-card">
     <div class="info-row">
         <span class="info-label">👨‍⚕️ Doctor Reviewed</span>
-        <span class="info-value">Dr. {{ review.doctor.name }}</span>
+        <span class="info-value">{{ review.doctor.name }}</span>
     </div>
     <div class="info-row">
         <span class="info-label">⭐ Your Rating</span>
@@ -36,7 +36,7 @@
 </div>
 {% endif %}
 
-<p>Your review has been published and is now visible to other patients on Dr. {{ review.doctor.name }}'s profile.</p>
+<p>Your review has been published and is now visible to other patients on {{ review.doctor.name }}'s profile.</p>
 
 <p style="text-align: center;">
     <a href="http://127.0.0.1:8000/doctor/{{ review.doctor.id }}/reviews/" class="btn">

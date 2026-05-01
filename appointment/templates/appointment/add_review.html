@@ -1,187 +1,360 @@
-﻿{% extends 'appointment/base.html' %}
+{% extends 'appointment/base.html' %}
 
 {% block title %}Add Review - VITALBOOK{% endblock %}
 
-{% block content %}
-<section class="review-section">
-    <div class="container">
-        <div class="review-form-card">
-            <h1>Rate Your Experience</h1>
-            <p class="subtitle">Share your feedback about Dr. {{ appointment.doctor.name }}</p>
-            
-            <div class="appointment-summary">
-                <p><strong>Appointment Date:</strong> {{ appointment.date|date:"F d, Y" }}</p>
-                <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.name }}</p>
-                <p><strong>Specialization:</strong> {{ appointment.doctor.specialization.name }}</p>
-            </div>
-            
-            <form method="POST" class="review-form">
-                {% csrf_token %}
-                
-                <div class="form-group">
-                    <label>Rating *</label>
-                    <div class="star-rating">
-                        <input type="radio" name="rating" value="5" id="star5" required>
-                        <label for="star5"><i class="fas fa-star"></i></label>
-                        
-                        <input type="radio" name="rating" value="4" id="star4">
-                        <label for="star4"><i class="fas fa-star"></i></label>
-                        
-                        <input type="radio" name="rating" value="3" id="star3">
-                        <label for="star3"><i class="fas fa-star"></i></label>
-                        
-                        <input type="radio" name="rating" value="2" id="star2">
-                        <label for="star2"><i class="fas fa-star"></i></label>
-                        
-                        <input type="radio" name="rating" value="1" id="star1">
-                        <label for="star1"><i class="fas fa-star"></i></label>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>Your Review (optional)</label>
-                    <textarea name="comment" rows="6" placeholder="Share your experience with the doctor..."></textarea>
-                </div>
-                
-                <div class="form-actions">
-                    <a href="{% url 'my_appointments' %}" class="btn btn-outline">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Submit Review</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</section>
-{% endblock %}
-
 {% block extra_css %}
 <style>
-.review-section {
-    padding: 60px 0;
-    background: #f8f9fa;
-    min-height: calc(100vh - 200px);
-}
+    /* --- VITALBOOK REVIEW PAGE OVERHAUL --- */
 
-.review-form-card {
-    max-width: 600px;
-    margin: 0 auto;
-    background: white;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
+    /* Hide base navbar padding so wrapper truly fills viewport */
+    .review-page-wrapper {
+        background-color: #f1f5f9;
+        min-height: calc(100vh - 72px);
+        /* account for fixed navbar */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 40px 20px;
+    }
 
-.review-form-card h1 {
-    font-size: 28px;
-    margin-bottom: 10px;
-    color: #2c3e50;
-}
+    /* Hide site footer on this page */
+    .footer {
+        display: none !important;
+    }
 
-.subtitle {
-    color: #6c757d;
-    margin-bottom: 30px;
-}
+    /* Center card */
+    .review-card {
+        background: #ffffff;
+        border-radius: 24px;
+        width: 100%;
+        max-width: 600px;
+        padding: 44px 40px;
+        box-shadow: 0 20px 40px rgba(15, 28, 46, 0.08);
+        border: 1px solid #e2e8f0;
+        animation: cardFadeIn 0.4s ease both;
+    }
 
-.appointment-summary {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 30px;
-}
+    @keyframes cardFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
 
-.appointment-summary p {
-    margin-bottom: 8px;
-    color: #495057;
-}
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
-.star-rating {
-    display: inline-flex;
-    flex-direction: row-reverse;
-    gap: 4px;
-    font-size: 1.4rem;
-    cursor: pointer;
-}
+    /* Header */
+    .review-card h1 {
+        color: #0f1c2e;
+        font-weight: 800;
+        font-size: 1.85rem;
+        margin-bottom: 6px;
+        letter-spacing: -0.5px;
+    }
 
-.star-rating input {
-    display: none;
-}
+    .text-muted-custom {
+        color: #64748b;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
 
-.star-rating label {
-    cursor: pointer;
-    color: #ddd;
-    transition: all 0.1s ease;
-}
+    /* Appointment summary box */
+    .appointment-summary {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 20px 24px;
+        margin: 28px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
 
-.star-rating label:hover {
-    transform: scale(1.2);
-}
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.92rem;
+    }
 
-.star-rating input:checked ~ label,
-.star-rating label:hover,
-.star-rating label:hover ~ label {
-    color: #ffc107;
-}
+    .summary-label {
+        color: #94a3b8;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.6px;
+    }
 
-.form-group {
-    margin-bottom: 25px;
-}
+    .summary-value {
+        color: #0f1c2e;
+        font-weight: 700;
+    }
 
-.form-group label {
-    display: block;
-    margin-bottom: 10px;
-    font-weight: 600;
-    color: #2c3e50;
-}
+    /* Star rating */
+    .rating-group {
+        margin: 28px 0 24px;
+    }
 
-.form-group textarea {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    font-size: 15px;
-    font-family: inherit;
-    resize: vertical;
-}
+    .rating-group>.form-label {
+        margin-bottom: 12px;
+    }
 
-.form-group textarea:focus {
-    outline: none;
-    border-color: #0d6efd;
-}
+    .stars-container {
+        display: flex;
+        gap: 10px;
+    }
 
-.form-actions {
-    display: flex;
-    gap: 15px;
-    justify-content: flex-end;
-    margin-top: 30px;
-}
+    /* Hidden radios — we drive state via JS */
+    .star-radio {
+        display: none;
+    }
 
-.btn {
-    padding: 12px 30px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-block;
-}
+    .star-icon {
+        font-size: 2.1rem;
+        color: #cbd5e1;
+        cursor: pointer;
+        transition: color 0.2s ease, transform 0.15s ease;
+        -webkit-user-select: none;
+        user-select: none;
+    }
 
-.btn-primary {
-    background: #0d6efd;
-    color: white;
-    border: none;
-}
+    .star-icon.active {
+        color: #ff6b00;
+        transform: scale(1.12);
+    }
 
-.btn-primary:hover {
-    background: #0b5ed7;
-}
+    .star-icon:hover {
+        color: #ff6b00;
+        transform: scale(1.18);
+    }
 
-.btn-outline {
-    background: white;
-    color: #6c757d;
-    border: 2px solid #e9ecef;
-}
+    /* Form labels */
+    .form-label {
+        font-weight: 700;
+        color: #0f1c2e;
+        font-size: 0.95rem;
+        margin-bottom: 10px;
+        display: block;
+    }
 
-.btn-outline:hover {
-    border-color: #6c757d;
-}
+    /* Form group spacing */
+    .form-group {
+        margin-bottom: 0;
+    }
+
+    /* Modern textarea */
+    .custom-textarea {
+        width: 100%;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 14px 16px;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 0.95rem;
+        color: #0f1c2e;
+        resize: vertical;
+        min-height: 120px;
+        transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        background: #ffffff;
+    }
+
+    .custom-textarea:focus {
+        outline: none;
+        border-color: #ff6b00;
+        box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.1);
+    }
+
+    /* Buttons */
+    .button-group {
+        display: flex;
+        gap: 14px;
+        margin-top: 32px;
+    }
+
+    .btn-base {
+        flex: 1;
+        padding: 14px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        text-align: center;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-family: inherit;
+    }
+
+    .btn-cancel {
+        background: #f1f5f9;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+    }
+
+    .btn-cancel:hover {
+        background: #e2e8f0;
+        color: #0f1c2e;
+        transform: translateY(-2px);
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #ff6b00, #f97316);
+        color: white;
+        box-shadow: 0 10px 15px -3px rgba(255, 107, 0, 0.2);
+    }
+
+    .btn-submit:hover {
+        box-shadow: 0 14px 20px -3px rgba(255, 107, 0, 0.35);
+        transform: translateY(-2px);
+        filter: brightness(1.05);
+    }
+
+    /* Divider */
+    .section-divider {
+        border: none;
+        border-top: 1px solid #f1f5f9;
+        margin: 28px 0;
+    }
 </style>
+{% endblock %}
+
+{% block content %}
+<div class="review-page-wrapper">
+    <div class="review-card">
+
+        <!-- Header -->
+        <h1>Rate Your Experience</h1>
+        <p class="text-muted-custom">Share your feedback about <strong>{{ appointment.doctor.name }}</strong></p>
+
+        <!-- Appointment Summary -->
+        <div class="appointment-summary">
+            <div class="summary-item">
+                <span class="summary-label">Appointment Date</span>
+                <span class="summary-value">{{ appointment.date|date:"F d, Y" }}</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Doctor</span>
+                <span class="summary-value">{{ appointment.doctor.name }}</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Specialization</span>
+                <span class="summary-value">{{ appointment.doctor.specialization.name }}</span>
+            </div>
+        </div>
+
+        <!-- Review Form -->
+        <form method="POST" id="review-form">
+            {% csrf_token %}
+
+            <!-- Hidden radio inputs carry the actual form value -->
+            <input class="star-radio" type="radio" name="rating" value="1" id="star1">
+            <input class="star-radio" type="radio" name="rating" value="2" id="star2">
+            <input class="star-radio" type="radio" name="rating" value="3" id="star3">
+            <input class="star-radio" type="radio" name="rating" value="4" id="star4">
+            <input class="star-radio" type="radio" name="rating" value="5" id="star5" checked>
+
+            <!-- Visual Star Rating -->
+            <div class="rating-group">
+                <span class="form-label">Overall Rating *</span>
+                <div class="stars-container" id="stars-container" role="radiogroup" aria-label="Star rating">
+                    <i class="fas fa-star star-icon active" data-value="1" title="1 star" tabindex="0"></i>
+                    <i class="fas fa-star star-icon active" data-value="2" title="2 stars" tabindex="0"></i>
+                    <i class="fas fa-star star-icon active" data-value="3" title="3 stars" tabindex="0"></i>
+                    <i class="fas fa-star star-icon active" data-value="4" title="4 stars" tabindex="0"></i>
+                    <i class="fas fa-star star-icon active" data-value="5" title="5 stars" tabindex="0"></i>
+                </div>
+            </div>
+
+            <hr class="section-divider">
+
+            <!-- Comment -->
+            <div class="form-group">
+                <label class="form-label" for="review-comment">Your Review <span
+                        style="color:#94a3b8;font-weight:500;">(Optional)</span></label>
+                <textarea id="review-comment" name="comment" class="custom-textarea" rows="4"
+                    placeholder="How was your visit? Share details about your experience..."></textarea>
+            </div>
+
+            <!-- Buttons -->
+            <div class="button-group">
+                <a href="{% url 'patient_dashboard' %}#upcoming-appointments" class="btn-base btn-cancel">
+                    <i class="fas fa-arrow-left"></i> Go Back
+                </a>
+                <button type="submit" class="btn-base btn-submit">
+                    <i class="fas fa-paper-plane"></i> Submit My Review
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        var currentRating = 5; // default
+        var stars = document.querySelectorAll('#stars-container .star-icon');
+
+        function setRating(val) {
+            currentRating = val;
+            // Tick the hidden radio
+            var radio = document.getElementById('star' + val);
+            if (radio) radio.checked = true;
+            // Update visual state
+            stars.forEach(function (s) {
+                var sv = parseInt(s.getAttribute('data-value'), 10);
+                if (sv <= val) {
+                    s.classList.add('active');
+                } else {
+                    s.classList.remove('active');
+                }
+            });
+        }
+
+        function previewRating(val) {
+            stars.forEach(function (s) {
+                var sv = parseInt(s.getAttribute('data-value'), 10);
+                if (sv <= val) {
+                    s.classList.add('active');
+                } else {
+                    s.classList.remove('active');
+                }
+            });
+        }
+
+        stars.forEach(function (star) {
+            star.addEventListener('mouseenter', function () {
+                previewRating(parseInt(this.getAttribute('data-value'), 10));
+            });
+            star.addEventListener('mouseleave', function () {
+                previewRating(currentRating);
+            });
+            star.addEventListener('click', function () {
+                setRating(parseInt(this.getAttribute('data-value'), 10));
+            });
+            // Keyboard accessibility
+            star.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setRating(parseInt(this.getAttribute('data-value'), 10));
+                }
+            });
+        });
+
+        // Validate rating on submit
+        document.getElementById('review-form').addEventListener('submit', function (e) {
+            if (!currentRating) {
+                e.preventDefault();
+                alert('Please select a star rating before submitting.');
+            }
+        });
+    })();
+</script>
 {% endblock %}

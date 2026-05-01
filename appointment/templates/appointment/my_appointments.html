@@ -1,4 +1,4 @@
-﻿{% extends 'appointment/base.html' %}
+{% extends 'appointment/base.html' %}
 
 {% block title %}My Appointments - VITALBOOK{% endblock %}
 
@@ -44,7 +44,7 @@
                             </div>
                         </div>
                         <div class="appointment-info">
-                            <h3>Dr. {{ appointment.doctor.name }}</h3>
+                            <h3>{{ appointment.doctor.name }}</h3>
                             <p class="specialization">{{ appointment.doctor.specialization.name }}</p>
                             <p class="time"><i class="fas fa-clock"></i> {{ appointment.time|time:"h:i A" }}</p>
                         </div>
@@ -74,9 +74,9 @@
                             <a href="{% url 'reschedule_appointment' appointment.id %}" class="btn btn-sm btn-secondary">
                                 <i class="fas fa-calendar-alt"></i> Reschedule
                             </a>
-                            <a href="{% url 'cancel_appointment' appointment.id %}" 
+                            <a href="{% url 'request_cancellation' appointment.id %}" 
                                class="btn btn-sm btn-danger"
-                               onclick="return confirm('Cancel this appointment? Note: Cancellations made after 24 hours of booking will incur a ₹500 cancellation fee.')">
+                               onclick="return confirm('Cancel this appointment? Note: If your appointment is within 24 hours, a ₹200 cancellation fee will apply via Razorpay.')">
                                 <i class="fas fa-times"></i> Cancel
                             </a>
                         {% endif %}
@@ -101,7 +101,7 @@
                             </div>
                         </div>
                         <div class="appointment-info">
-                            <h3>Dr. {{ appointment.doctor.name }}</h3>
+                            <h3>{{ appointment.doctor.name }}</h3>
                             <p class="specialization">{{ appointment.doctor.specialization.name }}</p>
                             <p class="time"><i class="fas fa-clock"></i> {{ appointment.time|time:"h:i A" }}</p>
                         </div>

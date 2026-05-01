@@ -1,644 +1,480 @@
 {% extends 'appointment/base.html' %}
-
-{% block title %}Checkout - VitalBook{% endblock %}
+{% block title %}Secure UPI Payment – VitalBook{% endblock %}
 
 {% block extra_css %}
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+    body { background: #f0f4f8; }
 
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #f8f9fa;
-}
-
-.checkout-container {
-    max-width: 1200px;
-    margin: 40px auto;
-    padding: 0 20px;
-}
-
-.checkout-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr;
-    gap: 30px;
-}
-
-.card {
-    background: white;
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-/* Booking Summary */
-.booking-summary h2 {
-    font-size: 24px;
-    margin-bottom: 25px;
-    color: #2c3e50;
-}
-
-.doctor-info {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 25px;
-    padding-bottom: 25px;
-    border-bottom: 1px solid #e9ecef;
-}
-
-.doctor-photo {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.doctor-details h3 {
-    font-size: 20px;
-    color: #2c3e50;
-    margin-bottom: 5px;
-}
-
-.doctor-details .specialization {
-    color: #0d6efd;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.appointment-details {
-    margin-bottom: 25px;
-}
-
-.detail-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px solid #f1f3f5;
-}
-
-.detail-row:last-child {
-    border-bottom: none;
-}
-
-.detail-label {
-    color: #6c757d;
-    font-size: 14px;
-}
-
-.detail-value {
-    color: #2c3e50;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-.price-summary {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
-    margin-top: 20px;
-}
-
-.price-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
-}
-
-.price-row.total {
-    padding-top: 15px;
-    border-top: 2px solid #dee2e6;
-    font-size: 20px;
-    font-weight: 700;
-    color: #0d6efd;
-}
-
-/* Payment Options */
-.payment-section h2 {
-    font-size: 24px;
-    margin-bottom: 25px;
-    color: #2c3e50;
-}
-
-.payment-category {
-    margin-bottom: 30px;
-}
-
-.category-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #495057;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.payment-options {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-}
-
-.payment-option {
-    border: 2px solid #e9ecef;
-    border-radius: 10px;
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background: white;
-}
-
-.payment-option:hover {
-    border-color: #0d6efd;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
-}
-
-.payment-option.selected {
-    border-color: #0d6efd;
-    background: #e7f1ff;
-}
-
-.payment-option i {
-    font-size: 32px;
-    color: #0d6efd;
-    margin-bottom: 10px;
-}
-
-.payment-option .option-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: #2c3e50;
-}
-
-.complete-payment-btn {
-    width: 100%;
-    padding: 16px;
-    background: #0d6efd;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 30px;
-    transition: background 0.3s ease;
-}
-
-.complete-payment-btn:hover {
-    background: #0b5ed7;
-}
-
-.complete-payment-btn:disabled {
-    background: #6c757d;
-    cursor: not-allowed;
-}
-
-/* Processing Overlay */
-.processing-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-}
-
-.processing-content {
-    text-align: center;
-    color: white;
-}
-
-.spinner {
-    width: 60px;
-    height: 60px;
-    border: 4px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.processing-text {
-    font-size: 20px;
-    font-weight: 500;
-}
-
-/* Success Modal */
-.success-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-}
-
-.success-card {
-    background: white;
-    border-radius: 16px;
-    padding: 40px;
-    max-width: 500px;
-    width: 90%;
-    text-align: center;
-}
-
-.success-icon {
-    width: 80px;
-    height: 80px;
-    background: #28a745;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 20px;
-}
-
-.success-icon i {
-    font-size: 40px;
-    color: white;
-}
-
-.success-card h2 {
-    color: #28a745;
-    margin-bottom: 10px;
-}
-
-.receipt-details {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
-    margin: 25px 0;
-    text-align: left;
-}
-
-.receipt-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.receipt-row:last-child {
-    border-bottom: none;
-}
-
-.receipt-label {
-    color: #6c757d;
-    font-size: 14px;
-}
-
-.receipt-value {
-    color: #2c3e50;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-.redirect-text {
-    color: #6c757d;
-    font-size: 14px;
-    margin-top: 20px;
-}
-
-/* Responsive */
-@media (max-width: 968px) {
-    .checkout-grid {
-        grid-template-columns: 1fr;
+    .checkout-wrapper {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 16px;
     }
-    
-    .payment-options {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
 
-@media (max-width: 576px) {
-    .payment-options {
-        grid-template-columns: 1fr;
+    .checkout-card {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.10);
+        width: 100%;
+        max-width: 560px;
     }
-}
+
+    .checkout-header {
+        text-align: center;
+        margin-bottom: 28px;
+    }
+
+    .checkout-header h2 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 6px;
+    }
+
+    .checkout-header p {
+        font-size: 13px;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .lock-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 54px;
+        height: 54px;
+        background: linear-gradient(135deg, #0d6efd, #0056b3);
+        border-radius: 16px;
+        font-size: 24px;
+        margin-bottom: 14px;
+    }
+
+    /* Booking summary */
+    .summary-box {
+        background: #f8faff;
+        border-radius: 14px;
+        padding: 20px 22px;
+        margin-bottom: 24px;
+        border-left: 4px solid #0d6efd;
+    }
+
+    .summary-box h5 {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        margin: 0 0 14px;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .summary-item label {
+        font-size: 11px;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: block;
+        margin-bottom: 3px;
+    }
+
+    .summary-item strong {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .summary-divider {
+        border: none;
+        border-top: 1px solid #e2e8f0;
+        margin: 14px 0;
+    }
+
+    .amount-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .amount-row span {
+        font-weight: 700;
+        color: #0f172a;
+        font-size: 15px;
+    }
+
+    .amount-row .big-amount {
+        font-size: 28px;
+        font-weight: 900;
+        color: #0d6efd;
+    }
+
+    /* UPI app selector */
+    .upi-section h5 {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0 0 14px;
+    }
+
+    .upi-apps {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .upi-app-btn {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 14px 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: white;
+        user-select: none;
+    }
+
+    .upi-app-btn:hover {
+        border-color: #0d6efd;
+        background: #eff6ff;
+        transform: translateY(-2px);
+    }
+
+    .upi-app-btn.selected {
+        border-color: #0d6efd;
+        background: #eff6ff;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+    }
+
+    .upi-app-btn .app-icon { font-size: 26px; margin-bottom: 5px; }
+    .upi-app-btn .app-name { font-size: 11px; font-weight: 600; color: #475569; }
+
+    /* UPI ID input */
+    .upi-input-box {
+        background: #f8faff;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+
+    .upi-input-box label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+    }
+
+    .upi-input-row {
+        display: flex;
+        gap: 8px;
+    }
+
+    .upi-input-row input {
+        flex: 1;
+        padding: 11px 14px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s;
+        font-family: inherit;
+    }
+
+    .upi-input-row input:focus { border-color: #0d6efd; }
+
+    .btn-verify {
+        background: #eff6ff;
+        color: #0d6efd;
+        border: 2px solid #0d6efd;
+        border-radius: 10px;
+        padding: 11px 16px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+        font-family: inherit;
+        transition: all 0.2s;
+    }
+
+    .btn-verify:hover { background: #0d6efd; color: white; }
+
+    .verify-msg {
+        font-size: 12px;
+        margin: 8px 0 0;
+        display: none;
+    }
+
+    .test-badge {
+        margin-top: 10px;
+        background: #fff3cd;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 12px;
+        color: #856404;
+    }
+
+    /* Pay button */
+    .btn-pay {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, #0d6efd, #0056b3);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 17px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-family: inherit;
+        box-shadow: 0 6px 20px rgba(13, 110, 253, 0.3);
+        letter-spacing: 0.3px;
+    }
+
+    .btn-pay:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(13, 110, 253, 0.4); }
+    .btn-pay:active { transform: translateY(0); }
+    .btn-pay:disabled { background: #94a3b8; box-shadow: none; cursor: not-allowed; transform: none; }
+
+    .trust-badges {
+        text-align: center;
+        margin-top: 14px;
+        font-size: 12px;
+        color: #94a3b8;
+    }
+
+    .trust-badges span { margin: 0 6px; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="checkout-container">
-    <div class="checkout-grid">
-        <!-- Left Side: Booking Summary -->
-        <div class="card booking-summary">
-            <h2>Booking Summary</h2>
-            
-            <div class="doctor-info">
-                <img src="https://ui-avatars.com/api/?name={{ doctor.name }}&size=80&background=0d6efd&color=fff" 
-                     alt="{{ doctor.name }}" class="doctor-photo">
-                <div class="doctor-details">
-                    <h3>Dr. {{ doctor.name }}</h3>
-                    <div class="specialization">{{ doctor.specialization.name }}</div>
+<div class="checkout-wrapper">
+    <div class="checkout-card">
+
+        <!-- Header -->
+        <div class="checkout-header">
+            <div class="lock-icon">🔒</div>
+            <h2>Secure UPI Payment</h2>
+            <p>Pay with PhonePe · Google Pay · Paytm · BHIM UPI</p>
+        </div>
+
+        <!-- Booking Summary -->
+        <div class="summary-box">
+            <h5>📋 Booking Summary</h5>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <label>Doctor</label>
+                    <strong>Dr. {{ doctor.name }}</strong>
+                </div>
+                <div class="summary-item">
+                    <label>Specialization</label>
+                    <strong>{{ doctor.specialization.name }}</strong>
+                </div>
+                <div class="summary-item">
+                    <label>Date</label>
+                    <strong>{{ appointment.date|date:"d M Y" }}</strong>
+                </div>
+                <div class="summary-item">
+                    <label>Time</label>
+                    <strong>{{ appointment.time|time:"h:i A" }}</strong>
                 </div>
             </div>
-            
-            <div class="appointment-details">
-                <div class="detail-row">
-                    <span class="detail-label">Appointment Date</span>
-                    <span class="detail-value">{{ appointment.date|date:"d M, Y" }}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Appointment Time</span>
-                    <span class="detail-value">{{ appointment.time|time:"g:i A" }}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Patient Name</span>
-                    <span class="detail-value">{{ appointment.patient.name }}</span>
-                </div>
-            </div>
-            
-            <div class="price-summary">
-                <div class="price-row total">
-                    <span>Consultation Fee</span>
-                    <span>₹{{ amount }}</span>
-                </div>
+            <hr class="summary-divider">
+            <div class="amount-row">
+                <span>Total Amount</span>
+                <span class="big-amount">₹{{ amount }}</span>
             </div>
         </div>
-        
-        <!-- Right Side: Payment Options -->
-        <div class="card payment-section">
-            <h2>Select Payment Method</h2>
-            
-            <!-- Credit/Debit Cards -->
-            <div class="payment-category">
-                <div class="category-title">
-                    <i class="fas fa-credit-card"></i>
-                    Credit / Debit Card
+
+        <!-- UPI App Selector -->
+        <div class="upi-section">
+            <h5>💳 Choose UPI App</h5>
+            <div class="upi-apps">
+                <div class="upi-app-btn" id="upi-phonepe" onclick="selectUPI('phonepe')">
+                    <div class="app-icon">📱</div>
+                    <div class="app-name">PhonePe</div>
                 </div>
-                <div class="payment-options">
-                    <div class="payment-option" data-method="Visa">
-                        <i class="fab fa-cc-visa"></i>
-                        <div class="option-name">Visa</div>
-                    </div>
-                    <div class="payment-option" data-method="Mastercard">
-                        <i class="fab fa-cc-mastercard"></i>
-                        <div class="option-name">Mastercard</div>
-                    </div>
-                    <div class="payment-option" data-method="RuPay">
-                        <i class="fas fa-credit-card"></i>
-                        <div class="option-name">RuPay</div>
-                    </div>
+                <div class="upi-app-btn" id="upi-gpay" onclick="selectUPI('gpay')">
+                    <div class="app-icon">💳</div>
+                    <div class="app-name">GPay</div>
+                </div>
+                <div class="upi-app-btn" id="upi-paytm" onclick="selectUPI('paytm')">
+                    <div class="app-icon">💰</div>
+                    <div class="app-name">Paytm</div>
+                </div>
+                <div class="upi-app-btn" id="upi-other" onclick="selectUPI('other')">
+                    <div class="app-icon">🏦</div>
+                    <div class="app-name">Other UPI</div>
                 </div>
             </div>
-            
-            <!-- Digital Wallets -->
-            <div class="payment-category">
-                <div class="category-title">
-                    <i class="fas fa-wallet"></i>
-                    Digital Wallets
+
+            <!-- UPI ID Input -->
+            <div class="upi-input-box">
+                <label for="upi-id-input">Enter UPI ID</label>
+                <div class="upi-input-row">
+                    <input type="text" id="upi-id-input"
+                           placeholder="example@upi or 9999999999@paytm"
+                           autocomplete="off">
+                    <button class="btn-verify" onclick="verifyUPIId()">Verify</button>
                 </div>
-                <div class="payment-options">
-                    <div class="payment-option" data-method="Apple Pay">
-                        <i class="fab fa-apple-pay"></i>
-                        <div class="option-name">Apple Pay</div>
-                    </div>
-                    <div class="payment-option" data-method="Google Pay">
-                        <i class="fab fa-google-pay"></i>
-                        <div class="option-name">Google Pay</div>
-                    </div>
-                    <div class="payment-option" data-method="PayPal">
-                        <i class="fab fa-paypal"></i>
-                        <div class="option-name">PayPal</div>
-                    </div>
+                <p id="upi-verify-msg" class="verify-msg"></p>
+
+                {% if cashfree_env == 'TEST' %}
+                <div class="test-badge">
+                    🧪 <strong>Test Mode:</strong> Use UPI ID <strong>testsuccess@gocash</strong> to simulate a paid transaction.
                 </div>
+                {% endif %}
             </div>
-            
-            <!-- UPI -->
-            <div class="payment-category">
-                <div class="category-title">
-                    <i class="fas fa-mobile-alt"></i>
-                    UPI
-                </div>
-                <div class="payment-options">
-                    <div class="payment-option" data-method="PhonePe">
-                        <i class="fas fa-mobile-alt"></i>
-                        <div class="option-name">PhonePe</div>
-                    </div>
-                    <div class="payment-option" data-method="GPay">
-                        <i class="fab fa-google"></i>
-                        <div class="option-name">GPay</div>
-                    </div>
-                    <div class="payment-option" data-method="Paytm">
-                        <i class="fas fa-wallet"></i>
-                        <div class="option-name">Paytm</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Bank Transfer -->
-            <div class="payment-category">
-                <div class="category-title">
-                    <i class="fas fa-university"></i>
-                    Bank Transfer
-                </div>
-                <div class="payment-options">
-                    <div class="payment-option" data-method="IMPS">
-                        <i class="fas fa-exchange-alt"></i>
-                        <div class="option-name">IMPS</div>
-                    </div>
-                    <div class="payment-option" data-method="NEFT">
-                        <i class="fas fa-university"></i>
-                        <div class="option-name">NEFT</div>
-                    </div>
-                    <div class="payment-option" data-method="ACH">
-                        <i class="fas fa-building"></i>
-                        <div class="option-name">ACH</div>
-                    </div>
-                    <div class="payment-option" data-method="SEPA">
-                        <i class="fas fa-euro-sign"></i>
-                        <div class="option-name">SEPA</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Buy Now Pay Later -->
-            <div class="payment-category">
-                <div class="category-title">
-                    <i class="fas fa-calendar-check"></i>
-                    Buy Now Pay Later
-                </div>
-                <div class="payment-options">
-                    <div class="payment-option" data-method="ZestMoney">
-                        <i class="fas fa-coins"></i>
-                        <div class="option-name">ZestMoney</div>
-                    </div>
-                    <div class="payment-option" data-method="Klarna">
-                        <i class="fas fa-hand-holding-usd"></i>
-                        <div class="option-name">Klarna</div>
-                    </div>
-                </div>
-            </div>
-            
-            <button class="complete-payment-btn" id="completePaymentBtn" disabled>
-                Complete Payment
-            </button>
         </div>
+
+        <!-- Pay Button -->
+        <button id="pay-btn" class="btn-pay" onclick="initiateUPIPayment()">
+            🔒 Pay ₹{{ amount }} with UPI
+        </button>
+
+        <div class="trust-badges">
+            <span>🔐 256-bit SSL</span>
+            <span>·</span>
+            <span>🇮🇳 BHIM UPI</span>
+            <span>·</span>
+            <span>🏦 RBI Regulated</span>
+        </div>
+
     </div>
 </div>
 
-<!-- Processing Overlay -->
-<div class="processing-overlay" id="processingOverlay">
-    <div class="processing-content">
-        <div class="spinner"></div>
-        <div class="processing-text">Processing your payment...</div>
-    </div>
-</div>
-
-<!-- Success Modal -->
-<div class="success-modal" id="successModal">
-    <div class="success-card">
-        <div class="success-icon">
-            <i class="fas fa-check"></i>
-        </div>
-        <h2>Payment Successful!</h2>
-        <p>Your appointment has been confirmed</p>
-        
-        <div class="receipt-details" id="receiptDetails">
-            <!-- Will be populated by JavaScript -->
-        </div>
-        
-        <div class="redirect-text" id="redirectText">
-            Redirecting to dashboard in <span id="countdown">3</span> seconds...
-        </div>
-    </div>
-</div>
-
+<!-- Cashfree JS SDK -->
+<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const paymentOptions = document.querySelectorAll('.payment-option');
-    const completePaymentBtn = document.getElementById('completePaymentBtn');
-    const processingOverlay = document.getElementById('processingOverlay');
-    const successModal = document.getElementById('successModal');
-    let selectedPaymentMethod = null;
-    
-    // Handle payment option selection
-    paymentOptions.forEach(option => {
-        option.addEventListener('click', function() {
-            // Remove selected class from all options
-            paymentOptions.forEach(opt => opt.classList.remove('selected'));
-            
-            // Add selected class to clicked option
-            this.classList.add('selected');
-            
-            // Store selected payment method
-            selectedPaymentMethod = this.dataset.method;
-            
-            // Enable payment button
-            completePaymentBtn.disabled = false;
-        });
-    });
-    
-    // Handle complete payment button click
-    completePaymentBtn.addEventListener('click', function() {
-        if (!selectedPaymentMethod) {
-            alert('Please select a payment method');
+    const cashfree = Cashfree({ mode: '{% if cashfree_env == "PROD" %}production{% else %}sandbox{% endif %}' });
+    const UPI_PLACEHOLDERS = {
+        phonepe: '9999999999@ybl',
+        gpay:    '9999999999@okicici',
+        paytm:   '9999999999@paytm',
+        other:   'yourname@upi',
+    };
+
+    function selectUPI(app) {
+        document.querySelectorAll('.upi-app-btn').forEach(el => el.classList.remove('selected'));
+        const el = document.getElementById('upi-' + app);
+        if (el) el.classList.add('selected');
+        const input = document.getElementById('upi-id-input');
+        input.placeholder = UPI_PLACEHOLDERS[app] || 'yourname@upi';
+        input.focus();
+    }
+
+    function showMsg(text, type) {
+        const msg = document.getElementById('upi-verify-msg');
+        msg.style.display = 'block';
+        msg.textContent = text;
+        msg.style.color = type === 'success' ? '#16a34a' : '#dc2626';
+    }
+
+    function verifyUPIId() {
+        const upiId = document.getElementById('upi-id-input').value.trim();
+        if (!upiId) { showMsg('Please enter a UPI ID.', 'error'); return; }
+        const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/;
+        if (!regex.test(upiId)) {
+            showMsg('❌ Invalid format. Use: name@upi or 9999999999@paytm', 'error');
+        } else {
+            showMsg('✅ UPI ID looks valid!', 'success');
+        }
+    }
+
+    function initiateUPIPayment() {
+        const upiId = document.getElementById('upi-id-input').value.trim();
+        const btn = document.getElementById('pay-btn');
+
+        if (!upiId) {
+            showMsg('Please enter your UPI ID first.', 'error');
             return;
         }
-        
-        // Show processing overlay
-        processingOverlay.style.display = 'flex';
-        
-        // Simulate 2-second processing
-        setTimeout(function() {
-            // Send payment request to backend
-            fetch('{% url "process_payment" %}', {
+
+        btn.disabled = true;
+        btn.innerHTML = '<span>⏳ Connecting to payment gateway…</span>';
+
+        const sessionId = '{{ payment_session_id }}';
+
+        // S2S API Integration
+        if (sessionId) {
+            fetch('/payment/process/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': '{{ csrf_token }}'
                 },
                 body: JSON.stringify({
-                    appointment_id: {{ appointment.id }},
-                    payment_method: selectedPaymentMethod
+                    payment_session_id: sessionId,
+                    upi_id: upiId
                 })
             })
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
-                // Hide processing overlay
-                processingOverlay.style.display = 'none';
-                
-                if (data.status === 'success') {
-                    // Show success modal with receipt
-                    showSuccessModal(data);
+                if (data.message && data.message !== 'Success') {
+                    showMsg(data.message, 'error');
+                    resetBtn();
+                } else if (data.action === 'custom' || data.payment_method === 'upi' || data.payment_method) {
+                    showMsg('✅ Payment request sent! Please approve it in your UPI app.', 'success');
+                    btn.innerHTML = '<span>⏳ Waiting for approval in UPI app...</span>';
+                    
+                    // Poll for success every 4 seconds
+                    let attempts = 0;
+                    const poll = setInterval(() => {
+                        attempts++;
+                        if (attempts > 30) {
+                            clearInterval(poll);
+                            showMsg('Payment timed out or was not approved. Please try again.', 'error');
+                            resetBtn();
+                            return;
+                        }
+                        
+                        // Check status via our verify endpoint
+                        fetch('/payment/verify/?order_id={{ order_id }}&appointment_id={{ appointment.id }}', {
+                            method: 'GET',
+                            redirect: 'follow'
+                        }).then(res => {
+                            if (res.redirected) {
+                                // Once verified, the backend redirects to the receipt or failed page
+                                // If it redirects to appointment detail, it means it's still pending
+                                if (!res.url.includes('/appointment/{{ appointment.id }}')) {
+                                    clearInterval(poll);
+                                    window.location.href = res.url;
+                                }
+                            }
+                        });
+                    }, 4000);
+                    
                 } else {
-                    alert('Payment failed: ' + data.message);
+                    showMsg('Unexpected response from gateway.', 'error');
+                    resetBtn();
                 }
             })
-            .catch(error => {
-                processingOverlay.style.display = 'none';
-                alert('An error occurred. Please try again.');
-                console.error('Error:', error);
+            .catch(err => {
+                console.error('S2S API error:', err);
+                resetBtn();
+                showMsg('Request failed. Check console for details.', 'error');
             });
-        }, 2000);
-    });
-    
-    function showSuccessModal(data) {
-        // Populate receipt details
-        const receiptDetails = document.getElementById('receiptDetails');
-        receiptDetails.innerHTML = `
-            <div class="receipt-row">
-                <span class="receipt-label">Booking ID</span>
-                <span class="receipt-value">${data.booking_id}</span>
-            </div>
-            <div class="receipt-row">
-                <span class="receipt-label">Doctor Name</span>
-                <span class="receipt-value">Dr. ${data.doctor_name}</span>
-            </div>
-            <div class="receipt-row">
-                <span class="receipt-label">Appointment Date</span>
-                <span class="receipt-value">${data.appointment_date}</span>
-            </div>
-            <div class="receipt-row">
-                <span class="receipt-label">Appointment Time</span>
-                <span class="receipt-value">${data.appointment_time}</span>
-            </div>
-            <div class="receipt-row">
-                <span class="receipt-label">Amount Paid</span>
-                <span class="receipt-value">₹${data.amount}</span>
-            </div>
-            <div class="receipt-row">
-                <span class="receipt-label">Payment Method</span>
-                <span class="receipt-value">${data.payment_method}</span>
-            </div>
-        `;
-        
-        // Show success modal
-        successModal.style.display = 'flex';
-        
-        // Start countdown
-        let countdown = 3;
-        const countdownElement = document.getElementById('countdown');
-        
-        const countdownInterval = setInterval(function() {
-            countdown--;
-            countdownElement.textContent = countdown;
-            
-            if (countdown <= 0) {
-                clearInterval(countdownInterval);
-                window.location.href = '{% url "my_appointments" %}';
-            }
-        }, 1000);
+        } else {
+            // No session ID (gateway not configured) — show informative error
+            resetBtn();
+            showMsg('⚠️ Payment gateway not configured. Add CASHFREE_APP_ID and CASHFREE_SECRET_KEY to your .env file.', 'error');
+        }
     }
-});
+
+    function resetBtn() {
+        const btn = document.getElementById('pay-btn');
+        btn.disabled = false;
+        btn.innerHTML = '🔒 Pay ₹{{ amount }} with UPI';
+    }
 </script>
 {% endblock %}

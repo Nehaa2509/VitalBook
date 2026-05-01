@@ -10,13 +10,13 @@
                 <i class="fas fa-check-circle"></i>
             </div>
             
-            <h1>Payment Successful!</h1>
-            <p class="success-message">Your appointment has been confirmed</p>
+            <h1>Payment Successful! 🎉</h1>
+            <p class="success-message">Your payment is received. Your appointment is awaiting admin confirmation.</p>
             
             <div class="receipt-card">
                 <div class="receipt-header">
                     <h3><i class="fas fa-receipt"></i> Payment Receipt</h3>
-                    <span class="status-badge">PAID</span>
+                    <span class="status-badge" style="background:#ffc107; color:#333;">⏳ AWAITING CONFIRMATION</span>
                 </div>
                 
                 <div class="receipt-body">
@@ -43,15 +43,19 @@
                     <div class="appointment-card-mini">
                         <img src="https://ui-avatars.com/api/?name={{ appointment.doctor.name }}&size=60&background=4A90E2&color=fff" alt="{{ appointment.doctor.name }}">
                         <div>
-                            <h5>Dr. {{ appointment.doctor.name }}</h5>
+                            <h5>{{ appointment.doctor.name }}</h5>
                             <p><i class="fas fa-stethoscope"></i> {{ appointment.doctor.specialization.name }}</p>
                             <p><i class="fas fa-calendar"></i> {{ appointment.date|date:"d M, Y" }} at {{ appointment.time|time:"g:i A" }}</p>
                         </div>
                     </div>
                 </div>
                 
-                <div class="receipt-footer">
-                    <p><i class="fas fa-info-circle"></i> A confirmation email has been sent to {{ appointment.patient.email }}</p>
+                <div class="receipt-footer" style="background:#fff8e1; border-radius:8px; padding:15px; border-left:4px solid #ffc107;">
+                    <p style="color:#856404; font-weight:600;">
+                        <i class="fas fa-clock" style="color:#ffc107;"></i>
+                        Your payment is confirmed. The admin will review and confirm your appointment shortly.
+                        You will receive an email once confirmed.
+                    </p>
                 </div>
             </div>
             
@@ -59,25 +63,25 @@
                 <a href="{% url 'appointment_detail' appointment.id %}" class="btn btn-outline btn-lg">
                     <i class="fas fa-eye"></i> View Appointment
                 </a>
-                <a href="{% url 'my_appointments' %}" class="btn btn-primary btn-lg">
+                <a href="{% url 'patient_dashboard' %}#upcoming-appointments" class="btn btn-primary btn-lg">
                     <i class="fas fa-calendar-check"></i> My Appointments
                 </a>
             </div>
             
             <div class="next-steps">
-                <h4>What's Next?</h4>
+                <h4>What Happens Next?</h4>
                 <div class="steps-grid">
                     <div class="step-item">
+                        <i class="fas fa-user-shield"></i>
+                        <p>Admin reviews your appointment and <strong>confirms</strong> it</p>
+                    </div>
+                    <div class="step-item">
                         <i class="fas fa-envelope"></i>
-                        <p>Check your email for appointment confirmation</p>
+                        <p>You'll receive a <strong>confirmation email</strong> once approved</p>
                     </div>
                     <div class="step-item">
-                        <i class="fas fa-qrcode"></i>
-                        <p>Use QR code for quick check-in at hospital</p>
-                    </div>
-                    <div class="step-item">
-                        <i class="fas fa-clock"></i>
-                        <p>Arrive 15 minutes before scheduled time</p>
+                        <i class="fas fa-calendar-check"></i>
+                        <p>Check <strong>My Appointments</strong> to see updated status</p>
                     </div>
                 </div>
             </div>
@@ -331,7 +335,7 @@
 <script>
 // Auto-redirect to appointments after 10 seconds
 setTimeout(function() {
-    window.location.href = "{% url 'my_appointments' %}";
+    window.location.href = "{% url 'patient_dashboard' %}#upcoming-appointments";
 }, 10000);
 </script>
 {% endblock %}

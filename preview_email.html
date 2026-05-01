@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        .email-wrapper {
+            max-width: 600px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .email-header {
+            background: linear-gradient(135deg, #0d6efd, #0056b3);
+            padding: 32px;
+            text-align: center;
+        }
+        .email-header h1 {
+            color: white;
+            margin: 0;
+            font-size: 28px;
+        }
+        .email-header p {
+            color: rgba(255,255,255,0.85);
+            margin: 8px 0 0;
+            font-size: 14px;
+        }
+        .email-body {
+            padding: 32px;
+        }
+        .email-body h2 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-top: 0;
+        }
+        .email-body p {
+            color: #495057;
+            margin: 12px 0;
+        }
+        .info-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #0d6efd;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .info-value {
+            font-weight: 600;
+            color: #212529;
+            text-align: right;
+        }
+        .btn {
+            display: inline-block;
+            background: #0d6efd;
+            color: white !important;
+            padding: 12px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 16px 0;
+        }
+        .btn:hover {
+            background: #0b5ed7;
+        }
+        .email-footer {
+            background: #f8f9fa;
+            padding: 24px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 13px;
+        }
+        .email-footer p {
+            margin: 8px 0;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .status-confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status-paid {
+            background: #d4edda;
+            color: #155724;
+        }
+        .highlight-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 16px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .highlight-box strong {
+            color: #856404;
+        }
+        @media only screen and (max-width: 600px) {
+            .email-wrapper {
+                margin: 0;
+                border-radius: 0;
+            }
+            .email-body {
+                padding: 20px;
+            }
+            .info-row {
+                flex-direction: column;
+            }
+            .info-value {
+                text-align: left;
+                margin-top: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <div class="email-header">
+            <h1>💊 VitalBook</h1>
+            <p>Your Health, Our Priority</p>
+        </div>
+        <div class="email-body">
+            
+<h2>Your Digital Prescription</h2>
+<p>Dear John Doe,</p>
+<p>Dr. Sarah Smith has issued a digital prescription for your recent appointment on <strong>24 April 2026</strong>.</p>
+
+<div class="info-card" style="border-left: 4px solid #198754; background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+    <h3 style="color: #198754; margin-top: 0;"><i class="fas fa-prescription"></i> Rx Details</h3>
+    <div style="margin-top: 15px;">
+        <strong>Medicines:</strong>
+        <p style="white-space: pre-wrap; font-family: monospace; background: #fff; padding: 10px; border: 1px solid #dee2e6; border-radius: 4px;">1. Amoxicillin 500mg - 1 tablet twice a day for 5 days
+2. Paracetamol 500mg - 1 tablet as needed for fever</p>
+    </div>
+    
+    
+    <div style="margin-top: 15px;">
+        <strong>Instructions:</strong>
+        <p style="white-space: pre-wrap; background: #fff; padding: 10px; border: 1px solid #dee2e6; border-radius: 4px;">Please take the antibiotics after meals. Drink plenty of water and rest well. If symptoms persist, contact the clinic.</p>
+    </div>
+    
+</div>
+
+<p>You can also download a PDF copy of your prescription anytime from your patient dashboard.</p>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="http://127.0.0.1:8000/patient/dashboard/" class="btn">View in Dashboard</a>
+</div>
+
+        </div>
+        <div class="email-footer">
+            <p><strong>© 2026 VitalBook.</strong> All rights reserved.</p>
+            <p>Need help? Contact us at <a href="mailto:support@vitalbook.in" style="color: #0d6efd;">support@vitalbook.in</a></p>
+            <p>📞 +91 98765 43210</p>
+            <p style="font-size:11px; color:#adb5bd; margin-top: 16px;">
+                This is an automated email. Please do not reply directly to this message.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

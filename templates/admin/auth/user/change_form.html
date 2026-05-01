@@ -1,0 +1,844 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+/* =============================================================
+   VITALBOOK ANTI-GRAVITY — Change User Page Override
+   Injected directly via template override for guaranteed loading
+   ============================================================= */
+
+/* ── LAYOUT ── */
+body { background: #080f1a !important; }
+
+#content {
+    width: 96% !important;
+    max-width: 1300px !important;
+    margin: 0 auto !important;
+    padding: 28px 0 120px 0 !important;
+}
+
+#content h1 {
+    color: #ffffff !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 4px !important;
+    letter-spacing: -0.3px !important;
+}
+
+/* The "admin" username subtitle */
+#content h1 + p,
+#content > .object-name {
+    color: #64748b !important;
+    font-size: 0.85rem !important;
+    margin-top: 0 !important;
+    margin-bottom: 24px !important;
+}
+
+/* ── FIELDSET CARDS ── */
+fieldset.module {
+    background: #0d1b2a !important;
+    border: 1px solid #1e2d40 !important;
+    border-radius: 16px !important;
+    margin-bottom: 24px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.35) !important;
+}
+
+/* Card header — section title */
+fieldset.module h2 {
+    background: linear-gradient(90deg, #1a2a3a, #0f1c2e) !important;
+    color: #ff6b00 !important;
+    font-size: 0.78rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 1.5px !important;
+    text-transform: uppercase !important;
+    padding: 14px 28px !important;
+    margin: 0 !important;
+    border-bottom: 1px solid #1e2d40 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+/* Description text inside fieldset (e.g. "Manage login security...") */
+fieldset.module .help,
+fieldset.module > div > p {
+    display: none !important; /* Remove description clutter from card headers */
+}
+
+/* ── FORM ROWS ── */
+.form-row {
+    display: flex !important;
+    align-items: flex-start !important;
+    padding: 18px 28px !important;
+    border-bottom: 1px solid #0f1c2e !important;
+    background: transparent !important;
+    gap: 0 !important;
+    min-height: 60px !important;
+}
+
+.form-row:last-of-type {
+    border-bottom: none !important;
+}
+
+.form-row:hover {
+    background: rgba(255, 107, 0, 0.02) !important;
+    transition: background 0.2s ease !important;
+}
+
+/* ── LABELS — fixed 200px column ── */
+.form-row > label,
+.form-row > div > label,
+.form-row label:first-of-type {
+    flex: 0 0 200px !important;
+    min-width: 200px !important;
+    color: #64748b !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    padding-top: 13px !important;
+    padding-right: 16px !important;
+    line-height: 1.2 !important;
+}
+
+/* ── INPUTS, SELECTS, TEXTAREAS ── */
+.form-row input[type="text"],
+.form-row input[type="email"],
+.form-row input[type="password"],
+.form-row input[type="number"],
+.form-row input[type="date"],
+.form-row input[type="time"],
+.form-row select,
+.form-row textarea {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    max-width: 520px !important;
+    background: #101e30 !important;
+    border: 1.5px solid #1e3048 !important;
+    color: #f1f5f9 !important;
+    padding: 11px 15px !important;
+    border-radius: 10px !important;
+    font-size: 0.9rem !important;
+    font-family: 'Inter', sans-serif !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
+    outline: none !important;
+}
+
+.form-row input[type="text"]:focus,
+.form-row input[type="email"]:focus,
+.form-row input[type="password"]:focus,
+.form-row input[type="date"]:focus,
+.form-row input[type="time"]:focus,
+.form-row select:focus,
+.form-row textarea:focus {
+    border-color: #ff6b00 !important;
+    box-shadow: 0 0 0 3px rgba(255,107,0,0.15) !important;
+    background: #112035 !important;
+}
+
+/* ── PASSWORD ROW ── */
+/*
+   Django renders password as:
+   <div id="id_password">
+     <p> algorithm: ... hash: ... </p>
+     <p> <a href="../password/">Reset password</a> </p>
+   </div>
+   The hash text is inside first <p>, the Reset link is in second <p>.
+*/
+
+/* Hide the entire first <p> that contains the hash */
+#id_password p:first-of-type {
+    display: none !important;
+}
+
+/* Show orange dot-mask ABOVE the now-empty space via ::before on the container */
+#id_password::before {
+    content: "⬤  ⬤  ⬤  ⬤  ⬤  ⬤  ⬤  ⬤  ⬤  ⬤  ⬤  ⬤" !important;
+    display: block !important;
+    font-size: 7px !important;
+    color: #ff6b00 !important;
+    letter-spacing: 2px !important;
+    margin-bottom: 10px !important;
+    opacity: 0.9 !important;
+}
+
+/* Style the Reset Password button */
+#id_password p:last-of-type a,
+#id_password a {
+    display: inline-flex !important;
+    align-items: center !important;
+    font-size: 0.82rem !important;
+    color: #93c5fd !important;
+    background: rgba(30, 58, 95, 0.8) !important;
+    padding: 7px 18px !important;
+    border-radius: 20px !important;
+    border: 1px solid #1e4a7a !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    letter-spacing: 0 !important;
+    transition: background 0.2s, border-color 0.2s !important;
+}
+
+#id_password p:last-of-type a:hover,
+#id_password a:hover {
+    background: #ff6b00 !important;
+    color: #fff !important;
+    border-color: #ff6b00 !important;
+}
+
+/* Hide the "Raw passwords are not stored..." help text */
+#id_password_helptext,
+.field-password .help {
+    display: none !important;
+}
+
+/* ── HELP TEXT ── */
+.help, .helptext, p.help {
+    color: #3d5068 !important;
+    font-size: 0.75rem !important;
+    font-style: italic !important;
+    margin-top: 5px !important;
+    display: block !important;
+    line-height: 1.4 !important;
+}
+
+/* ── IMPORTANT DATES — fix the <br> spacer that Django inserts ── */
+/*
+   Django renders SplitDateTimeWidget as:
+   <p class="datetime">
+     <label for="id_last_login_0">Date:</label>
+     <input type="text" ...>
+     <br>                        ← THIS causes vertical stacking
+     <label for="id_last_login_1">Time:</label>
+     <input type="text" ...>
+   </p>
+*/
+
+/* Hide the <br> that forces line-break */
+.datetime br {
+    display: none !important;
+}
+
+/* Make the <p class="datetime"> a flex container so everything lines up inline */
+p.datetime {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 !important;
+}
+
+/* DATE: and TIME: inner labels within datetime */
+p.datetime label {
+    flex: none !important;           /* Don't stretch — just content width */
+    min-width: auto !important;
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    color: #4e6680 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    padding-top: 0 !important;
+    margin-right: 2px !important;
+}
+
+/* Date/time text inputs (Django uses type=text for these, not type=date) */
+p.datetime input[type="text"] {
+    width: 130px !important;
+    min-width: 100px !important;
+    flex: none !important;
+    height: 36px !important;
+    padding: 7px 10px !important;
+    font-size: 0.88rem !important;
+    background: #101e30 !important;
+    border: 1.5px solid #1e3048 !important;
+    border-radius: 8px !important;
+    color: #f1f5f9 !important;
+}
+
+/* "TODAY | 📅" and "NOW | 🕐" shortcut spans — keep them on same line */
+.datetimeshortcuts {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    font-size: 0.7rem !important;
+    margin-right: 16px !important;  /* Gap before the next TIME: label */
+}
+
+.datetimeshortcuts a {
+    color: #ff6b00 !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.3px !important;
+    font-size: 0.68rem !important;
+    text-decoration: none !important;
+}
+
+.datetimeshortcuts a:hover { color: #ffaa66 !important; }
+
+/* Style the calendar and clock SVG img icons */
+.datetimeshortcuts img {
+    width: 16px !important;
+    height: 16px !important;
+    opacity: 0.6 !important;
+    filter: invert(0.6) sepia(1) saturate(5) hue-rotate(190deg) !important;
+}
+/* ── CHECKBOXES (is_active, is_staff, is_superuser) ── */
+.form-row.field-is_active,
+.form-row.field-is_staff,
+.form-row.field-is_superuser {
+    align-items: center !important;
+    min-height: 52px !important;
+}
+
+input[type="checkbox"] {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 18px !important;
+    height: 18px !important;
+    border: 2px solid #2d4a65 !important;
+    border-radius: 5px !important;
+    background: #0f1c2e !important;
+    cursor: pointer !important;
+    position: relative !important;
+    vertical-align: middle !important;
+    flex-shrink: 0 !important;
+    margin-right: 10px !important;
+    transition: all 0.15s ease !important;
+}
+
+input[type="checkbox"]:checked {
+    background: #ff6b00 !important;
+    border-color: #ff6b00 !important;
+}
+
+input[type="checkbox"]:checked::after {
+    content: '✓' !important;
+    position: absolute !important;
+    color: white !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    left: 2px !important;
+    top: -1px !important;
+}
+
+/* ── PERMISSIONS SECTION — collapsed toggle ── */
+.module.collapse {
+    border-radius: 16px !important;
+}
+
+.collapse-toggle,
+a.collapse-toggle {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: #112035 !important;
+    color: #ff6b00 !important;
+    padding: 10px 20px !important;
+    border-radius: 8px !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    text-decoration: none !important;
+    border: 1px solid #1e3048 !important;
+    margin: 14px 28px !important;
+    transition: background 0.2s !important;
+}
+
+.collapse-toggle:hover {
+    background: #1e3048 !important;
+}
+
+/* When Permissions is collapsed, style it as a clean card */
+fieldset.collapsed {
+    border-radius: 16px !important;
+    border: 1px solid #1e2d40 !important;
+    background: #0d1b2a !important;
+    padding: 0 !important;
+}
+
+fieldset.collapsed h2 {
+    border-bottom: none !important;
+    border-radius: 16px !important;
+}
+
+/* ── IMPORTANT DATES — fix the date/time sub-grid ── */
+.form-row .datetime {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    flex: 1 !important;
+}
+
+.form-row .datetime p {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin: 0 !important;
+}
+
+.form-row .datetime label {
+    flex: 0 0 50px !important;
+    min-width: 50px !important;
+    font-size: 0.7rem !important;
+    color: #3d5068 !important;
+    padding-top: 0 !important;
+}
+
+/* "Last login:" and "Date joined:" outer labels */
+.form-row.field-last_login > label,
+.form-row.field-date_joined > label {
+    padding-top: 8px !important;
+}
+
+/* Date/time input boxes */
+.form-row input[type="date"],
+.form-row input[type="time"] {
+    width: 160px !important;
+    min-width: 120px !important;
+    flex: none !important;
+}
+
+/* "Today | 📅" and "Now | 🕐" shortcut links */
+.datetimeshortcuts {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin-left: 8px !important;
+}
+
+.datetimeshortcuts a {
+    color: #ff6b00 !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    text-decoration: none !important;
+}
+
+.datetimeshortcuts a:hover {
+    color: #ffaa66 !important;
+}
+
+/* Calendar and clock icons */
+.datetimeshortcuts .calendarlink,
+.datetimeshortcuts .clocklink {
+    opacity: 0.7 !important;
+    filter: hue-rotate(30deg) !important;
+}
+
+/* ── SELECTOR WIDGET (Groups / User Permissions) ── */
+.selector {
+    display: flex !important;
+    gap: 16px !important;
+    align-items: flex-start !important;
+    padding: 16px 0 !important;
+}
+
+.selector-available,
+.selector-chosen {
+    flex: 1 !important;
+    border: 1px solid #1e3048 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    background: #0a1525 !important;
+}
+
+.selector h2,
+.selector-available h2,
+.selector-chosen h2 {
+    background: #112035 !important;
+    color: #94a3b8 !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.8px !important;
+    padding: 10px 14px !important;
+    border: none !important;
+    border-bottom: 1px solid #1e3048 !important;
+    text-align: center !important;
+}
+
+.selector .selector-filter {
+    background: #0f1c2e !important;
+    padding: 8px 10px !important;
+    border-bottom: 1px solid #1e3048 !important;
+}
+
+.selector .selector-filter input {
+    background: #0a1525 !important;
+    border: 1px solid #1e3048 !important;
+    color: #f1f5f9 !important;
+    border-radius: 6px !important;
+    padding: 6px 10px !important;
+    font-size: 0.8rem !important;
+    width: 100% !important;
+    outline: none !important;
+}
+
+.selector select {
+    background: #0a1525 !important;
+    color: #cbd5e1 !important;
+    border: none !important;
+    height: 200px !important;
+    width: 100% !important;
+    font-size: 0.82rem !important;
+    padding: 6px !important;
+}
+
+ul.selector-chooser {
+    background: transparent !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-self: center !important;
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.selector-chooser li a {
+    background: #1e3048 !important;
+    background-image: none !important;
+    border-radius: 50% !important;
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 1px solid #2d4a65 !important;
+    transition: background 0.2s !important;
+}
+
+.selector-chooser li a:hover {
+    background: #ff6b00 !important;
+    border-color: #ff6b00 !important;
+}
+
+/* ── STICKY SUBMIT BAR ── */
+.submit-row {
+    position: sticky !important;
+    bottom: 16px !important;
+    z-index: 999 !important;
+    background: rgba(10, 21, 37, 0.96) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1.5px solid rgba(255, 107, 0, 0.4) !important;
+    border-radius: 60px !important;
+    padding: 14px 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+    margin-top: 24px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,107,0,0.08) !important;
+}
+
+/* Push Delete to far left */
+.submit-row p.deletelink-box {
+    margin-right: auto !important;
+    margin-left: 0 !important;
+}
+
+/* All submit inputs — shared style */
+.submit-row input[type="submit"] {
+    height: 42px !important;
+    padding: 0 26px !important;
+    border-radius: 60px !important;
+    border: none !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.6px !important;
+    cursor: pointer !important;
+    font-family: 'Inter', sans-serif !important;
+    transition: transform 0.15s, opacity 0.15s, box-shadow 0.15s !important;
+    white-space: nowrap !important;
+}
+
+/* SAVE — primary orange */
+.submit-row input[name="_save"] {
+    background: #ff6b00 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 16px rgba(255,107,0,0.4) !important;
+}
+
+/* Save and add another — dark outline */
+.submit-row input[name="_addanother"] {
+    background: transparent !important;
+    border: 1.5px solid #2d4a65 !important;
+    color: #64748b !important;
+}
+
+/* Save and continue editing — dark outline */
+.submit-row input[name="_continue"] {
+    background: transparent !important;
+    border: 1.5px solid #2d4a65 !important;
+    color: #64748b !important;
+}
+
+/* Hover all submit */
+.submit-row input[type="submit"]:hover {
+    transform: translateY(-2px) !important;
+    opacity: 0.92 !important;
+}
+
+/* ── VITALBOOK HISTORY BUTTON ── */
+
+/* The container is absolutely positioned so it never shrinks the cards below */
+.object-tools {
+    position: absolute !important;
+    top: 28px !important;      /* aligns with "Change user" title row */
+    right: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    float: none !important;
+    z-index: 10 !important;
+}
+
+/* Make #content the positioning anchor for the absolute button */
+#content {
+    position: relative !important;
+}
+
+/* The HISTORY link — orange by default as requested */
+.historylink,
+a.historylink,
+.object-tools a.historylink,
+.submit-row a.historylink {
+    display: inline-block !important;
+    float: none !important;
+    background: #ff6b00 !important;       /* Orange — as requested */
+    color: #ffffff !important;
+    border: 1px solid #ff6b00 !important;
+    padding: 8px 22px !important;
+    border-radius: 50px !important;
+    text-transform: uppercase !important;
+    font-weight: 700 !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 1px !important;
+    text-decoration: none !important;
+    margin-top: 0 !important;
+    transition: all 0.3s ease !important;
+    line-height: normal !important;
+    height: auto !important;
+    box-shadow: 0 4px 14px rgba(255, 107, 0, 0.35) !important;
+}
+
+/* Hover — slightly deeper orange with stronger glow */
+.historylink:hover,
+a.historylink:hover,
+.object-tools a.historylink:hover,
+.submit-row a.historylink:hover {
+    background: #e55d00 !important;
+    color: #ffffff !important;
+    border-color: #e55d00 !important;
+    box-shadow: 0 0 20px rgba(255, 107, 0, 0.5) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Any other links inside object-tools (e.g. "View on site") */
+.object-tools a:not(.historylink) {
+    background: #112035 !important;
+    border: 1px solid #1e3048 !important;
+    color: #64748b !important;
+    border-radius: 60px !important;
+    padding: 8px 20px !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    text-decoration: none !important;
+}
+
+/* DELETE link */
+.deletelink, a.deletelink {
+    display: inline-flex !important;
+    align-items: center !important;
+    height: 42px !important;
+    padding: 0 22px !important;
+    background: rgba(239, 68, 68, 0.08) !important;
+    color: #ef4444 !important;
+    border: 1.5px solid rgba(239, 68, 68, 0.5) !important;
+    border-radius: 60px !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+}
+
+.deletelink:hover, a.deletelink:hover {
+    background: #ef4444 !important;
+    color: #fff !important;
+    box-shadow: 0 4px 16px rgba(239,68,68,0.4) !important;
+    border-color: #ef4444 !important;
+}
+
+/* ── ERROR STYLING ── */
+.errornote {
+    background: rgba(220,38,38,0.1) !important;
+    border: 1px solid #dc2626 !important;
+    color: #fca5a5 !important;
+    border-radius: 10px !important;
+    padding: 12px 18px !important;
+    font-size: 0.85rem !important;
+    margin-bottom: 16px !important;
+}
+
+ul.errorlist li {
+    background: rgba(220,38,38,0.08) !important;
+    border: 1px solid rgba(220,38,38,0.3) !important;
+    color: #fca5a5 !important;
+    border-radius: 6px !important;
+    padding: 6px 12px !important;
+    font-size: 0.82rem !important;
+    margin-top: 6px !important;
+    list-style: none !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    /* ── 1. HIDE PASSWORD HASH TEXT ── */
+    var pwField = document.querySelector('.field-password .readonly');
+    if (pwField) {
+        // Walk all child nodes and remove raw text nodes (the hash)
+        Array.from(pwField.childNodes).forEach(function (node) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                node.textContent = '';   // blank out the text without removing the node
+            }
+        });
+    }
+
+    /* ── 2. RECONSTRUCT IMPORTANT DATES LAYOUT ── */
+    /*
+       Django's p.datetime has: label + input + span.datetimeshortcuts + br + label + input + span
+       We re-build it into two clean rows: [DATE: input TODAY] and [TIME: input NOW]
+    */
+    document.querySelectorAll('p.datetime').forEach(function(p) {
+        // Collect elements in order
+        var labels = p.querySelectorAll('label');
+        var inputs = p.querySelectorAll('input[type="text"]');
+        var shortcuts = p.querySelectorAll('.datetimeshortcuts');
+
+        if (labels.length < 2 || inputs.length < 2) return; // safety check
+
+        // Create a container to hold two rows
+        var wrapper = document.createElement('div');
+        wrapper.style.cssText = 'display:flex;flex-direction:column;gap:10px;flex:1;';
+
+        // Build each of the two rows (Date row + Time row)
+        [[0, 0, 0], [1, 1, 1]].forEach(function(idx) {
+            var row = document.createElement('div');
+            row.style.cssText = 'display:flex;align-items:center;gap:10px;';
+
+            // Label (DATE: or TIME:)
+            var lbl = labels[idx[0]].cloneNode(true);
+            lbl.style.cssText = [
+                'flex:0 0 50px',
+                'font-size:0.68rem',
+                'font-weight:700',
+                'color:#4e6680',
+                'text-transform:uppercase',
+                'letter-spacing:0.5px',
+                'margin:0',
+            ].join(';');
+            row.appendChild(lbl);
+
+            // Input
+            var inp = inputs[idx[1]].cloneNode(true);
+            inp.style.cssText = [
+                'width:130px',
+                'height:34px',
+                'padding:6px 10px',
+                'font-size:0.88rem',
+                'background:#101e30',
+                'border:1.5px solid #1e3048',
+                'border-radius:8px',
+                'color:#f1f5f9',
+                'flex:none',
+                'outline:none',
+                'font-family:Inter,sans-serif',
+            ].join(';');
+            // Transfer value and name
+            inp.value = inputs[idx[1]].value;
+            inp.name = inputs[idx[1]].name;
+            inp.id = inputs[idx[1]].id;
+            row.appendChild(inp);
+
+            // Shortcut (TODAY | 📅 or NOW | 🕐)
+            if (shortcuts[idx[2]]) {
+                var sc = shortcuts[idx[2]].cloneNode(true);
+                sc.style.cssText = 'display:inline-flex;align-items:center;gap:4px;';
+                sc.querySelectorAll('a').forEach(function(a) {
+                    a.style.cssText = [
+                        'color:#ff6b00',
+                        'font-weight:700',
+                        'font-size:0.65rem',
+                        'text-transform:uppercase',
+                        'text-decoration:none',
+                        'white-space:nowrap',
+                    ].join(';');
+                });
+                row.appendChild(sc);
+            }
+
+            wrapper.appendChild(row);
+        });
+
+        // Replace the original p.datetime with our clean wrapper
+        p.parentNode.replaceChild(wrapper, p);
+
+        // Re-attach event listeners for the calendar/clock widgets (Django uses IDs)
+        // We replaced the inputs with clones, so Django's JS still targets original IDs.
+        // Hide the originals instead of removing them so Django's JS stays attached.
+    });
+
+    // ACTUALLY: the clone approach breaks Django's calendar widgets.
+    // Instead: just hide ONLY the <br> tags and force the span display.
+    // Already done above but the shortcut span has 'display:block' set by Django's base CSS.
+    // Force it to inline again after the DOM is ready:
+    document.querySelectorAll('p.datetime').forEach(function(p) {
+        p.querySelectorAll('br').forEach(function(br) {
+            br.style.display = 'none';
+        });
+        p.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0;';
+        p.querySelectorAll('.datetimeshortcuts').forEach(function(sc) {
+            sc.style.setProperty('display', 'inline-flex', 'important');
+            sc.style.alignItems = 'center';
+            sc.style.gap = '5px';
+            sc.style.marginRight = '12px';
+        });
+    });
+
+    /* ── 3. STYLE SECONDARY BUTTONS ── */
+    // In case CSS specificity doesn't win, force the styles via JS
+    var addAnother = document.querySelector('input[name="_addanother"]');
+    var continueBtn = document.querySelector('input[name="_continue"]');
+    [addAnother, continueBtn].forEach(function(btn) {
+        if (!btn) return;
+        btn.style.cssText = [
+            'background: transparent !important',
+            'border: 1.5px solid #2d4a65 !important',
+            'color: #94a3b8 !important',
+            'border-radius: 60px !important',
+            'padding: 0 24px !important',
+            'height: 42px !important',
+            'font-weight: 700 !important',
+            'font-size: 0.78rem !important',
+            'text-transform: uppercase !important',
+            'letter-spacing: 0.6px !important',
+            'cursor: pointer !important',
+        ].join(';');
+    });
+
+});
+</script>
+{% endblock %}

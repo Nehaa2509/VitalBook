@@ -1,0 +1,246 @@
+{% extends 'appointment/base.html' %}
+
+{% block title %}Cancellation Fee - VitalBook{% endblock %}
+
+{% block extra_css %}
+<style>
+.cancellation-section {
+    padding: 60px 0;
+    background: linear-gradient(135deg, #0B2B46 0%, #1a4a70 45%, #5c2d91 100%);
+    min-height: 100vh;
+}
+.cancellation-card {
+    max-width: 540px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+.cancellation-card h2 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #0B2B46;
+    margin: 0 0 6px;
+}
+.cancellation-card > p {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.7;
+    margin: 0 0 4px;
+}
+.fee-badge {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    padding: 20px;
+    border-radius: 16px;
+    text-align: center;
+    margin: 20px 0;
+    box-shadow: 0 6px 20px rgba(239,68,68,0.3);
+}
+.fee-badge .label {
+    font-size: 12px;
+    opacity: 0.85;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+.fee-badge .amount {
+    font-size: 2.5rem;
+    font-weight: 900;
+    line-height: 1;
+}
+.appointment-summary {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin: 16px 0;
+    border-left: 4px solid #ef4444;
+}
+.appointment-summary dl { margin: 0; }
+.appointment-summary dt {
+    font-size: 11px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 3px;
+}
+.appointment-summary dd {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0B2B46;
+    margin: 0 0 10px;
+}
+.appointment-summary dd:last-child { margin-bottom: 0; }
+.info-box {
+    background: #fef3c7;
+    border: 1px solid #fbbf24;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin: 16px 0;
+    color: #92400e;
+    font-size: 13px;
+    line-height: 1.5;
+}
+.info-box i { margin-right: 6px; }
+.test-hint {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin: 12px 0 20px;
+    font-size: 13px;
+    color: #1e40af;
+}
+.test-hint strong { font-weight: 700; }
+.btn-pay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(239,68,68,0.35);
+    transition: all 0.25s ease;
+    font-family: inherit;
+}
+.btn-pay:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(239,68,68,0.45);
+}
+.btn-pay:disabled {
+    background: #94a3b8;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 22px;
+    transition: color 0.2s;
+}
+.btn-back:hover { color: #0B2B46; }
+.status-msg {
+    text-align: center;
+    font-size: 13px;
+    margin-top: 12px;
+    min-height: 20px;
+    font-weight: 500;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="cancellation-section">
+    <div class="container">
+        <div class="cancellation-card">
+
+            <a href="{% url 'patient_dashboard' %}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+
+            <h2>⚠️ Late Cancellation Fee</h2>
+            <p>Your appointment is scheduled in less than 24 hours. A cancellation fee applies as per our policy.</p>
+
+            <div class="fee-badge">
+                <div class="label">Cancellation Fee</div>
+                <div class="amount">₹{{ cancellation_fee }}</div>
+            </div>
+
+            <div class="appointment-summary">
+                <dl>
+                    <dt>Doctor</dt>
+                    <dd>Dr. {{ appointment.doctor.name }}</dd>
+                    <dt>Date &amp; Time</dt>
+                    <dd>{{ appointment.date|date:"d M Y" }} at {{ appointment.time|time:"h:i A" }}</dd>
+                    <dt>Hours Remaining</dt>
+                    <dd>{{ hours_remaining }} hours</dd>
+                </dl>
+            </div>
+
+            <div class="info-box">
+                <i class="fas fa-info-circle"></i>
+                <strong>Policy:</strong> Cancellations within 24 hours of the appointment incur a
+                ₹{{ cancellation_fee }} fee. Your appointment will be cancelled only after the fee is paid.
+            </div>
+
+            {% if payment_session_id %}
+                {% if cashfree_env == 'TEST' %}
+                <div class="test-hint">
+                    🧪 <strong>Test Mode:</strong> Click the button below. On the Cashfree page, use
+                    UPI ID <strong>testsuccess@gocash</strong> to simulate a successful payment.
+                </div>
+                {% endif %}
+
+                <button id="pay-cancel-btn" class="btn-pay" onclick="openCashfreeCheckout()">
+                    <i class="fas fa-lock"></i> Pay ₹{{ cancellation_fee }} &amp; Cancel Appointment
+                </button>
+                <p id="status-msg" class="status-msg"></p>
+
+            {% else %}
+                <!-- Cashfree order creation failed — direct server-side cancel fallback -->
+                <form method="POST" action="{% url 'verify_cancellation_payment' appointment.id %}?order_id={{ order_id }}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-pay">
+                        <i class="fas fa-check-circle"></i> Confirm Cancellation (Gateway Unavailable)
+                    </button>
+                </form>
+            {% endif %}
+
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+{% if payment_session_id %}
+<!-- Cashfree JS SDK v3 — opens Cashfree's hosted payment page -->
+<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+<script>
+    // Cashfree v3 requires 'sandbox' or 'production' — not 'test'/'prod'
+    var cashfree = Cashfree({ mode: '{% if cashfree_env == "PROD" %}production{% else %}sandbox{% endif %}' });
+
+    function openCashfreeCheckout() {
+        var btn = document.getElementById('pay-cancel-btn');
+        var msg = document.getElementById('status-msg');
+
+        btn.disabled  = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening secure payment…';
+        msg.style.color = '#64748b';
+        msg.textContent = 'You will be redirected to Cashfree to complete the payment.';
+
+        // cashfree.checkout() opens Cashfree's hosted payment UI.
+        // After payment Cashfree redirects the browser to returnUrl automatically.
+        cashfree.checkout({
+            paymentSessionId: '{{ payment_session_id }}',
+            returnUrl: window.location.origin + '/cancel/verify/{{ appointment.id }}/?order_id={{ order_id }}',
+        }).then(function(result) {
+            if (result.error) {
+                msg.style.color = '#dc2626';
+                msg.textContent = '❌ ' + (result.error.message || 'Payment could not be initiated. Please try again.');
+                btn.disabled  = false;
+                btn.innerHTML = '<i class="fas fa-lock"></i> Pay ₹{{ cancellation_fee }} & Cancel Appointment';
+            }
+        }).catch(function(err) {
+            console.error('Cashfree error:', err);
+            msg.style.color = '#dc2626';
+            msg.textContent = '❌ Something went wrong. Please refresh and try again.';
+            btn.disabled  = false;
+            btn.innerHTML = '<i class="fas fa-lock"></i> Pay ₹{{ cancellation_fee }} & Cancel Appointment';
+        });
+    }
+</script>
+{% endif %}
+{% endblock %}

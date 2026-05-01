@@ -222,7 +222,7 @@
                 <div class="hospital-contact">123 Healthcare Avenue, Mumbai, Maharashtra | Tel: +91-98765-43210</div>
             </td>
             <td class="doctor-info-cell">
-                <div class="doctor-name">Dr. {{ appointment.doctor.name }}</div>
+                <div class="doctor-name">{{ appointment.doctor.name }}</div>
                 <div class="doctor-spec">{{ appointment.doctor.specialization.name }}</div>
                 {% if appointment.doctor.qualification %}
                 <div class="doctor-meta">{{ appointment.doctor.qualification }}</div>
@@ -300,7 +300,7 @@
     <!-- ══ SIGNATURE ══ -->
     <div class="signature-section">
         <div class="signature-line"></div><br>
-        <div class="signature-name">Dr. {{ appointment.doctor.name }}</div>
+        <div class="signature-name">{{ appointment.doctor.name }}</div>
         <div class="signature-spec">{{ appointment.doctor.specialization.name }}</div>
         {% if appointment.doctor.qualification %}
         <div style="font-size:11px; color:#666;">{{ appointment.doctor.qualification }}</div>

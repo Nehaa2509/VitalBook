@@ -1,0 +1,539 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block content_title %}{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<style>
+/* ── Dashboard Page CSS ── */
+
+/* Header row */
+.dash-header {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 24px;
+}
+.dash-title-area h4 {
+    margin: 0 0 3px; color: var(--s400);
+    font-size: 13px; font-weight: 500;
+}
+.dash-title-area h1 {
+    margin: 0; color: #fff;
+    font-size: 24px; font-weight: 800; letter-spacing: -.4px;
+}
+.dash-header-actions { display: flex; gap: 12px; }
+
+/* Header buttons */
+.btn-outline {
+    background: transparent; color: var(--or);
+    border: 1.5px solid var(--or); padding: 10px 20px;
+    border-radius: 10px; font-size: 13.5px; font-weight: 600;
+    cursor: pointer; text-decoration: none; transition: all .2s;
+    display: inline-flex; align-items: center; gap: 6px; color: var(--or) !important;
+}
+.btn-outline:hover { background: rgba(249,115,22,.08); }
+
+/* ── Hero Glassmorphism Card ── */
+.hero-card {
+    background: rgba(17, 43, 70, 0.55);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 40px rgba(0,0,0,0.3);
+    border-radius: 16px; padding: 32px 40px;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 28px; position: relative; overflow: hidden;
+}
+/* Inner glow blobs */
+.hero-card::before {
+    content:''; position:absolute; width:340px; height:340px; border-radius:50%;
+    background: radial-gradient(circle, rgba(147,197,253,.12) 0%, transparent 70%);
+    top:-160px; left:-80px; pointer-events:none;
+}
+.hero-card::after {
+    content:''; position:absolute; width:280px; height:280px; border-radius:50%;
+    background: radial-gradient(circle, rgba(249,115,22,.07) 0%, transparent 70%);
+    bottom:-160px; right:250px; pointer-events:none;
+}
+
+.hero-content { position:relative; z-index:2; }
+.hero-subtitle { font-size:14px; color:rgba(255,255,255,.65); margin:0 0 5px; font-weight:500; }
+.hero-title { font-size:26px; font-weight:800; color:#fff; margin:0 0 6px; }
+.hero-desc { font-size:13.5px; color:rgba(255,255,255,.6); margin:0 0 24px; }
+
+/* Hero stat boxes */
+.hero-stats { display:flex; gap:12px; flex-wrap:wrap; }
+.hero-stat-box {
+    background: rgba(11,25,44,.25); border:1px solid rgba(255,255,255,.1);
+    border-radius: 12px; padding: 14px 20px; text-align:center; min-width:90px;
+    backdrop-filter:blur(5px);
+}
+.hero-stat-num { font-size:22px; font-weight:800; color:#fff; margin-bottom:3px; line-height:1; }
+.hero-stat-num.orange { color: var(--or); }
+.hero-stat-label { font-size:11px; color:rgba(255,255,255,.65); font-weight:500; letter-spacing:.3px; }
+
+/* ── Stats Grid ── */
+.stats-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px;
+}
+
+.stat-card {
+    border-radius: 14px; padding: 22px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    min-height: 150px; position: relative; overflow: hidden;
+    color: #fff !important; box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+    text-decoration: none; transition: transform .2s, box-shadow .2s;
+    border: 1px solid rgba(255,255,255,.08);
+}
+.stat-card:hover { transform: translateY(-4px); box-shadow: 0 14px 36px rgba(0,0,0,0.3); }
+
+/* Diagonal stripe texture overlay */
+.stat-card::before {
+    content:''; position:absolute; inset:0;
+    background-image: repeating-linear-gradient(
+        45deg,
+        rgba(255,255,255,.04), rgba(255,255,255,.04) 1px,
+        transparent 1px, transparent 12px
+    );
+    pointer-events:none; z-index:0;
+}
+
+.card-green  { background: linear-gradient(135deg, #10B981, #059669); }
+.card-orange { background: linear-gradient(135deg, #F97316, #EA580C); }
+.card-blue   { background: linear-gradient(135deg, #3B82F6, #2563EB); }
+.card-purple { background: linear-gradient(135deg, #8B5CF6, #7C3AED); }
+
+.stat-card-top {
+    display:flex; justify-content:space-between;
+    align-items:flex-start; position:relative; z-index:1;
+}
+.stat-card-icon { font-size:20px; opacity:.9; color:#fff !important; }
+.stat-card-badge {
+    background: rgba(0,0,0,.18); padding: 4px 10px;
+    border-radius:20px; font-size:11px; font-weight:700;
+    letter-spacing:.5px; text-transform:uppercase; color:#fff !important;
+}
+.stat-card-bottom { position:relative; z-index:1; margin-top:18px; }
+.stat-card-num  { font-size:34px; font-weight:800; line-height:1; margin-bottom:6px; color:#fff !important; }
+.stat-card-label{ font-size:13.5px; font-weight:500; color:#fff !important; opacity:.95; }
+.stat-card-link { font-size:12px; margin-top:10px; opacity:.8; font-weight:600; color:#fff !important; }
+.stat-card-link i { font-size:10px; margin-left:2px; }
+
+/* ── Pending Approvals Widget ── */
+.approval-panel {
+    background: #101929;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    margin-top: 24px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+.approval-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    background: #1a1f26;
+    border-bottom: 2px solid rgba(255,255,255,0.08);
+}
+.approval-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.approval-dot {
+    width: 9px; height: 9px;
+    background: #F97316;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.25);
+    animation: pulse-dot 1.8s ease infinite;
+    flex-shrink: 0;
+}
+@keyframes pulse-dot {
+    0%,100% { box-shadow: 0 0 0 3px rgba(249,115,22,0.25); }
+    50%      { box-shadow: 0 0 0 6px rgba(249,115,22,0.08); }
+}
+.approval-title h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+.approval-count {
+    background: #F97316;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+}
+.approval-view-all {
+    font-size: 13px;
+    font-weight: 600;
+    color: #F97316 !important;
+    text-decoration: none !important;
+    transition: opacity 0.2s;
+}
+.approval-view-all:hover { opacity: 0.75; }
+
+/* Table */
+.approval-table-wrap { overflow-x: auto; }
+.approval-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.approval-table thead th {
+    background: #1a1f26;
+    color: #94A3B8;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    padding: 11px 16px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    white-space: nowrap;
+}
+.approval-table tbody tr {
+    background: #1a1f26;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.approval-table tbody tr:last-child { border-bottom: none; }
+.approval-table tbody tr:hover { background: #1a1f26; }
+.approval-table tbody td {
+    padding: 13px 16px;
+    color: #CBD5E1;
+    font-size: 13.5px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.appt-id { color: #64748B; font-size: 12px; font-weight: 600; }
+.appt-name { color: #fff; font-weight: 600; font-size: 13.5px; }
+.appt-spec {
+    background: rgba(59,130,246,0.15);
+    color: #93C5FD;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+.appt-actions { display: flex; gap: 8px; }
+.btn-approve, .btn-reject {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: 7px;
+    font-size: 12.5px;
+    font-weight: 700;
+    text-decoration: none !important;
+    transition: all 0.2s;
+    white-space: nowrap;
+    cursor: pointer;
+    border: none;
+}
+.btn-approve {
+    background: rgba(16,185,129,0.15);
+    color: #10B981 !important;
+    border: 1px solid rgba(16,185,129,0.3);
+}
+.btn-approve:hover {
+    background: #10B981;
+    color: #fff !important;
+    border-color: #10B981;
+}
+.btn-reject {
+    background: rgba(239,68,68,0.12);
+    color: #F87171 !important;
+    border: 1px solid rgba(239,68,68,0.25);
+}
+.btn-reject:hover {
+    background: #EF4444;
+    color: #fff !important;
+    border-color: #EF4444;
+}
+
+/* Empty state */
+.approval-empty {
+    margin-top: 24px;
+    background: #101929;
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 14px;
+    padding: 28px;
+    text-align: center;
+}
+
+@keyframes modalIn {
+    from { opacity:0; transform:translateY(10px) scale(.97); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
+}
+
+</style>
+
+<div class="dash-header">
+    <div class="dash-title-area">
+        <h4 id="current-date">Saturday, 11 April 2026</h4>
+        <h1>Hospital Dashboard</h1>
+    </div>
+    <div class="dash-header-actions">
+        <a href="/admin/appointment/appointment/" class="btn-outline">
+            <i class="far fa-calendar-alt"></i> View Appointments
+        </a>
+    </div>
+</div>
+
+<div class="hero-card">
+    <div class="hero-content">
+        <p class="hero-subtitle">Good Afternoon,</p>
+        <h2 class="hero-title">{{ user.username|default:'Admin'|capfirst }}</h2>
+        <p class="hero-desc">Here's what's happening with VitalBook today</p>
+
+        <div class="hero-stats">
+            <div class="hero-stat-box">
+                <div class="hero-stat-num" id="api-today">{{ todays_appts|default:"0" }}</div>
+                <div class="hero-stat-label">Today's Appts</div>
+            </div>
+            <div class="hero-stat-box">
+                <div class="hero-stat-num" id="api-pending">{{ pending|default:"0" }}</div>
+                <div class="hero-stat-label">Pending</div>
+            </div>
+            <div class="hero-stat-box">
+                <div class="hero-stat-num" id="api-confirmed">{{ confirmed|default:"0" }}</div>
+                <div class="hero-stat-label">Confirmed</div>
+            </div>
+            <div class="hero-stat-box">
+                <div class="hero-stat-num orange" id="api-revenue">₹{{ today_revenue|default:"0" }}</div>
+                <div class="hero-stat-label">Today's Revenue</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <!-- Card 1: Patients -->
+    <a href="/admin/appointment/patient/" class="stat-card card-green">
+        <div class="stat-card-top">
+            <i class="fas fa-user-friends stat-card-icon"></i>
+            <span class="stat-card-badge">+0%</span>
+        </div>
+        <div class="stat-card-bottom">
+            <div class="stat-card-num">{{ total_patients|default:"0" }}</div>
+            <div class="stat-card-label">Total Patients</div>
+            <div class="stat-card-link">View All <i class="fas fa-arrow-right"></i></div>
+        </div>
+    </a>
+
+    <!-- Card 2: Appointments -->
+    <a href="/admin/appointment/appointment/" class="stat-card card-orange">
+        <div class="stat-card-top">
+            <i class="far fa-calendar-alt stat-card-icon"></i>
+            <span class="stat-card-badge">ALL TIME</span>
+        </div>
+        <div class="stat-card-bottom">
+            <div class="stat-card-num">{{ total_appts|default:"0" }}</div>
+            <div class="stat-card-label">Total Appointments</div>
+            <div class="stat-card-link">View All <i class="fas fa-arrow-right"></i></div>
+        </div>
+    </a>
+
+    <!-- Card 3: Total Doctors -->
+    <a href="/admin/appointment/doctor/" class="stat-card card-blue">
+        <div class="stat-card-top">
+            <i class="fas fa-user-md stat-card-icon"></i>
+            <span class="stat-card-badge">ACTIVE</span>
+        </div>
+        <div class="stat-card-bottom">
+            <div class="stat-card-num">{{ total_doctors|default:"0" }}</div>
+            <div class="stat-card-label">Total Doctors</div>
+            <div class="stat-card-link">View All <i class="fas fa-arrow-right"></i></div>
+        </div>
+    </a>
+
+    <!-- Card 4: Revenue -->
+    <a href="/admin/appointment/billing/" class="stat-card card-purple">
+        <div class="stat-card-top">
+            <i class="fas fa-rupee-sign stat-card-icon"></i>
+            <span class="stat-card-badge">+20%</span>
+        </div>
+        <div class="stat-card-bottom">
+            <div class="stat-card-num">₹{{ total_revenue|default:"0" }}</div>
+            <div class="stat-card-label">Total Revenue</div>
+            <div class="stat-card-link">Completed payments</div>
+        </div>
+    </a>
+</div>
+
+<!-- ── Pending Approvals Widget ─────────────────────────── -->
+{% if pending_approvals %}
+<div class="approval-panel">
+    <div class="approval-header">
+        <div class="approval-title">
+            <span class="approval-dot"></span>
+            <h3>Pending Approvals</h3>
+            <span class="approval-count">{{ pending_approvals|length }}</span>
+        </div>
+        <a href="/admin/appointment/appointment/?status__exact=Pending" class="approval-view-all">
+            View All &rarr;
+        </a>
+    </div>
+
+    <div class="approval-table-wrap">
+        <table class="approval-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Specialization</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appt in pending_approvals %}
+                <tr>
+                    <td class="appt-id">#{{ appt.id }}</td>
+                    <td>
+                        <div class="appt-name">{{ appt.patient.name }}</div>
+                    </td>
+                    <td>
+                        <div class="appt-name">Dr. {{ appt.doctor.name }}</div>
+                    </td>
+                    <td>
+                        <span class="appt-spec">
+                            {% if appt.doctor.specialization %}{{ appt.doctor.specialization.name }}{% else %}—{% endif %}
+                        </span>
+                    </td>
+                    <td>{{ appt.date|date:"d M Y" }}</td>
+                    <td>{{ appt.time|time:"h:i A" }}</td>
+                    <td class="appt-actions">
+                        <button type="button" class="btn-approve"
+                            data-action="approve"
+                            data-url="/admin/dashboard-approve/{{ appt.id }}/"
+                            data-patient="{{ appt.patient.name }}"
+                            data-id="{{ appt.id }}">
+                            <i class="fas fa-check"></i> Approve
+                        </button>
+                        <button type="button" class="btn-reject"
+                            data-action="cancel"
+                            data-url="/admin/dashboard-cancel/{{ appt.id }}/"
+                            data-patient="{{ appt.patient.name }}"
+                            data-id="{{ appt.id }}">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="approval-empty">
+    <i class="fas fa-check-circle" style="font-size:28px; color:#10B981; margin-bottom:8px;"></i>
+    <div style="font-size:15px; font-weight:600; color:#fff; margin-bottom:4px;">All Clear!</div>
+    <div style="font-size:13px; color:#94A3B8;">No appointments are pending approval right now.</div>
+</div>
+{% endif %}
+
+<!-- ── Confirmation Modal ── -->
+<div id="confirm-modal" style="display:none;position:fixed;inset:0;z-index:99999;
+     background:rgba(6,15,30,0.75);backdrop-filter:blur(6px);
+     align-items:center;justify-content:center;">
+    <div style="background:#112B46;border:1px solid rgba(255,255,255,0.1);
+                border-radius:16px;padding:32px 28px;width:360px;max-width:90vw;
+                box-shadow:0 24px 60px rgba(0,0,0,0.5);
+                animation:modalIn .18s ease;font-family:'Inter',sans-serif;">
+        <div style="font-size:22px;margin-bottom:8px;text-align:center;" id="modal-icon">✅</div>
+        <h3 id="modal-title" style="font-size:17px;font-weight:700;color:#fff;
+            text-align:center;margin:0 0 8px 0;"></h3>
+        <p id="modal-body" style="font-size:13.5px;color:#94A3B8;
+            text-align:center;margin:0 0 24px 0;line-height:1.5;"></p>
+        <div style="display:flex;gap:10px;justify-content:center;">
+            <button id="modal-cancel-btn" type="button"
+                style="flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);
+                       background:transparent;color:#CBD5E1;cursor:pointer;
+                       font-size:14px;font-weight:600;font-family:'Inter',sans-serif;
+                       transition:background .15s;">
+                No, go back
+            </button>
+            <form id="modal-form" method="POST" style="flex:1;margin:0;">
+                {% csrf_token %}
+                <button type="submit" id="modal-confirm-btn"
+                    style="width:100%;padding:10px;border-radius:8px;border:none;
+                           cursor:pointer;font-size:14px;font-weight:700;
+                           font-family:'Inter',sans-serif;transition:all .15s;">
+                    Yes, confirm
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Dynamic date
+const dateEl = document.getElementById('current-date');
+if(dateEl) {
+    dateEl.textContent = new Date().toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+}
+
+// Dynamic greeting
+const hour = new Date().getHours();
+let greeting = hour < 12 ? 'Good Morning,' : hour < 17 ? 'Good Afternoon,' : 'Good Evening,';
+const sub = document.querySelector('.hero-subtitle');
+if (sub) sub.textContent = greeting;
+
+// Modal elements
+var overlay     = document.getElementById('confirm-modal');
+var modalForm   = document.getElementById('modal-form');
+var modalTitle  = document.getElementById('modal-title');
+var modalBody   = document.getElementById('modal-body');
+var modalIcon   = document.getElementById('modal-icon');
+var confirmBtn  = document.getElementById('modal-confirm-btn');
+var cancelBtn   = document.getElementById('modal-cancel-btn');
+
+function openModal(action, url, patientName, apptId) {
+    var isApprove = action === 'approve';
+    modalIcon.textContent       = isApprove ? '✅' : '❌';
+    modalTitle.textContent      = isApprove ? 'Confirm Appointment' : 'Cancel Appointment';
+    modalBody.textContent       = isApprove
+        ? 'Approve appointment #' + apptId + ' for ' + patientName + '? The patient will be notified by email.'
+        : 'Cancel appointment #' + apptId + ' for ' + patientName + '? This action cannot be undone.';
+    confirmBtn.textContent      = isApprove ? 'Yes, Approve' : 'Yes, Cancel';
+    confirmBtn.style.background = isApprove ? '#10B981' : '#EF4444';
+    confirmBtn.style.color      = '#fff';
+    modalForm.action            = url;
+    overlay.style.display       = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    overlay.style.display        = 'none';
+    document.body.style.overflow = '';
+}
+
+// Wire up all action buttons
+document.querySelectorAll('[data-action]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        openModal(
+            btn.dataset.action,
+            btn.dataset.url,
+            btn.dataset.patient,
+            btn.dataset.id
+        );
+    });
+});
+
+if(cancelBtn) cancelBtn.addEventListener('click', closeModal);
+if(overlay) {
+    overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) closeModal();
+    });
+}
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeModal();
+});
+</script>
+{% endblock %}

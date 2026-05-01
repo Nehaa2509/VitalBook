@@ -11,12 +11,17 @@ A complete web-based Hospital Appointment System built with Django, SQLite, HTML
 - View appointment history
 - Cancel appointments
 - Real-time appointment status tracking
+- **Secure UPI Payment Gateway** integration (Cashfree)
+- **Digital Medical Prescriptions** with PDF download
+- **Automated Email Notifications** for appointments and prescriptions
 
 ### Admin Features
 - Manage doctors (add, edit, delete)
 - View all appointments
 - Approve or cancel appointments
 - Filter appointments by status, date, and doctor
+- **Digital Prescription Generation** with auto-filled details
+- **Real-time User Activity Tracking** (Online/Offline status)
 
 ## Technology Stack
 
@@ -24,6 +29,9 @@ A complete web-based Hospital Appointment System built with Django, SQLite, HTML
 - **Database**: SQLite
 - **Frontend**: HTML5, CSS3, JavaScript
 - **Authentication**: Django built-in auth system
+- **PDF Generation**: `xhtml2pdf`
+- **Payments**: Cashfree Payment Gateway API
+- **Emails**: Django SMTP Backend
 
 ## Project Structure
 
@@ -96,7 +104,21 @@ python manage.py runserver
 - Usernames: `john_doe`, `jane_smith`, `bob_wilson`
 - Password: `password123`
 
-### 5. Populate Database (if needed)
+### 5. Environment Variables
+
+Create a `.env` file in the root directory (do **NOT** use real keys in public repositories):
+```env
+# Example .env configuration
+SECRET_KEY=your_django_secret_key
+DEBUG=True
+CASHFREE_APP_ID=your_cashfree_app_id
+CASHFREE_SECRET_KEY=your_cashfree_secret_key
+CASHFREE_ENV=TEST
+EMAIL_HOST_USER=your_email@gmail.com
+EMAIL_HOST_PASSWORD=your_app_password
+```
+
+### 6. Populate Database (if needed)
 ```bash
 python manage.py populate_data
 ```
@@ -156,6 +178,15 @@ python manage.py populate_data
 - Reason for visit
 - Automatic status tracking
 
+### Digital Prescriptions (New)
+- Automated PDF generation using `xhtml2pdf`
+- Admin interface for prescribing medication
+- Patient dashboard integration for downloading prescriptions
+
+### Notifications & Payments (New)
+- Automated Email dispatch for prescriptions and appointments
+- Integrated Cashfree UPI payment gateway
+
 ### Admin Dashboard
 - Full CRUD operations for doctors
 - Appointment management
@@ -163,12 +194,9 @@ python manage.py populate_data
 
 ## Future Enhancements
 
-- Email notifications for appointment confirmations
 - SMS reminders
 - Doctor availability calendar
-- Payment integration
 - Patient medical history
-- Prescription management
 - Video consultation feature
 
 ## Project Demonstration Tips

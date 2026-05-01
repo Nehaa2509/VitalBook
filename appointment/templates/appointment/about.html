@@ -1,75 +1,539 @@
 {% extends 'appointment/base.html' %}
-
+{% load static %}
 {% block title %}About Us - VitalBook{% endblock %}
 
-{% block content %}
-<section class="page-header">
-    <div class="container">
-        <h1>About VitalBook</h1>
-        <p>Your trusted healthcare partner</p>
-    </div>
-</section>
+{% block extra_css %}
+<style>
+    /* ── Page Canvas ── */
+    .about-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0B2B46 0%, #1a4a70 45%, #5c2d91 100%);
+        position: relative;
+        overflow: hidden;
+        padding-bottom: 80px;
+    }
 
-<section class="about-content">
-    <div class="container">
-        <div class="about-grid">
-            <div class="about-text">
-                <h2>Welcome to VitalBook</h2>
-                <p>VitalBook is a leading healthcare provider committed to delivering exceptional medical services with compassion and excellence. With state-of-the-art facilities and a team of highly qualified medical professionals, we strive to provide the best possible care to our patients.</p>
-                
-                <p>Our mission is to make quality healthcare accessible to everyone. We believe in treating not just the illness, but the whole person, with dignity and respect.</p>
-                
-                <div class="about-features">
-                    <div class="about-feature">
-                        <i class="fas fa-award"></i>
-                        <h3>Excellence in Care</h3>
-                        <p>Award-winning medical services</p>
+    .about-page::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    /* ── Page Hero ── */
+    .about-hero {
+        text-align: center;
+        padding: 60px 20px 48px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .about-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(8px);
+        padding: 6px 20px;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #93c5fd;
+        letter-spacing: 0.5px;
+        margin-bottom: 20px;
+    }
+
+    .about-page-title {
+        font-size: clamp(2rem, 5vw, 3rem);
+        font-weight: 800;
+        color: #ffffff;
+        letter-spacing: -1px;
+        margin-bottom: 12px;
+    }
+
+    .about-page-title span {
+        color: #f97316;
+    }
+
+    .about-page-subtitle {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1.1rem;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    /* ── Container ── */
+    .about-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 20px;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ── White Card ── */
+    .about-card {
+        background: #ffffff;
+        border-radius: 24px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25), 0 8px 20px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-bottom: 28px;
+        animation: cardUp 0.5s ease;
+    }
+
+    @keyframes cardUp {
+        from {
+            opacity: 0;
+            transform: translateY(28px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ── Mission Card ── */
+    .mission-card {
+        display: grid;
+        grid-template-columns: 1fr 420px;
+        gap: 0;
+    }
+
+    .mission-text-wrap {
+        padding: 52px 48px;
+    }
+
+    .mission-text-wrap h2 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #0B2B46;
+        margin-bottom: 18px;
+        letter-spacing: -0.5px;
+    }
+
+    .mission-text-wrap p {
+        color: #475569;
+        line-height: 1.8;
+        font-size: 1.02rem;
+        margin-bottom: 18px;
+    }
+
+    .mission-image-wrap {
+        position: relative;
+        overflow: hidden;
+        border-radius: 0 24px 24px 0;
+    }
+
+    .mission-image-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.5s ease;
+    }
+
+    .mission-image-wrap:hover img {
+        transform: scale(1.04);
+    }
+
+    .mission-image-wrap::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to right, rgba(255, 255, 255, 0.08), transparent);
+        pointer-events: none;
+    }
+
+    /* ── Feature Pills ── */
+    .about-feature-row {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 28px;
+    }
+
+    .about-feature-pill {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+        border: 1px solid #bae6fd;
+        border-radius: 14px;
+        padding: 14px 20px;
+        flex: 1 1 160px;
+    }
+
+    .about-feature-pill i {
+        font-size: 20px;
+        color: #0B2B46;
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #0B2B46, #1a4a70);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .about-feature-pill h3 {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0B2B46;
+        margin-bottom: 2px;
+    }
+
+    .about-feature-pill p {
+        font-size: 12px;
+        color: #64748b;
+        margin: 0;
+    }
+
+    /* ── Stats Strip ── */
+    .stats-strip {
+        background: linear-gradient(135deg, #0B2B46, #1a4a70);
+        border-radius: 0;
+        padding: 36px 48px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+        text-align: center;
+    }
+
+    .stat-item {
+        padding: 0 20px;
+        border-right: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .stat-item:last-child {
+        border-right: none;
+    }
+
+    .stat-number-big {
+        font-size: 2.4rem;
+        font-weight: 800;
+        color: #f97316;
+        letter-spacing: -1px;
+        display: block;
+    }
+
+    .stat-desc {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 500;
+        margin-top: 4px;
+    }
+
+    /* ── Values Section ── */
+    .values-card {
+        padding: 48px 48px 44px;
+    }
+
+    .section-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: #94a3b8;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .section-label::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #e2e8f0;
+    }
+
+    .section-heading {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #0B2B46;
+        margin-bottom: 36px;
+        letter-spacing: -0.5px;
+    }
+
+    .values-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+
+    .value-card {
+        background: linear-gradient(135deg, #f8faff, #f0f4ff);
+        border: 1px solid #e8efff;
+        border-radius: 18px;
+        padding: 28px 22px;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: default;
+    }
+
+    .value-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 40px rgba(11, 43, 70, 0.12);
+        border-color: #c7d7f5;
+    }
+
+    .value-card-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin: 0 auto 18px;
+    }
+
+    .value-card-icon.red {
+        background: linear-gradient(135deg, #fee2e2, #fecaca);
+        color: #dc2626;
+    }
+
+    .value-card-icon.blue {
+        background: linear-gradient(135deg, #eff6ff, #dbeafe);
+        color: #2563eb;
+    }
+
+    .value-card-icon.purple {
+        background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+        color: #7c3aed;
+    }
+
+    .value-card-icon.green {
+        background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+        color: #16a34a;
+    }
+
+    .value-card h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #0B2B46;
+        margin-bottom: 8px;
+    }
+
+    .value-card p {
+        font-size: 13px;
+        color: #64748b;
+        line-height: 1.6;
+    }
+
+    /* ── CTA Strip ── */
+    .cta-strip {
+        background: linear-gradient(135deg, #f97316, #fb923c);
+        border-radius: 20px;
+        padding: 44px 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        flex-wrap: wrap;
+        box-shadow: 0 12px 36px rgba(249, 115, 22, 0.35);
+    }
+
+    .cta-strip-text h2 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 6px;
+    }
+
+    .cta-strip-text p {
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 15px;
+    }
+
+    .btn-cta-white {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: white;
+        color: #f97316 !important;
+        padding: 14px 32px;
+        border-radius: 50px;
+        font-weight: 800;
+        text-decoration: none;
+        font-size: 15px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .btn-cta-white:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .mission-card {
+            grid-template-columns: 1fr;
+        }
+
+        .mission-image-wrap {
+            height: 300px;
+            border-radius: 0 0 24px 24px;
+        }
+
+        .stats-strip {
+            grid-template-columns: repeat(2, 1fr);
+            row-gap: 24px;
+        }
+
+        .stat-item:nth-child(2) {
+            border-right: none;
+        }
+
+        .values-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .mission-text-wrap {
+            padding: 36px 28px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .values-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .stats-strip {
+            padding: 28px 20px;
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .cta-strip {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="about-page">
+    <!-- Hero -->
+    <div class="about-hero">
+        <div class="about-eyebrow"><i class="fas fa-hospital"></i> About VitalBook</div>
+        <h1 class="about-page-title">Your Trusted <span>Healthcare</span> Partner</h1>
+        <p class="about-page-subtitle">Delivering exceptional medical care with compassion, excellence, and innovation.
+        </p>
+    </div>
+
+    <div class="about-container">
+
+        <!-- Mission Card -->
+        <div class="about-card">
+            <div class="mission-card">
+                <div class="mission-text-wrap">
+                    <h2>Welcome to VitalBook</h2>
+                    <p>VitalBook is a leading healthcare provider committed to delivering exceptional medical services
+                        with compassion and excellence. With state-of-the-art facilities and a team of highly qualified
+                        medical professionals, we strive to provide the best possible care to our patients.</p>
+                    <p>Our mission is to make quality healthcare accessible to everyone. We believe in treating not just
+                        the illness, but the whole person — with dignity and respect.</p>
+
+                    <div class="about-feature-row">
+                        <div class="about-feature-pill">
+                            <i class="fas fa-award"></i>
+                            <div>
+                                <h3>Excellence in Care</h3>
+                                <p>Award-winning services</p>
+                            </div>
+                        </div>
+                        <div class="about-feature-pill">
+                            <i class="fas fa-users"></i>
+                            <div>
+                                <h3>Expert Team</h3>
+                                <p>Highly qualified professionals</p>
+                            </div>
+                        </div>
+                        <div class="about-feature-pill">
+                            <i class="fas fa-hospital"></i>
+                            <div>
+                                <h3>Modern Facilities</h3>
+                                <p>State-of-the-art equipment</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="about-feature">
-                        <i class="fas fa-users"></i>
-                        <h3>Expert Team</h3>
-                        <p>Highly qualified professionals</p>
+                </div>
+                <div class="mission-image-wrap">
+                    <img src="{% static 'images/hospital_lobby.png' %}" alt="VitalBook Healthcare Center">
+                </div>
+            </div>
+
+            <!-- Stats Strip -->
+            <div class="stats-strip">
+                <div class="stat-item">
+                    <span class="stat-number-big">12+</span>
+                    <div class="stat-desc">Expert Doctors</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number-big">25+</span>
+                    <div class="stat-desc">Happy Patients</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number-big">6</span>
+                    <div class="stat-desc">Specializations</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number-big">15+</span>
+                    <div class="stat-desc">Years of Service</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Values Card -->
+        <div class="about-card">
+            <div class="values-card">
+                <div class="section-label"><i class="fas fa-star"></i> Our Foundation</div>
+                <h2 class="section-heading">Our Core Values</h2>
+                <div class="values-grid">
+                    <div class="value-card">
+                        <div class="value-card-icon red"><i class="fas fa-heart"></i></div>
+                        <h3>Compassion</h3>
+                        <p>We treat every patient with empathy and genuine care</p>
                     </div>
-                    <div class="about-feature">
-                        <i class="fas fa-hospital"></i>
-                        <h3>Modern Facilities</h3>
-                        <p>State-of-the-art equipment</p>
+                    <div class="value-card">
+                        <div class="value-card-icon blue"><i class="fas fa-shield-alt"></i></div>
+                        <h3>Integrity</h3>
+                        <p>Honest and ethical in all our medical practices</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-card-icon purple"><i class="fas fa-star"></i></div>
+                        <h3>Excellence</h3>
+                        <p>Committed to the highest standards of healthcare</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-card-icon green"><i class="fas fa-handshake"></i></div>
+                        <h3>Respect</h3>
+                        <p>Valuing the dignity of every individual always</p>
                     </div>
                 </div>
             </div>
-            
-            <div class="about-image">
-                <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600" alt="Hospital">
-            </div>
         </div>
-    </div>
-</section>
 
-<section class="values-section">
-    <div class="container">
-        <h2 class="section-title">Our Core Values</h2>
-        <div class="values-grid">
-            <div class="value-card">
-                <i class="fas fa-heart"></i>
-                <h3>Compassion</h3>
-                <p>We treat every patient with empathy and care</p>
+        <!-- CTA Strip -->
+        <div class="cta-strip">
+            <div class="cta-strip-text">
+                <h2>Ready to Experience Premium Healthcare?</h2>
+                <p>Book your appointment with our expert doctors today.</p>
             </div>
-            <div class="value-card">
-                <i class="fas fa-shield-alt"></i>
-                <h3>Integrity</h3>
-                <p>Honest and ethical in all our practices</p>
-            </div>
-            <div class="value-card">
-                <i class="fas fa-star"></i>
-                <h3>Excellence</h3>
-                <p>Committed to the highest standards of care</p>
-            </div>
-            <div class="value-card">
-                <i class="fas fa-handshake"></i>
-                <h3>Respect</h3>
-                <p>Valuing the dignity of every individual</p>
-            </div>
+            <a href="{% url 'doctor_list' %}" class="btn-cta-white">
+                <i class="fas fa-calendar-plus"></i> Book Appointment
+            </a>
         </div>
+
     </div>
-</section>
+</div>
 {% endblock %}

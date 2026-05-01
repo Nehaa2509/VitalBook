@@ -2,95 +2,412 @@
 
 {% block title %}Contact Us - VitalBook{% endblock %}
 
-{% block content %}
-<section class="page-header">
-    <div class="container">
-        <h1>Contact Us</h1>
-        <p>Get in touch with us for any inquiries</p>
-    </div>
-</section>
+{% block extra_css %}
+<style>
+/* ── Page Canvas ── */
+.contact-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0B2B46 0%, #1a4a70 45%, #5c2d91 100%);
+    position: relative;
+    overflow: hidden;
+    padding-bottom: 80px;
+}
+.contact-page::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+}
 
-<section class="contact-section">
-    <div class="container">
-        <div class="contact-wrapper">
-            <div class="contact-info-section">
-                <h2>Get In Touch</h2>
-                <p>Have questions? We're here to help. Reach out to us through any of the following channels.</p>
-                
-                <div class="contact-info-list">
-                    <div class="contact-info-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </div>
-                        <div>
-                            <h4>Address</h4>
-                            <p>12 Health Avenue<br>New Delhi, 110001, India</p>
-                        </div>
+/* Decorative orb */
+.contact-page::after {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(92,45,145,0.2) 0%, transparent 70%);
+    bottom: -200px; right: -200px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Page Hero ── */
+.contact-hero {
+    text-align: center;
+    padding: 60px 20px 48px;
+    position: relative;
+    z-index: 1;
+}
+.contact-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(8px);
+    padding: 6px 20px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #93c5fd;
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+}
+.contact-page-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+}
+.contact-page-title span { color: #f97316; }
+.contact-page-subtitle {
+    color: rgba(255,255,255,0.7);
+    font-size: 1.05rem;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* ── Container ── */
+.contact-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Main Contact Grid ── */
+.contact-grid {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 28px;
+    align-items: start;
+}
+
+/* ── Left Info Panel ── */
+.contact-info-card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 40px 32px;
+    animation: cardUp 0.4s ease;
+}
+@keyframes cardUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.contact-info-card h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 12px;
+    letter-spacing: -0.3px;
+}
+.contact-info-card > p {
+    color: rgba(255,255,255,0.65);
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 36px;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    margin-bottom: 28px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.info-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+.info-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #f97316, #fb923c);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: white;
+    box-shadow: 0 6px 18px rgba(249,115,22,0.35);
+    flex-shrink: 0;
+}
+.info-content h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 5px;
+}
+.info-content p {
+    font-size: 14px;
+    color: white;
+    line-height: 1.7;
+    font-weight: 500;
+}
+.info-content a {
+    color: #93c5fd;
+    text-decoration: none;
+    font-size: 14px;
+}
+.info-content a:hover { text-decoration: underline; }
+
+/* ── Right Form Card ── */
+.contact-form-card {
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.3), 0 8px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    animation: cardUp 0.4s ease 0.1s both;
+}
+.contact-form-header {
+    background: linear-gradient(135deg, #0B2B46, #1a4a70);
+    padding: 28px 36px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.cf-header-icon {
+    width: 52px; height: 52px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 15px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: white;
+    flex-shrink: 0;
+}
+.contact-form-header h2 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 3px;
+}
+.contact-form-header p { color: rgba(255,255,255,0.7); font-size: 13px; }
+
+.contact-form-body {
+    padding: 36px 36px 32px;
+}
+
+/* Form elements */
+.cform-group {
+    margin-bottom: 22px;
+}
+.cform-group label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0B2B46;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.cform-group label i { color: #5c2d91; font-size: 12px; }
+
+.cform-group input,
+.cform-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: inherit;
+    color: #0B2B46;
+    background: #f8faff;
+    transition: all 0.25s ease;
+    box-sizing: border-box;
+}
+.cform-group input:focus,
+.cform-group textarea:focus {
+    outline: none;
+    border-color: #5c2d91;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(92,45,145,0.08);
+}
+.cform-group input::placeholder,
+.cform-group textarea::placeholder {
+    color: #94a3b8;
+}
+.cform-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* Submit button */
+.btn-send-message {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #f97316, #fb923c);
+    color: white !important;
+    border: none;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 8px 24px rgba(249,115,22,0.4);
+    transition: all 0.3s ease;
+    margin-top: 8px;
+}
+.btn-send-message:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 32px rgba(249,115,22,0.5);
+    background: linear-gradient(135deg, #ea6c00, #f97316);
+}
+
+/* ── Success Message ── */
+.contact-success {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 1px solid #86efac;
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #166534;
+}
+.contact-success i { color: #22c55e; font-size: 20px; }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .contact-grid { grid-template-columns: 1fr; }
+    .contact-info-card { display: grid; grid-template-columns: 1fr 1fr; }
+    .contact-info-card h2, .contact-info-card > p { grid-column: 1 / -1; }
+}
+@media (max-width: 576px) {
+    .contact-info-card { display: block; }
+    .contact-form-body { padding: 24px 20px; }
+    .contact-form-header { padding: 22px 20px; }
+    .cform-row { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="contact-page">
+    <!-- Hero -->
+    <div class="contact-hero">
+        <div class="contact-eyebrow"><i class="fas fa-envelope"></i> Contact Us</div>
+        <h1 class="contact-page-title">Get in <span>Touch</span></h1>
+        <p class="contact-page-subtitle">Have questions? We're here to help. Reach out through any of the channels below.</p>
+    </div>
+
+    <div class="contact-container">
+        <div class="contact-grid">
+
+            <!-- Left: Info Panel -->
+            <div class="contact-info-card">
+                <h2>We're Here for You</h2>
+                <p>Our team is available 24/7 for emergencies and Mon–Sat for regular inquiries.</p>
+
+                <div class="info-item">
+                    <div class="info-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="info-content">
+                        <h4>Address</h4>
+                        <p>12 Health Avenue<br>New Delhi, 110001, India</p>
                     </div>
-                    
-                    <div class="contact-info-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-phone"></i>
-                        </div>
-                        <div>
-                            <h4>Phone</h4>
-                            <p>+91 98765 43210<br>+91 11 2345 6789</p>
-                        </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon"><i class="fas fa-phone"></i></div>
+                    <div class="info-content">
+                        <h4>Phone</h4>
+                        <p>+91 98765 43210<br>+91 11 2345 6789</p>
                     </div>
-                    
-                    <div class="contact-info-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <div>
-                            <h4>Email</h4>
-                            <p>care@vitalbook.in<br>support@vitalbook.in</p>
-                        </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon"><i class="fas fa-envelope"></i></div>
+                    <div class="info-content">
+                        <h4>Email</h4>
+                        <a href="mailto:care@vitalbook.in">care@vitalbook.in</a><br>
+                        <a href="mailto:support@vitalbook.in">support@vitalbook.in</a>
                     </div>
-                    
-                    <div class="contact-info-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div>
-                            <h4>Working Hours</h4>
-                            <p>24/7 Emergency Services<br>Mon-Sat: 8:00 AM - 8:00 PM</p>
-                        </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon"><i class="fas fa-clock"></i></div>
+                    <div class="info-content">
+                        <h4>Working Hours</h4>
+                        <p>24/7 Emergency Services<br>Mon–Sat: 8:00 AM – 8:00 PM</p>
                     </div>
                 </div>
             </div>
-            
-            <div class="contact-form-section">
-                <h2>Send Us a Message</h2>
-                <form method="POST" class="contact-form">
-                    {% csrf_token %}
-                    
-                    <div class="form-group">
-                        <label><i class="fas fa-user"></i> Your Name</label>
-                        <input type="text" name="name" required placeholder="Enter your name">
+
+            <!-- Right: Form Card -->
+            <div class="contact-form-card">
+                <div class="contact-form-header">
+                    <div class="cf-header-icon"><i class="fas fa-paper-plane"></i></div>
+                    <div>
+                        <h2>Send Us a Message</h2>
+                        <p>We'll get back to you within 24 hours</p>
                     </div>
-                    
-                    <div class="form-group">
-                        <label><i class="fas fa-envelope"></i> Your Email</label>
-                        <input type="email" name="email" required placeholder="your@email.com">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label><i class="fas fa-tag"></i> Subject</label>
-                        <input type="text" name="subject" required placeholder="Message subject">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label><i class="fas fa-comment"></i> Message</label>
-                        <textarea name="message" rows="5" required placeholder="Write your message here..."></textarea>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary btn-block">
-                        <i class="fas fa-paper-plane"></i> Send Message
-                    </button>
-                </form>
+                </div>
+                <div class="contact-form-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="contact-success">
+                            <i class="fas fa-check-circle"></i> {{ message }}
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <div class="cform-row">
+                            <div class="cform-group">
+                                <label><i class="fas fa-user"></i> Your Name</label>
+                                <input type="text" name="name" required placeholder="Full name">
+                            </div>
+                            <div class="cform-group">
+                                <label><i class="fas fa-envelope"></i> Your Email</label>
+                                <input type="email" name="email" required placeholder="your@email.com">
+                            </div>
+                        </div>
+
+                        <div class="cform-group">
+                            <label><i class="fas fa-phone"></i> Phone (Optional)</label>
+                            <input type="tel" name="phone" placeholder="+91 XXXXX XXXXX">
+                        </div>
+
+                        <div class="cform-group">
+                            <label><i class="fas fa-tag"></i> Subject</label>
+                            <input type="text" name="subject" required placeholder="What is this regarding?">
+                        </div>
+
+                        <div class="cform-group">
+                            <label><i class="fas fa-comment"></i> Your Message</label>
+                            <textarea name="message" rows="5" required placeholder="Write your message here..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn-send-message">
+                            <i class="fas fa-paper-plane"></i> Send Message
+                        </button>
+                    </form>
+                </div>
             </div>
+
         </div>
     </div>
-</section>
+</div>
 {% endblock %}

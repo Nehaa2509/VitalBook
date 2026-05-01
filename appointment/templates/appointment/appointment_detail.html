@@ -1,11 +1,11 @@
-﻿{% extends 'appointment/base.html' %}
+{% extends 'appointment/base.html' %}
 
 {% block title %}Appointment Details - VITALBOOK{% endblock %}
 
 {% block content %}
 <section class="appointment-detail-section">
     <div class="container">
-        <a href="{% url 'my_appointments' %}" class="back-link">
+        <a href="{% url 'patient_dashboard' %}#upcoming-appointments" class="back-link">
             <i class="fas fa-arrow-left"></i> Back to Appointments
         </a>
         
@@ -23,7 +23,7 @@
                     <div class="doctor-info-box">
                         <img src="https://ui-avatars.com/api/?name={{ appointment.doctor.name }}&size=80&background=0B3B60&color=fff" alt="{{ appointment.doctor.name }}">
                         <div>
-                            <h4>Dr. {{ appointment.doctor.name }}</h4>
+                            <h4>{{ appointment.doctor.name }}</h4>
                             <p>{{ appointment.doctor.specialization.name }}</p>
                             <p>{{ appointment.doctor.qualification }}</p>
                             <p><i class="fas fa-phone"></i> {{ appointment.doctor.phone }}</p>
@@ -156,7 +156,7 @@
                     <a href="{% url 'reschedule_appointment' appointment.id %}" class="btn btn-secondary">
                         <i class="fas fa-calendar-alt"></i> Reschedule
                     </a>
-                    <a href="{% url 'cancel_appointment' appointment.id %}" 
+                    <a href="{% url 'request_cancellation' appointment.id %}" 
                        class="btn btn-danger"
                        onclick="return confirm('Cancel this appointment? Note: Cancellations made after 24 hours of booking will incur a ₹500 cancellation fee.')">
                         <i class="fas fa-times"></i> Cancel Appointment
@@ -170,6 +170,28 @@
             </div>
         </div>
     </div>
+    </div>
 </section>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+    if (window.location.search.indexOf('print=1') > -1) {
+        window.onload = function() { window.print(); }
+    }
+</script>
+<style>
+    @media print {
+        .back-link, .detail-actions, .navbar, .footer, header, footer {
+            display: none !important;
+        }
+        body {
+            background: #fff;
+        }
+        .appointment-detail-card {
+            box-shadow: none !important;
+            border: 1px solid #ddd;
+        }
+    }
+</style>
+{% endblock %}
