@@ -171,7 +171,6 @@ qrcode==8.2
 
 razorpay==2.0.1
 
-reportlab==4.4.10
 
 requests==2.32.5
 
@@ -289,7 +288,6 @@ python-dotenv==1.2.1
 pytz==2025.2
 qrcode==8.2
 razorpay==2.0.1
-reportlab==4.4.10
 requests==2.32.5
 rsa==4.9.1
 scikit-learn==1.8.0
