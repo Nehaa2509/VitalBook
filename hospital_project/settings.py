@@ -179,6 +179,9 @@ CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL_ORIGINS', 'True') == 'Tr
 
 # Security Settings (enabled in production with HTTPS)
 if not DEBUG:
+    # Tell Django it's behind a proxy (like Render) so it treats requests as HTTPS
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
     SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True'
     SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False') == 'True'
     CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', 'False') == 'True'
@@ -188,6 +191,9 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_BROWSER_XSS_FILTER = True
     X_FRAME_OPTIONS = 'DENY'
+    
+    # Allow POST requests from Render domain
+    CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
 
 
 # ── SMS via Twilio ─────────────────────────────────────────────────────────────
