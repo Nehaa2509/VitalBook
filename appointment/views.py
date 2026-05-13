@@ -1519,6 +1519,9 @@ def verify_otp(request):
                 user.is_active = True
                 user.save()
 
+                # Create OTPVerification record so they can book appointments
+                OTPVerification.objects.create(user=user, is_verified=True, otp_type='email')
+
                 # Create patient profile and link extra details
                 try:
                     patient, created = Patient.objects.get_or_create(user=user)

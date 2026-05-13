@@ -278,3 +278,305 @@ Traceback (most recent call last):
   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
   File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
 ModuleNotFoundError: No module named 'django_crontab'
+
+[2026-05-04 13:17:31] Running reminder check (current hour: 13:xx)
+
+  Done — 0 sent, 1 skipped.
+
+[2026-05-04 13:27:05] Running reminder check (current hour: 13:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-04 13:27:26] Running reminder check (current hour: 13:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-04 13:57:06] Running reminder check (current hour: 13:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-04 14:27:05] Running reminder check (current hour: 14:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-04 14:57:04] Running reminder check (current hour: 14:xx)
+[OK] Confirmed email sent to fdear9339@gmail.com
+Traceback (most recent call last):
+  File "e:\Sneha\INTERSHIP\hospital\appointment\management\commands\send_reminders.py", line 145, in handle
+    self.stdout.write(self.style.SUCCESS(
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+        f'  \u2713 Sent to {patient_email} '
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        f'(appt #{appt.id}, hour={current_hour:02d})'
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ))
+    ^^
+  File "e:\Sneha\INTERSHIP\hospital\venv\Lib\site-packages\django\core\management\base.py", line 185, in write
+    self._out.write(style_func(msg))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\zenuk\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2713' in position 2: character maps to <undefined>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "e:\Sneha\INTERSHIP\hospital\manage.py", line 22, in <module>
+    main()
+    ~~~~^^
+  File "e:\Sneha\INTERSHIP\hospital\manage.py", line 18, in main
+    execute_from_command_line(sys.argv)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "e:\Sneha\INTERSHIP\hospital\venv\Lib\site-packages\django\core\management\__init__.py", line 443, in execute_from_command_line
+    utility.execute()
+    ~~~~~~~~~~~~~~~^^
+  File "e:\Sneha\INTERSHIP\hospital\venv\Lib\site-packages\django\core\management\__init__.py", line 437, in execute
+    self.fetch_command(subcommand).run_from_argv(self.argv)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "e:\Sneha\INTERSHIP\hospital\venv\Lib\site-packages\django\core\management\base.py", line 420, in run_from_argv
+    self.execute(*args, **cmd_options)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "e:\Sneha\INTERSHIP\hospital\venv\Lib\site-packages\django\core\management\base.py", line 464, in execute
+    output = self.handle(*args, **options)
+  File "e:\Sneha\INTERSHIP\hospital\appointment\management\commands\send_reminders.py", line 150, in handle
+    self.stdout.write(self.style.ERROR(
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+        f'  \u2717 Failed for {patient_email}: {exc}'
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ))
+    ^^
+  File "e:\Sneha\INTERSHIP\hospital\venv\Lib\site-packages\django\core\management\base.py", line 185, in write
+    self._out.write(style_func(msg))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\zenuk\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2717' in position 2: character maps to <undefined>
+
+[2026-05-04 16:27:06] Running reminder check (current hour: 16:xx)
+[OK] Confirmed email sent to fdear9339@gmail.com
+Traceback (most recent call last):
+  File "e:\Sneha\INTERSHIP\hospital\appointment\management\commands\send_reminders.py", line 145, in handle
+    self.stdout.write(self.style.SUCCESS(
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+        f'  \u2713 Sent to {patient_email} '
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        f'(appt #{appt.id}, hour={current_hour:02d})'
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ))
+    ^^
+  File "e:\Sneha\INTERSHIP\hospital\venv\Lib\site-packages\django\core\management\base.py", line 185, in write
+    self._out.write(style_func(msg))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\zenuk\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2713' in position 2: character maps to <undefined>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "e:\Sneha\INTERSHIP\hospital\manage.py", line 22, in <module>
+    main()
+    ~~~~^^
+  File "e:\Sneha\INTERSHIP\hospital\manage.py", line 18, in main
+    execute_from_command_line(sys.argv)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "e:\Sneha\INTERSHIP\hospital\venv\Lib\site-packages\django\core\management\__init__.py", line 443, in execute_from_command_line
+    utility.execute()
+    ~~~~~~~~~~~~~~~^^
+  File "e:\Sneha\INTERSHIP\hospital\venv\Lib\site-packages\django\core\management\__init__.py", line 437, in execute
+    self.fetch_command(subcommand).run_from_argv(self.argv)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "e:\Sneha\INTERSHIP\hospital\venv\Lib\site-packages\django\core\management\base.py", line 420, in run_from_argv
+    self.execute(*args, **cmd_options)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "e:\Sneha\INTERSHIP\hospital\venv\Lib\site-packages\django\core\management\base.py", line 464, in execute
+    output = self.handle(*args, **options)
+  File "e:\Sneha\INTERSHIP\hospital\appointment\management\commands\send_reminders.py", line 150, in handle
+    self.stdout.write(self.style.ERROR(
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+        f'  \u2717 Failed for {patient_email}: {exc}'
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ))
+    ^^
+  File "e:\Sneha\INTERSHIP\hospital\venv\Lib\site-packages\django\core\management\base.py", line 185, in write
+    self._out.write(style_func(msg))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\zenuk\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2717' in position 2: character maps to <undefined>
+
+[2026-05-04 19:19:02] Running reminder check (current hour: 19:xx)
+
+  Done — 0 sent, 2 skipped.
+
+[2026-05-04 19:27:06] Running reminder check (current hour: 19:xx)
+
+  Done — 0 sent, 2 skipped.
+
+[2026-05-04 19:57:07] Running reminder check (current hour: 19:xx)
+
+  Done — 0 sent, 2 skipped.
+
+[2026-05-04 21:27:06] Running reminder check (current hour: 21:xx)
+
+  Done — 0 sent, 2 skipped.
+
+[2026-05-04 21:57:03] Running reminder check (current hour: 21:xx)
+
+  Done — 0 sent, 2 skipped.
+^C
+[2026-05-06 13:01:25] Running reminder check (current hour: 13:xx)
+  No pending reminders for this hour. All caught up!
+^C
+[2026-05-06 14:57:08] Running reminder check (current hour: 14:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-06 17:57:08] Running reminder check (current hour: 17:xx)
+  No pending reminders for this hour. All caught up!
+^C^C^C^C^C^C
+[2026-05-08 18:27:11] Running reminder check (current hour: 18:xx)
+  No pending reminders for this hour. All caught up!
+^C
+[2026-05-08 19:27:05] Running reminder check (current hour: 19:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-08 19:57:07] Running reminder check (current hour: 19:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-09 13:57:06] Running reminder check (current hour: 13:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-09 14:27:07] Running reminder check (current hour: 14:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-09 15:27:07] Running reminder check (current hour: 15:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-09 15:57:05] Running reminder check (current hour: 15:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-09 16:27:44] Running reminder check (current hour: 16:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-09 16:57:05] Running reminder check (current hour: 16:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-09 17:27:04] Running reminder check (current hour: 17:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-11 10:27:09] Running reminder check (current hour: 10:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-11 10:57:06] Running reminder check (current hour: 10:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-11 11:27:05] Running reminder check (current hour: 11:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-11 13:27:06] Running reminder check (current hour: 13:xx)
+  No pending reminders for this hour. All caught up!
+^C
+[2026-05-11 14:27:06] Running reminder check (current hour: 14:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-11 14:57:07] Running reminder check (current hour: 14:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-11 15:57:05] Running reminder check (current hour: 15:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-11 16:27:09] Running reminder check (current hour: 16:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-11 16:57:06] Running reminder check (current hour: 16:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-11 18:57:07] Running reminder check (current hour: 18:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-11 19:57:02] Running reminder check (current hour: 19:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 10:57:07] Running reminder check (current hour: 10:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 11:27:06] Running reminder check (current hour: 11:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 11:57:04] Running reminder check (current hour: 11:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 12:27:06] Running reminder check (current hour: 12:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 13:27:05] Running reminder check (current hour: 13:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 13:57:06] Running reminder check (current hour: 13:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 14:27:06] Running reminder check (current hour: 14:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 14:57:05] Running reminder check (current hour: 14:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 15:27:03] Running reminder check (current hour: 15:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 15:57:05] Running reminder check (current hour: 15:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 16:28:02] Running reminder check (current hour: 16:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 16:57:06] Running reminder check (current hour: 16:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 17:27:02] Running reminder check (current hour: 17:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 17:57:08] Running reminder check (current hour: 17:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 18:27:05] Running reminder check (current hour: 18:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 18:57:05] Running reminder check (current hour: 18:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 20:27:06] Running reminder check (current hour: 20:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 21:27:06] Running reminder check (current hour: 21:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 21:57:06] Running reminder check (current hour: 21:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 22:27:05] Running reminder check (current hour: 22:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 22:57:03] Running reminder check (current hour: 22:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-12 23:27:11] Running reminder check (current hour: 23:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-13 12:27:08] Running reminder check (current hour: 12:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-13 13:57:06] Running reminder check (current hour: 13:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-13 14:27:06] Running reminder check (current hour: 14:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-13 14:57:06] Running reminder check (current hour: 14:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-13 15:27:06] Running reminder check (current hour: 15:xx)
+  No pending reminders for this hour. All caught up!
+
+[2026-05-13 15:57:10] Running reminder check (current hour: 15:xx)
+  No pending reminders for this hour. All caught up!
