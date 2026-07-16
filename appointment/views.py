@@ -1928,43 +1928,49 @@ def admin_appointment_details(request, appointment_id):
 def diagnose(request):
     import sys
     import os
-    import hashlib
+    import traceback
+    from django.test import RequestFactory
+    from django.contrib.sessions.middleware import SessionMiddleware
+    from django.contrib.messages.storage.fallback import FallbackStorage
     
     views_path = __file__
+    
+    # Run a test registration POST locally on the server inside this view!
+    factory = RequestFactory()
+    post_req = factory.post('/register/', {
+        'name': 'Diagnostics Test User',
+        'username': 'diag_test_user_unique',
+        'email': 'diag_test_user_unique@example.com',
+        'phone': '9876543210',
+        'password': 'TestPass@123',
+        'confirm_password': 'TestPass@123',
+        'gender': 'Male',
+        'blood_group': 'O+',
+        'address': '123 Test Street Bangalore',
+        'date_of_birth': '2000-01-01',
+    })
+    
+    # Setup session and messages
+    middleware = SessionMiddleware(lambda req: None)
+    middleware.process_request(post_req)
+    post_req.session.save()
+    post_req._messages = FallbackStorage(post_req)
+    
+    tb_str = ""
+    status = ""
     try:
-        with open(views_path, 'r', encoding='utf-8') as f:
-            views_content = f.read()
-        views_hash = hashlib.md5(views_content.encode('utf-8')).hexdigest()
-        
-        reg_lines = []
-        lines = views_content.split('\n')
-        start_idx, end_idx = -1, -1
-        for idx, line in enumerate(lines):
-            if line.startswith('def register('):
-                start_idx = idx
-            if line.startswith('def user_login('):
-                end_idx = idx
-                break
-                
-        if start_idx != -1 and end_idx != -1:
-            reg_lines = lines[start_idx:end_idx]
-            
-        reg_code = '\n'.join(reg_lines)
+        from appointment.views import register
+        response = register(post_req)
+        status = f"Redirect to {response.url}" if response.status_code == 302 else f"Status {response.status_code}"
     except Exception as e:
-        views_hash = f"Error reading file: {e}"
-        reg_code = ""
-        
-    try:
-        root_files = os.listdir('.')
-    except Exception as e:
-        root_files = f"Error listing dir: {e}"
+        status = f"Exception: {e}"
+        tb_str = traceback.format_exc()
         
     return JsonResponse({
         'views_file': views_path,
-        'views_hash': views_hash,
-        'sys_path': sys.path,
         'cwd': os.getcwd(),
-        'root_files': root_files,
-        'reg_view_code': reg_code,
+        'status': status,
+        'traceback': tb_str,
     })
+
 
