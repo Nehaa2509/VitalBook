@@ -2045,7 +2045,9 @@ def diagnose(request):
         'pip_freeze': pip_freeze,
         'db_config': db_config,
         'server_users': server_users,
+        'db_url_env': os.environ.get('DATABASE_URL'),
     })
+
 
 
 
