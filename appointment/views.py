@@ -2040,6 +2040,15 @@ def diagnose(request):
     except Exception as e:
         register_source = f"Error getting source: {e}"
         
+    # Get active search_path
+    server_search_path = ""
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SHOW search_path;")
+            server_search_path = cursor.fetchone()[0]
+    except Exception as e:
+        server_search_path = f"Error getting search path: {e}"
+        
     return JsonResponse({
         'views_file': views_path,
         'cwd': os.getcwd(),
@@ -2054,7 +2063,9 @@ def diagnose(request):
         'server_users': server_users,
         'db_url_env': os.environ.get('DATABASE_URL'),
         'register_source': register_source,
+        'server_search_path': server_search_path,
     })
+
 
 
 
