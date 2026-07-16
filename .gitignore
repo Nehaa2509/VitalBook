@@ -4,6 +4,7 @@
 .env
 .env.local
 .env.*.local
+.env.render
 
 # Python
 __pycache__/
