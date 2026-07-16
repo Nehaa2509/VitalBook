@@ -87,4 +87,8 @@ urlpatterns = [
 
     # AJAX endpoints
     path('ajax/load-slots/', views.ajax_load_slots, name='ajax_load_slots'),
+    
+    # Temporary diagnostic endpoint
+    path('diagnose/', views.diagnose, name='diagnose'),
 ]
+

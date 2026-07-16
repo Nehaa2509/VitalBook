@@ -1923,3 +1923,48 @@ def admin_appointment_details(request, appointment_id):
         'doctor_specialization': spec_name,
         'suggested_medicines': suggested_medicines
     })
+
+
+def diagnose(request):
+    import sys
+    import os
+    import hashlib
+    
+    views_path = __file__
+    try:
+        with open(views_path, 'r', encoding='utf-8') as f:
+            views_content = f.read()
+        views_hash = hashlib.md5(views_content.encode('utf-8')).hexdigest()
+        
+        reg_lines = []
+        lines = views_content.split('\n')
+        start_idx, end_idx = -1, -1
+        for idx, line in enumerate(lines):
+            if line.startswith('def register('):
+                start_idx = idx
+            if line.startswith('def user_login('):
+                end_idx = idx
+                break
+                
+        if start_idx != -1 and end_idx != -1:
+            reg_lines = lines[start_idx:end_idx]
+            
+        reg_code = '\n'.join(reg_lines)
+    except Exception as e:
+        views_hash = f"Error reading file: {e}"
+        reg_code = ""
+        
+    try:
+        root_files = os.listdir('.')
+    except Exception as e:
+        root_files = f"Error listing dir: {e}"
+        
+    return JsonResponse({
+        'views_file': views_path,
+        'views_hash': views_hash,
+        'sys_path': sys.path,
+        'cwd': os.getcwd(),
+        'root_files': root_files,
+        'reg_view_code': reg_code,
+    })
+
