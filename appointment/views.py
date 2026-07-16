@@ -1958,6 +1958,7 @@ def diagnose(request):
     
     tb_str = ""
     status = ""
+    otp_lines = []
     try:
         from appointment.views import register
         response = register(post_req)
@@ -1968,12 +1969,22 @@ def diagnose(request):
         exc_lines = traceback.format_exception(type(e), e, e.__traceback__)
         tb_str = "".join(exc_lines)
         
+    try:
+        with open(views_path, 'r', encoding='utf-8') as f:
+            for ln_num, line in enumerate(f, 1):
+                if 'OTPVerification' in line:
+                    otp_lines.append(f"{ln_num}: {line.strip()}")
+    except Exception as e:
+        otp_lines.append(f"Error reading views.py: {e}")
+        
     return JsonResponse({
         'views_file': views_path,
         'cwd': os.getcwd(),
         'status': status,
         'traceback': tb_str,
+        'otp_lines': otp_lines,
     })
+
 
 
 
