@@ -1964,7 +1964,9 @@ def diagnose(request):
         status = f"Redirect to {response.url}" if response.status_code == 302 else f"Status {response.status_code}"
     except Exception as e:
         status = f"Exception: {e}"
-        tb_str = traceback.format_exc()
+        # Format the exception chain explicitly
+        exc_lines = traceback.format_exception(type(e), e, e.__traceback__)
+        tb_str = "".join(exc_lines)
         
     return JsonResponse({
         'views_file': views_path,
@@ -1972,5 +1974,6 @@ def diagnose(request):
         'status': status,
         'traceback': tb_str,
     })
+
 
 
