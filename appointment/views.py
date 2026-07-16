@@ -2013,6 +2013,18 @@ def diagnose(request):
     except Exception as e:
         otp_lines.append(f"Error reading views.py: {e}")
         
+    # Get active database config
+    db_config = {}
+    try:
+        db_config = {
+            'ENGINE': settings.DATABASES['default'].get('ENGINE'),
+            'NAME': settings.DATABASES['default'].get('NAME'),
+            'HOST': settings.DATABASES['default'].get('HOST'),
+            'PORT': settings.DATABASES['default'].get('PORT'),
+        }
+    except Exception as e:
+        db_config = f"Error getting DB settings: {e}"
+        
     return JsonResponse({
         'views_file': views_path,
         'cwd': os.getcwd(),
@@ -2023,7 +2035,9 @@ def diagnose(request):
         'otp_lines': otp_lines,
         'queries': queries,
         'pip_freeze': pip_freeze,
+        'db_config': db_config,
     })
+
 
 
 
