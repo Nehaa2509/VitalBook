@@ -1929,11 +1929,18 @@ def diagnose(request):
     import sys
     import os
     import traceback
+    from django.conf import settings
+    from django.db import connection
     from django.test import RequestFactory
     from django.contrib.sessions.middleware import SessionMiddleware
     from django.contrib.messages.storage.fallback import FallbackStorage
     
     views_path = __file__
+    
+    # Enable query logging temporarily
+    old_debug = settings.DEBUG
+    settings.DEBUG = True
+    connection.queries_log.clear()
     
     # Run a test registration POST locally on the server inside this view!
     factory = RequestFactory()
@@ -1958,7 +1965,6 @@ def diagnose(request):
     
     tb_str = ""
     status = ""
-    otp_lines = []
     try:
         from appointment.views import register
         response = register(post_req)
@@ -1969,6 +1975,13 @@ def diagnose(request):
         exc_lines = traceback.format_exception(type(e), e, e.__traceback__)
         tb_str = "".join(exc_lines)
         
+    # Get connection queries
+    queries = list(connection.queries)
+    
+    # Restore DEBUG
+    settings.DEBUG = old_debug
+    
+    otp_lines = []
     try:
         with open(views_path, 'r', encoding='utf-8') as f:
             for ln_num, line in enumerate(f, 1):
@@ -1983,7 +1996,9 @@ def diagnose(request):
         'status': status,
         'traceback': tb_str,
         'otp_lines': otp_lines,
+        'queries': queries,
     })
+
 
 
 
