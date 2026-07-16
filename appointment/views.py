@@ -1981,6 +1981,13 @@ def diagnose(request):
     # Restore DEBUG
     settings.DEBUG = old_debug
     
+    # Run pip freeze
+    import subprocess
+    try:
+        pip_freeze = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze']).decode('utf-8')
+    except Exception as e:
+        pip_freeze = f"Error running pip freeze: {e}"
+        
     otp_lines = []
     try:
         with open(views_path, 'r', encoding='utf-8') as f:
@@ -1997,7 +2004,9 @@ def diagnose(request):
         'traceback': tb_str,
         'otp_lines': otp_lines,
         'queries': queries,
+        'pip_freeze': pip_freeze,
     })
+
 
 
 
