@@ -22,7 +22,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-%zdpx92v(c9%2ci2!yc!u
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,*.up.railway.app').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,*.up.railway.app,*.onrender.com').split(',')
 
 
 # Application definition
@@ -111,9 +111,13 @@ DATABASES = {
     }
 }
 
-# If DATABASE_URL is set (e.g., on Render), use it
+# If DATABASE_URL is set (e.g., on Render/Railway), use it
 if os.environ.get('DATABASE_URL'):
-    DATABASES['default'] = dj_database_url.parse(os.environ.get('DATABASE_URL'))
+    DATABASES['default'] = dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600,        # keep connections alive for 10 min (reduces overhead)
+        ssl_require=not DEBUG,   # enforce SSL in production (required by Render PostgreSQL)
+    )
 
 
 # Password validation
