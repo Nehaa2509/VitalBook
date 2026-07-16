@@ -2,9 +2,9 @@
 Email utility functions for VitalBook.
 Sends professional HTML emails for all key events.
 """
-from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
+from .otp_email import send_transactional_email
 
 
 def send_appointment_confirmation(appointment):
@@ -23,15 +23,7 @@ def send_appointment_confirmation(appointment):
         html_content = render_to_string('emails/appointment_confirmation.html', context)
         text_content = f'Your appointment with Dr. {appointment.doctor.name} is confirmed for {appointment.date} at {appointment.time}.'
         
-        email = EmailMultiAlternatives(
-            subject,
-            text_content,
-            settings.DEFAULT_FROM_EMAIL,
-            [appointment.patient.user.email]
-        )
-        email.attach_alternative(html_content, 'text/html')
-        email.send(fail_silently=True)
-        return True
+        return send_transactional_email(appointment.patient.user.email, subject, html_content, appointment.patient.name)
     except Exception as e:
         print(f"Error sending confirmation email: {e}")
         return False
@@ -51,28 +43,14 @@ def send_appointment_cancelled(appointment, cancelled_by='patient'):
             html_content = render_to_string('emails/appointment_cancelled.html', context)
             text_content = f'Your appointment with Dr. {appointment.doctor.name} on {appointment.date} has been cancelled.'
             
-            email = EmailMultiAlternatives(
-                subject,
-                text_content,
-                settings.DEFAULT_FROM_EMAIL,
-                [appointment.patient.user.email]
-            )
-            email.attach_alternative(html_content, 'text/html')
-            email.send(fail_silently=True)
+            send_transactional_email(appointment.patient.user.email, subject, html_content, appointment.patient.name)
         
         # Email to doctor (if doctor has user account)
         if appointment.doctor.user and appointment.doctor.user.email:
             subject_doctor = f'📋 Appointment Cancelled by Patient – VitalBook'
             html_doctor = render_to_string('emails/doctor_cancellation_notice.html', context)
             
-            email2 = EmailMultiAlternatives(
-                subject_doctor,
-                text_content,
-                settings.DEFAULT_FROM_EMAIL,
-                [appointment.doctor.user.email]
-            )
-            email2.attach_alternative(html_doctor, 'text/html')
-            email2.send(fail_silently=True)
+            send_transactional_email(appointment.doctor.user.email, subject_doctor, html_doctor, appointment.doctor.name)
         
         return True
     except Exception as e:
@@ -92,15 +70,7 @@ def send_appointment_reminder(appointment):
         html_content = render_to_string('emails/appointment_reminder.html', context)
         text_content = f'Reminder: You have an appointment with Dr. {appointment.doctor.name} tomorrow at {appointment.time}.'
         
-        email = EmailMultiAlternatives(
-            subject,
-            text_content,
-            settings.DEFAULT_FROM_EMAIL,
-            [appointment.patient.user.email]
-        )
-        email.attach_alternative(html_content, 'text/html')
-        email.send(fail_silently=True)
-        return True
+        return send_transactional_email(appointment.patient.user.email, subject, html_content, appointment.patient.name)
     except Exception as e:
         print(f"Error sending reminder email: {e}")
         return False
@@ -121,15 +91,7 @@ def send_payment_receipt(appointment, payment):
         html_content = render_to_string('emails/payment_receipt.html', context)
         text_content = f'Payment of ₹{payment.amount} received for your appointment with Dr. {appointment.doctor.name}.'
         
-        email = EmailMultiAlternatives(
-            subject,
-            text_content,
-            settings.DEFAULT_FROM_EMAIL,
-            [appointment.patient.user.email]
-        )
-        email.attach_alternative(html_content, 'text/html')
-        email.send(fail_silently=True)
-        return True
+        return send_transactional_email(appointment.patient.user.email, subject, html_content, appointment.patient.name)
     except Exception as e:
         print(f"Error sending payment receipt email: {e}")
         return False
@@ -147,15 +109,7 @@ def send_review_thankyou(review):
         html_content = render_to_string('emails/review_thankyou.html', context)
         text_content = f'Thank you for reviewing Dr. {review.doctor.name} on VitalBook.'
         
-        email = EmailMultiAlternatives(
-            subject,
-            text_content,
-            settings.DEFAULT_FROM_EMAIL,
-            [review.patient.user.email]
-        )
-        email.attach_alternative(html_content, 'text/html')
-        email.send(fail_silently=True)
-        return True
+        return send_transactional_email(review.patient.user.email, subject, html_content, review.patient.name)
     except Exception as e:
         print(f"Error sending review thank you email: {e}")
         return False
@@ -176,15 +130,7 @@ def send_welcome_email(user, patient):
         html_content = render_to_string('emails/welcome_email.html', context)
         text_content = f'Welcome to VitalBook, {patient.name}! Your account has been created successfully.'
         
-        email = EmailMultiAlternatives(
-            subject,
-            text_content,
-            settings.DEFAULT_FROM_EMAIL,
-            [user.email]
-        )
-        email.attach_alternative(html_content, 'text/html')
-        email.send(fail_silently=True)
-        return True
+        return send_transactional_email(user.email, subject, html_content, patient.name)
     except Exception as e:
         print(f"Error sending welcome email: {e}")
         return False
@@ -344,18 +290,7 @@ support@vitalbook.in
 """
 
     try:
-        from django.core.mail import send_mail
-        from django.conf import settings as django_settings
-        send_mail(
-            subject=subject,
-            message=plain_message,
-            from_email=django_settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[patient_email],
-            html_message=html_message,
-            fail_silently=True,
-        )
-        print(f'[OK] Reminder [{reminder_label}] sent to {patient_email}')
-        return True
+        return send_transactional_email(patient_email, subject, html_message or plain_message, patient_name)
     except Exception as e:
         print(f'[ERROR] Reminder email error: {e}')
         return False

@@ -73,12 +73,13 @@ def send_booking_email(appointment):
             f"Thank you for choosing VITALBOOK.\n"
             f"📞 +91 98765 43210\n"
         )
-        send_mail(
+        from .otp_email import send_transactional_email
+        html_content = f"<html><body><p>{message.replace(chr(10), '<br>')}</p></body></html>"
+        send_transactional_email(
+            appointment.patient.email,
             subject,
-            message,
-            django_settings.DEFAULT_FROM_EMAIL,
-            [appointment.patient.email],
-            fail_silently=True,
+            html_content,
+            appointment.patient.name
         )
     except Exception:
         pass  # Silently fail - email is a nice-to-have, not critical

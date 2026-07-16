@@ -3,9 +3,9 @@ import requests
 import json
 from django.conf import settings
 
-def send_otp_email(to_email, otp, to_name=""):
+def send_transactional_email(to_email, subject, html_content, to_name=""):
     """
-    Sends OTP verification email using Brevo's transactional HTTP API (v3).
+    Sends transactional email using Brevo's transactional HTTP API (v3).
     Does not raise exceptions. Returns True on success, False on failure.
     """
     api_key = os.environ.get('BREVO_API_KEY') or getattr(settings, 'BREVO_API_KEY', '')
@@ -23,6 +23,38 @@ def send_otp_email(to_email, otp, to_name=""):
         "accept": "application/json"
     }
 
+    payload = {
+        "sender": {
+            "name": sender_name,
+            "email": sender_email
+        },
+        "to": [
+            {
+                "email": to_email,
+                "name": to_name or to_email
+            }
+        ],
+        "subject": subject,
+        "htmlContent": html_content
+    }
+
+    try:
+        response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=10)
+        if response.status_code in [200, 201, 202]:
+            print(f"[OK] Email '{subject}' sent successfully to {to_email} via Brevo HTTP API.")
+            return True
+        else:
+            print(f"[ERROR] Brevo API error {response.status_code}: {response.text}")
+            return False
+    except requests.RequestException as e:
+        print(f"[ERROR] Connection to Brevo failed: {e}")
+        return False
+
+
+def send_otp_email(to_email, otp, to_name=""):
+    """
+    Sends OTP verification email.
+    """
     html_content = f'''<!DOCTYPE html>
 <html>
 <body style="font-family:Arial,sans-serif;background:#f4f6f9;padding:40px 0;margin:0;">
@@ -51,30 +83,9 @@ def send_otp_email(to_email, otp, to_name=""):
 </div>
 </body>
 </html>'''
-
-    payload = {
-        "sender": {
-            "name": sender_name,
-            "email": sender_email
-        },
-        "to": [
-            {
-                "email": to_email,
-                "name": to_name or to_email
-            }
-        ],
-        "subject": "🔐 VitalBook — Your OTP Verification Code",
-        "htmlContent": html_content
-    }
-
-    try:
-        response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=10)
-        if response.status_code in [200, 201, 202]:
-            print(f"[OK] OTP email sent successfully to {to_email} via Brevo HTTP API.")
-            return True
-        else:
-            print(f"[ERROR] Brevo API error {response.status_code}: {response.text}")
-            return False
-    except requests.RequestException as e:
-        print(f"[ERROR] Connection to Brevo failed: {e}")
-        return False
+    return send_transactional_email(
+        to_email=to_email,
+        subject="🔐 VitalBook — Your OTP Verification Code",
+        html_content=html_content,
+        to_name=to_name
+    )

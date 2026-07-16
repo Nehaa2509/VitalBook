@@ -47,14 +47,8 @@ class Command(BaseCommand):
                     html_content = render_to_string('emails/appointment_email.html', context)
                     
                     try:
-                        send_mail(
-                            subject=f"⏰ Reminder: Appointment in {remind_at} hour(s) — VitalBook",
-                            message=f"Reminder: Your appointment with Dr. {appointment.doctor.name} is in {remind_at} hour(s) at {appointment.time}.",
-                            from_email=settings.DEFAULT_FROM_EMAIL,
-                            recipient_list=[appointment.patient.user.email],
-                            html_message=html_content,
-                            fail_silently=True,
-                        )
+                        from appointment.otp_email import send_transactional_email
+                        send_transactional_email(appointment.patient.user.email, f"⏰ Reminder: Appointment in {remind_at} hour(s) — VitalBook", html_content, context['patient_name'])
                     except Exception as e:
                         self.stdout.write(self.style.ERROR(f'[ERROR] Reminder email error: {e}'))
                     sent_count += 1

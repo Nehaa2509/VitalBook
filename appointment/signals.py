@@ -6,8 +6,8 @@ so they can quickly confirm the linked appointment.
 """
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.core.mail import send_mail
 from django.conf import settings
+from .otp_email import send_transactional_email
 from django.template.loader import render_to_string
 from django.db import transaction
 from .models import Appointment, Prescription
@@ -35,18 +35,7 @@ def send_prescription_notification(sender, instance, created, **kwargs):
             subject = f"📝 Your Digital Prescription — VitalBook (VB-{appointment.id})"
             
             def send_email_task():
-                try:
-                    send_mail(
-                        subject=subject,
-                        message="Your digital prescription has been issued.",
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=[patient_email],
-                        html_message=html_content,
-                        fail_silently=True,
-                    )
-                    print(f'[OK] Prescription email sent to {patient_email}')
-                except Exception as e:
-                    print(f'[ERROR] Prescription email error: {e}')
+                send_transactional_email(patient_email, subject, html_content or "Your digital prescription has been issued.", context['patient_name'])
                     
             transaction.on_commit(send_email_task)
 
@@ -83,22 +72,18 @@ def notify_admin_on_payment(sender, instance, created, **kwargs):
     admin_url = 'http://127.0.0.1:8000/admin/appointment/appointment/'
 
     def send_admin_email_task():
-        send_mail(
-            subject=f'🔔 New Booking — VB-{appointment.id} Needs Confirmation',
-            message=(
-                f'New appointment booked and payment received!\n\n'
-                f'Patient:      {patient_name}\n'
-                f'Doctor:       Dr. {doctor_name}\n'
-                f'Date:         {appointment.date}\n'
-                f'Time:         {appointment.time}\n'
-                f'Amount Paid:  ₹{instance.amount}\n\n'
-                f'Please confirm this appointment:\n{confirm_url}\n\n'
-                f'Or view all appointments in the admin panel:\n{admin_url}\n'
-            ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[admin_email],
-            fail_silently=True,
+        msg_body = (
+            f'New appointment booked and payment received!<br><br>'
+            f'Patient:      {patient_name}<br>'
+            f'Doctor:       Dr. {doctor_name}<br>'
+            f'Date:         {appointment.date}<br>'
+            f'Time:         {appointment.time}<br>'
+            f'Amount Paid:  ₹{instance.amount}<br><br>'
+            f'Please confirm this appointment:<br><a href="{confirm_url}">{confirm_url}</a><br><br>'
+            f'Or view all appointments in the admin panel:<br><a href="{admin_url}">{admin_url}</a>'
         )
+        html_msg = f"<html><body><p>{msg_body}</p></body></html>"
+        send_transactional_email(admin_email, f'🔔 New Booking — VB-{appointment.id} Needs Confirmation', html_msg, "Admin")
 
     transaction.on_commit(send_admin_email_task)
 
@@ -136,18 +121,7 @@ def send_appointment_notification(sender, instance, created, **kwargs):
             subject = f"❌ Appointment Cancelled — VitalBook (VB-{instance.id})"
 
         def send_status_email_task():
-            try:
-                send_mail(
-                    subject=subject,
-                    message=f"Your appointment status is {status}.",
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[instance.patient.user.email],
-                    html_message=html_content,
-                    fail_silently=True,
-                )
-                print(f'[OK] {status} email sent to {instance.patient.user.email}')
-            except Exception as e:
-                print(f'[ERROR] Email error for {status}: {e}')
+            send_transactional_email(instance.patient.user.email, subject, html_content or f"Your appointment status is {status}.", context['patient_name'])
                 
         transaction.on_commit(send_status_email_task)
 

@@ -131,13 +131,9 @@ class Command(BaseCommand):
                 patient_email = appt.patient.user.email
                 if patient_email:
                     try:
-                        send_mail(
-                            subject=subject,
-                            message=message,
-                            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@vitalbook.com'),
-                            recipient_list=[patient_email],
-                            fail_silently=False,
-                        )
+                        from appointment.otp_email import send_transactional_email
+                        html_message = f"<html><body><p>{message.replace(chr(10), '<br>')}</p></body></html>"
+                        send_transactional_email(patient_email, subject, html_message, appt.patient.user.get_full_name() or appt.patient.user.username)
                         # Lock this hour — won't send again until next hour
                         appt.last_reminder_hour = current_hour
                         appt.save(update_fields=['last_reminder_hour'])
