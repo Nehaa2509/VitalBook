@@ -2033,6 +2033,13 @@ def diagnose(request):
     except Exception as e:
         server_users.append(f"Error querying users: {e}")
         
+    # Get live source code of register
+    import inspect
+    try:
+        register_source = inspect.getsource(register)
+    except Exception as e:
+        register_source = f"Error getting source: {e}"
+        
     return JsonResponse({
         'views_file': views_path,
         'cwd': os.getcwd(),
@@ -2046,7 +2053,9 @@ def diagnose(request):
         'db_config': db_config,
         'server_users': server_users,
         'db_url_env': os.environ.get('DATABASE_URL'),
+        'register_source': register_source,
     })
+
 
 
 
