@@ -2080,6 +2080,16 @@ def diagnose(request):
     except Exception as outer_mail_err:
         mail_test_status = f"Outer Exception: {outer_mail_err}"
         
+    # Extract lines 1540 to 1580 from views.py on the server
+    server_verify_lines = []
+    try:
+        with open(views_path, 'r', encoding='utf-8') as f:
+            for ln_num, line in enumerate(f, 1):
+                if 1540 <= ln_num <= 1580:
+                    server_verify_lines.append(f"{ln_num}: {line.rstrip()}")
+    except Exception as e:
+        server_verify_lines.append(f"Error reading lines: {e}")
+        
     return JsonResponse({
         'views_file': views_path,
         'cwd': os.getcwd(),
@@ -2097,7 +2107,9 @@ def diagnose(request):
         'verify_otp_source': verify_otp_source,
         'server_search_path': server_search_path,
         'mail_test_status': mail_test_status,
+        'server_verify_lines': server_verify_lines,
     })
+
 
 
 
