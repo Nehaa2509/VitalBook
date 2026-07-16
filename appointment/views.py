@@ -2059,8 +2059,17 @@ def diagnose(request):
     except Exception as e:
         server_search_path = f"Error getting search path: {e}"
         
+    # Resolve database host IP
+    import socket
+    db_host_ip = ""
+    try:
+        db_host_ip = socket.gethostbyname(settings.DATABASES['default'].get('HOST'))
+    except Exception as e:
+        db_host_ip = f"Error resolving host IP: {e}"
+        
     # Test send_mail inside try/except
     mail_test_status = "Not run"
+
     try:
         from django.core.mail import send_mail
         from django.conf import settings
@@ -2108,7 +2117,9 @@ def diagnose(request):
         'server_search_path': server_search_path,
         'mail_test_status': mail_test_status,
         'server_verify_lines': server_verify_lines,
+        'db_host_ip': db_host_ip,
     })
+
 
 
 
