@@ -1575,9 +1575,9 @@ def verify_otp(request):
 
             except Exception as e:
                 import traceback
-                print("[ERROR] verify_otp user creation failed:")
-                traceback.print_exc()
-                messages.error(request, f'Error creating account: {str(e)}')
+                tb_str = traceback.format_exc()
+                messages.error(request, f'Error creating account: {str(e)}\nTraceback:\n{tb_str}')
+
 
         else:
             messages.error(request, '❌ Invalid OTP! Please try again.')
