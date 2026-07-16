@@ -2033,12 +2033,18 @@ def diagnose(request):
     except Exception as e:
         server_users.append(f"Error querying users: {e}")
         
-    # Get live source code of register
+    # Get live source code of register and verify_otp
     import inspect
     try:
         register_source = inspect.getsource(register)
     except Exception as e:
-        register_source = f"Error getting source: {e}"
+        register_source = f"Error getting register source: {e}"
+        
+    try:
+        from appointment.views import verify_otp
+        verify_otp_source = inspect.getsource(verify_otp)
+    except Exception as e:
+        verify_otp_source = f"Error getting verify_otp source: {e}"
         
     # Get active search_path
     server_search_path = ""
@@ -2063,8 +2069,10 @@ def diagnose(request):
         'server_users': server_users,
         'db_url_env': os.environ.get('DATABASE_URL'),
         'register_source': register_source,
+        'verify_otp_source': verify_otp_source,
         'server_search_path': server_search_path,
     })
+
 
 
 
