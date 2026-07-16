@@ -176,12 +176,12 @@ EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@vitalbook.in')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'VitalBook <psiya4262@gmail.com>')
 
 # Brevo Email Campaigns configuration
 BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')
 BREVO_SENDER_NAME = os.environ.get('BREVO_SENDER_NAME', 'VitalBook')
-BREVO_SENDER_EMAIL = os.environ.get('BREVO_SENDER_EMAIL', 'noreply@vitalbook.in')
+BREVO_SENDER_EMAIL = os.environ.get('BREVO_SENDER_EMAIL', 'psiya4262@gmail.com')
 
 
 # Login redirect
