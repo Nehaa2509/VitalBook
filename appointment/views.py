@@ -2059,6 +2059,27 @@ def diagnose(request):
     except Exception as e:
         server_search_path = f"Error getting search path: {e}"
         
+    # Test send_mail inside try/except
+    mail_test_status = "Not run"
+    try:
+        from django.core.mail import send_mail
+        from django.conf import settings
+        try:
+            send_mail(
+                subject='Test',
+                message='Test',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=['test@example.com'],
+                fail_silently=True
+            )
+            mail_test_status = "Success (no exception raised)"
+        except Exception as mail_err:
+            mail_test_status = f"Caught Exception: {mail_err}"
+        except BaseException as mail_base_err:
+            mail_test_status = f"Caught BaseException: {mail_base_err}"
+    except Exception as outer_mail_err:
+        mail_test_status = f"Outer Exception: {outer_mail_err}"
+        
     return JsonResponse({
         'views_file': views_path,
         'cwd': os.getcwd(),
@@ -2075,7 +2096,9 @@ def diagnose(request):
         'register_source': register_source,
         'verify_otp_source': verify_otp_source,
         'server_search_path': server_search_path,
+        'mail_test_status': mail_test_status,
     })
+
 
 
 
