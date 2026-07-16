@@ -1934,6 +1934,8 @@ def diagnose(request):
     from django.test import RequestFactory
     from django.contrib.sessions.middleware import SessionMiddleware
     from django.contrib.messages.storage.fallback import FallbackStorage
+    from django.contrib.sessions.models import Session
+    from django.utils import timezone
     
     views_path = __file__
     
@@ -1942,6 +1944,13 @@ def diagnose(request):
     settings.DEBUG = True
     connection.queries_log.clear()
     
+    # Try running Session query BEFORE doing anything
+    before_status = "OK"
+    try:
+        list(Session.objects.filter(session_key='dummy_key', expire_date__gt=timezone.now()))
+    except Exception as e:
+        before_status = f"Failed before register: {e}\n{traceback.format_exc()}"
+        
     # Run a test registration POST locally on the server inside this view!
     factory = RequestFactory()
     post_req = factory.post('/register/', {
@@ -1975,6 +1984,13 @@ def diagnose(request):
         exc_lines = traceback.format_exception(type(e), e, e.__traceback__)
         tb_str = "".join(exc_lines)
         
+    # Try running Session query AFTER register
+    after_status = "OK"
+    try:
+        list(Session.objects.filter(session_key='dummy_key', expire_date__gt=timezone.now()))
+    except Exception as e:
+        after_status = f"Failed after register: {e}\n{traceback.format_exc()}"
+        
     # Get connection queries
     queries = list(connection.queries)
     
@@ -2000,12 +2016,15 @@ def diagnose(request):
     return JsonResponse({
         'views_file': views_path,
         'cwd': os.getcwd(),
+        'before_status': before_status,
+        'after_status': after_status,
         'status': status,
         'traceback': tb_str,
         'otp_lines': otp_lines,
         'queries': queries,
         'pip_freeze': pip_freeze,
     })
+
 
 
 
