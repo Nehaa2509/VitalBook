@@ -2025,6 +2025,14 @@ def diagnose(request):
     except Exception as e:
         db_config = f"Error getting DB settings: {e}"
         
+    # Get all users on server
+    server_users = []
+    try:
+        from django.contrib.auth.models import User
+        server_users = [f"{u.username} (active: {u.is_active})" for u in User.objects.all()]
+    except Exception as e:
+        server_users.append(f"Error querying users: {e}")
+        
     return JsonResponse({
         'views_file': views_path,
         'cwd': os.getcwd(),
@@ -2036,7 +2044,9 @@ def diagnose(request):
         'queries': queries,
         'pip_freeze': pip_freeze,
         'db_config': db_config,
+        'server_users': server_users,
     })
+
 
 
 
