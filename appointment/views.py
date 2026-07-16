@@ -16,6 +16,7 @@ from .forms import AppointmentForm
 from django.contrib.auth.models import User
 from . import email_utils
 from . import otp_utils
+from .otp_email import send_otp_email
 from .decorators import patient_required
 from .upi_utils import create_upi_order, verify_upi_payment, create_cashfree_cancellation_order
 import json
@@ -283,83 +284,14 @@ def register(request):
         request.session['reg_address'] = address
         request.session['otp_created_at'] = str(timezone.now())
 
-        # Send real email
-        try:
-            send_mail(
-                subject='🔐 VitalBook — Your OTP Verification Code',
-                message=f'''
-Dear {first_name},
-
-Your OTP verification code for VitalBook is:
-
-{otp}
-
-This code is valid for 10 minutes.
-Do not share this code with anyone.
-
-If you did not request this, please ignore this email.
-
-Best regards,
-Team VitalBook
-                ''',
-                from_email=django_settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
-                fail_silently=False,
-                html_message=f'''
-<!DOCTYPE html>
-<html>
-<body style="font-family:Inter,Arial,sans-serif;background:#f4f6f9;padding:40px 0;margin:0;">
-<div style="max-width:500px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
-
-    <!-- Header -->
-    <div style="background:linear-gradient(135deg,#0d6efd,#0056b3);padding:32px;text-align:center;">
-        <div style="background:#f97316;width:48px;height:48px;border-radius:12px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:white;">+</div>
-        <h1 style="color:white;margin:0;font-size:22px;font-weight:700;">VitalBook</h1>
-        <p style="color:rgba(255,255,255,0.8);margin:6px 0 0;font-size:13px;">Your Health, Our Priority</p>
-    </div>
-
-    <!-- Body -->
-    <div style="padding:36px 32px;text-align:center;">
-        <h2 style="color:#0f172a;font-size:20px;margin:0 0 8px;">Verify Your Email</h2>
-        <p style="color:#64748b;font-size:14px;margin:0 0 28px;">
-            Hi <strong>{first_name}</strong>, use the code below to verify your account.
-        </p>
-
-        <!-- OTP Box -->
-        <div style="background:#f0f7ff;border:2px dashed #0d6efd;border-radius:12px;padding:24px;margin:0 0 24px;">
-            <p style="color:#64748b;font-size:12px;margin:0 0 8px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Your OTP Code</p>
-            <div style="font-size:42px;font-weight:800;color:#0d6efd;letter-spacing:12px;font-family:monospace;">
-                {otp}
-            </div>
-        </div>
-
-        <p style="color:#94a3b8;font-size:13px;margin:0 0 6px;">
-            ⏰ This code expires in <strong>10 minutes</strong>
-        </p>
-        <p style="color:#94a3b8;font-size:12px;margin:0;">
-            🔒 Never share this code with anyone
-        </p>
-    </div>
-
-    <!-- Footer -->
-    <div style="background:#f8fafc;padding:20px;text-align:center;border-top:1px solid #e2e8f0;">
-        <p style="color:#94a3b8;font-size:12px;margin:0;">
-            © 2026 VitalBook. All rights reserved.<br>
-            If you didn't create an account, ignore this email.
-        </p>
-    </div>
-
-</div>
-</body>
-</html>
-                '''
-            )
+        # Send real email via Brevo HTTP API
+        success = send_otp_email(email, otp, first_name)
+        if success:
             messages.success(request, f'OTP sent to {email}! Check your inbox.')
-        except Exception as e:
-            print(f'Email error: {e}')
-            messages.warning(request, f'Could not send email. Please verify your SMTP settings.')
-
-        return redirect('verify_otp')
+            return redirect('verify_otp')
+        else:
+            messages.error(request, 'Failed to send OTP verification email. Please check your email address or try again.')
+            return render(request, 'appointment/register.html')
 
     return render(request, 'appointment/register.html')
 
@@ -1604,25 +1536,12 @@ def resend_otp(request):
     request.session['reg_otp'] = otp
     request.session['otp_created_at'] = str(timezone.now())
 
-    try:
-        send_mail(
-            subject='🔐 VitalBook — New OTP Code',
-            message=f'Your new OTP is: {otp}. Valid for 10 minutes.',
-            from_email=django_settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            fail_silently=False,
-            html_message=f'''
-<div style="font-family:Arial,sans-serif;max-width:400px;margin:0 auto;padding:32px;text-align:center;">
-    <h2 style="color:#0d6efd;">New OTP Code</h2>
-    <div style="font-size:42px;font-weight:800;color:#0d6efd;letter-spacing:12px;background:#f0f7ff;padding:20px;border-radius:12px;margin:20px 0;">{otp}</div>
-    <p style="color:#64748b;">Valid for 10 minutes. Do not share this code.</p>
-</div>
-            '''
-        )
+    # Send new OTP email via Brevo HTTP API
+    success = send_otp_email(email, otp, first_name)
+    if success:
         messages.success(request, f'✅ New OTP sent to {email}!')
-    except Exception as e:
-        print(f'Email send error: {e}')
-        messages.warning(request, f'Email failed to send.')
+    else:
+        messages.error(request, 'Failed to send new OTP verification email. Please try again.')
 
     return redirect('verify_otp')
 
