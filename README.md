@@ -37,7 +37,7 @@ A full-stack web application for managing hospital appointments, built with **Py
 | PDF Generation | `xhtml2pdf` |
 | Payments | Cashfree Payment Gateway (UPI) |
 | Email | Django SMTP Backend |
-| Deployment | Railway |
+| Deployment | Render |
 
 ---
 
