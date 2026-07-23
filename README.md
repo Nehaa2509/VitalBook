@@ -2,7 +2,7 @@
 
 A full-stack web application for managing hospital appointments, built with **Python 3.13 + Django 6.0**. Patients can register, browse doctors, book appointments, pay online, and download digital prescriptions — all from a single platform.
 
-> 🚀 **Live Demo**: [Deployed on Railway](https://railway.app) &nbsp;|&nbsp; 👨‍💻 **Tech Stack**: Django 6.0 · SQLite · Cashfree UPI · xhtml2pdf
+> 🚀 **Live Demo**: https://vitalbook-1.onrender.com &nbsp;|&nbsp; 👨‍💻 **Tech Stack**: Django 6.0 · SQLite · Cashfree UPI · xhtml2pdf
 
 ---
 
